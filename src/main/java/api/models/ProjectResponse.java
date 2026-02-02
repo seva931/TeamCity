@@ -1,10 +1,14 @@
 package api.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class ProjectResponse extends BaseModel {
     private String id;
     private String name;
-    private ParentProjectRef parentProject;
+    private ParentProject parentProject;
 }

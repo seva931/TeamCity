@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class CreateProjectRequest extends BaseModel {
-    private ParentProject parentProject = new ParentProject("id: Root");
+public class ParentProject {
     private String id;
-    private String name;
 }
