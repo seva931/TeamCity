@@ -34,4 +34,12 @@ public class RequestSpecs {
                 .build();
     }
 
+    public static RequestSpecification authAsUser(String username, String password) {
+        return defaultRequestBuilder()
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((username + ":" + password)
+                                .getBytes()))
+                .build();
+    }
+
 }
