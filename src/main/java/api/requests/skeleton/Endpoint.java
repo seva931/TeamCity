@@ -16,4 +16,8 @@ public enum Endpoint {
     private final String url;
     private final Class<? extends BaseModel> requestModel;
     private final Class<? extends BaseModel> responseModel;
+
+    public String getUrlByID() {
+        return url + "/{id}";
+    }
 }

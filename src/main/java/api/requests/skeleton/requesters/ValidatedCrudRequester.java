@@ -16,13 +16,16 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     }
 
     @Override
-    public Object post(BaseModel model) {
-        return null;
+    public T post(BaseModel model) {
+        return (T) crudRequester.post(model).extract().as(endpoint.getResponseModel());
     }
 
     @Override
-    public Object get() {
-        return null;
+    public T get() {
+        return (T) crudRequester.get().extract().as(endpoint.getResponseModel());
+    }
+    public T get(long id) {
+        return (T) crudRequester.get(id).extract().as(endpoint.getResponseModel());
     }
 
     @Override
@@ -31,7 +34,7 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     }
 
     @Override
-    public Object delete(long id) {
-        return null;
+    public T delete(long id) {
+        return (T) crudRequester.delete(id).extract().as(endpoint.getResponseModel());
     }
 }
