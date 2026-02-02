@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Endpoint {
-    YOUR_NAME("", BaseModel.class, BaseModel.class);
+    SERVER("/app/rest/server", BaseModel.class, BaseModel.class);
 
     private final String url;
     private final Class<? extends BaseModel> requestModel;

@@ -1,5 +1,19 @@
 package api.specs;
 
-public class ResponseSpecs {
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.specification.ResponseSpecification;
+import org.apache.http.HttpStatus;
 
+public class ResponseSpecs {
+    private ResponseSpecs() {}
+
+    private static ResponseSpecBuilder defaultResponseBuilder() {
+        return new ResponseSpecBuilder();
+    }
+
+    public static ResponseSpecification requestReturnsOk() {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_OK)
+                .build();
+    }
 }
