@@ -7,11 +7,14 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Endpoint {
-    SERVER("/app/rest/server", BaseModel.class, BaseModel.class),
-    USERS("/app/rest/users", CreateUserRequest.class, CreateUserResponse.class),
-    PROJECTS("/app/rest/projects", CreateProjectRequest.class, ProjectResponse.class),
-    PROJECT_BY_ID("/app/rest/projects/id:{id}", BaseModel.class, ProjectResponse.class),
-    BUILD_TYPES("/app/rest/buildTypes", CreateBuildConfigurationRequest.class, BaseModel.class);
+    SERVER("/server", BaseModel.class, BaseModel.class),
+    USERS("/users", CreateUserRequest.class, CreateUserResponse.class),
+    PROJECTS("/projects", CreateProjectRequest.class, ProjectResponse.class),
+    PROJECT_BY_ID("/projects/id:{id}", BaseModel.class, ProjectResponse.class),
+    BUILD_TYPES("/buildTypes", CreateBuildConfigurationRequest.class, BaseModel.class),
+    GET_ALL_ROOTS("/vcs-roots?locator=string&fields=string",GetAllRootsRequest.class,GetAllRootResponse.class),
+    CREATE_NEW_ROOT("/vcs-roots?fields=string",CreateNewRootRequest.class,CreateNewRootResponse.class);
+
 
     private final String url;
     private final Class<? extends BaseModel> requestModel;

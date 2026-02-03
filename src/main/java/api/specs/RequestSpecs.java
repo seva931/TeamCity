@@ -10,8 +10,6 @@ import io.restassured.specification.RequestSpecification;
 import java.util.Base64;
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
-
 public class RequestSpecs {
 
     private RequestSpecs() {
@@ -24,7 +22,7 @@ public class RequestSpecs {
                 .addFilters(
                         List.of(new RequestLoggingFilter(),
                                 new ResponseLoggingFilter()))
-                .setBaseUri(Config.getProperty("apiBaseUrl"));
+                .setBaseUri(Config.getProperty("BaseUrl")+Config.getProperty("api"));
     }
 
     public static RequestSpecification adminSpec() {
