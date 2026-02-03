@@ -7,16 +7,21 @@ import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.generators.TestDataGenerator;
 
 public class AdminSteps {
 
-    public static CreateUserRequest createUser(String username, String password){
-        CreateUserRequest createUserRequest = new CreateUserRequest(username, password);
+    public static CreateUserRequest createAdminUser() {
+        CreateUserRequest createUserRequest = CreateUserRequest.systemAdmin(
+                TestDataGenerator.generateUsername(),
+                TestDataGenerator.generatePassword());
+
         new CrudRequester(
                 RequestSpecs.adminSpec(),
                 Endpoint.USERS,
                 ResponseSpecs.requestReturnsOk())
                 .post(createUserRequest);
+
         return createUserRequest;
     }
 
