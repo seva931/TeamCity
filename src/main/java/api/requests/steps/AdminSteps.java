@@ -37,7 +37,7 @@ public class AdminSteps {
 
         new CrudRequester(
                 RequestSpecs.adminSpec(),
-                Endpoint.PROJECTS,
+                Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
                 .post(createBuildConfigurationRequest);
     }

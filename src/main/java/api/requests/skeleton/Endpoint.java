@@ -1,9 +1,6 @@
 package api.requests.skeleton;
 
-import api.models.BaseModel;
-import api.models.CreateBuildConfigurationRequest;
-import api.models.CreateProjectRequest;
-import api.models.CreateUserRequest;
+import api.models.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
