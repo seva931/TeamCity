@@ -17,14 +17,14 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface 
 
     @Override
     public ValidatableResponse post(BaseModel model) {
-            var body = model == null ? "" : model;
-            return given()
-                    .spec(requestSpecification)
-                    .body(body)
-                    .post(endpoint.getUrl())
-                    .then()
-                    .assertThat()
-                    .spec(responseSpecification);
+        var body = model == null ? "" : model;
+        return given()
+                .spec(requestSpecification)
+                .body(body)
+                .post(endpoint.getUrl())
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
     }
 
     @Override

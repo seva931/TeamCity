@@ -5,15 +5,23 @@ import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
 
 public class ResponseSpecs {
-    private ResponseSpecs() {}
 
-    private static ResponseSpecBuilder defaultResponseBuilder() {
-        return new ResponseSpecBuilder();
+    private ResponseSpecs() {
     }
 
     public static ResponseSpecification requestReturnsOk() {
-        return defaultResponseBuilder()
+        return ok();
+    }
+
+    public static ResponseSpecification ok() {
+        return new ResponseSpecBuilder()
                 .expectStatusCode(HttpStatus.SC_OK)
+                .build();
+    }
+
+    public static ResponseSpecification noContent() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_NO_CONTENT)
                 .build();
     }
 }

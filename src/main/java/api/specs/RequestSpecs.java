@@ -10,6 +10,8 @@ import io.restassured.specification.RequestSpecification;
 import java.util.Base64;
 import java.util.List;
 
+import static io.restassured.RestAssured.given;
+
 public class RequestSpecs {
 
     private RequestSpecs() {
@@ -42,4 +44,11 @@ public class RequestSpecs {
                 .build();
     }
 
+    /*public static RequestSpecification base() {
+        return given()
+                .baseUri(Config.getProperty("apiBaseUrl"))
+                .header("Authorization", "Bearer " + Config.getProperty("token"))
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json");
+    }*/
 }
