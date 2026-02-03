@@ -22,7 +22,7 @@ public class RequestSpecs {
                 .addFilters(
                         List.of(new RequestLoggingFilter(),
                                 new ResponseLoggingFilter()))
-                .setBaseUri(Config.getProperty("apiBaseUrl"));
+                .setBaseUri(Config.getProperty("BaseUrl")+Config.getProperty("api"));
     }
 
     public static RequestSpecification adminSpec() {
