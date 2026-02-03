@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Endpoint {
     SERVER("/app/rest/server", BaseModel.class, BaseModel.class),
-    USERS("/app/rest/users", CreateUserRequest.class, BaseModel.class),
+    USERS("/app/rest/users", CreateUserRequest.class, CreateUserResponse.class),
     PROJECTS("/app/rest/projects", CreateProjectRequest.class, ProjectResponse.class),
     PROJECT_BY_ID("/app/rest/projects/id:{id}", BaseModel.class, ProjectResponse.class),
     BUILD_TYPES("/app/rest/buildTypes", CreateBuildConfigurationRequest.class, BaseModel.class),
