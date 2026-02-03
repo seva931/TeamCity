@@ -21,10 +21,9 @@ public class RequestSpecs {
         return new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
-                .addFilters(List.of(
-                        new RequestLoggingFilter(),
-                        new ResponseLoggingFilter()
-                ))
+                .addFilters(
+                        List.of(new RequestLoggingFilter(),
+                                new ResponseLoggingFilter()))
                 .setBaseUri(Config.getProperty("apiBaseUrl"));
     }
 
@@ -33,8 +32,15 @@ public class RequestSpecs {
                 .addHeader("Authorization", "Basic " +
                         Base64.getEncoder().encodeToString(
                                 (Config.getProperty("admin.login") + ":" + Config.getProperty("admin.password"))
-                                        .getBytes()
-                        ))
+                                        .getBytes()))
+                .build();
+    }
+
+    public static RequestSpecification authAsUser(String username, String password) {
+        return defaultRequestBuilder()
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((username + ":" + password)
+                                .getBytes()))
                 .build();
     }
 
