@@ -6,11 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class CreateProjectRequest extends BaseModel{
-    private String id;
-    private String name;
-    private String parentProjectId;
+public class CreateUserRequest extends BaseModel{
+    private String username;
+    private String password;
 }

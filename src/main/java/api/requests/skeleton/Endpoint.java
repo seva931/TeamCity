@@ -1,8 +1,6 @@
 package api.requests.skeleton;
 
-import api.models.BaseModel;
-import api.models.CreateProjectRequest;
-import api.models.ProjectResponse;
+import api.models.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,7 +8,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Endpoint {
     SERVER("/app/rest/server", BaseModel.class, BaseModel.class),
+    USERS("/app/rest/users", CreateUserRequest.class, BaseModel.class),
     PROJECTS("/app/rest/projects", CreateProjectRequest.class, ProjectResponse.class),
+    BUILD_TYPES("/app/rest/buildTypes", CreateBuildConfigurationRequest.class, BaseModel.class),
     PROJECT_BY_ID("/app/rest/projects/id:%s", BaseModel.class, ProjectResponse.class);
 
     private final String url;
