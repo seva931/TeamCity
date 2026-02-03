@@ -11,13 +11,13 @@ import lombok.Getter;
 public enum Endpoint {
     SERVER("/app/rest/server", BaseModel.class, BaseModel.class),
     PROJECTS("/app/rest/projects", CreateProjectRequest.class, ProjectResponse.class),
-    PROJECT_BY_ID("/app/rest/projects/id:%s", BaseModel.class, ProjectResponse.class);
+    PROJECT_BY_ID("/app/rest/projects/id:{id}", BaseModel.class, ProjectResponse.class);
 
     private final String url;
     private final Class<? extends BaseModel> requestModel;
     private final Class<? extends BaseModel> responseModel;
 
     public String getUrlByID() {
-        return url + "/{id}";
+        return url + "{id}";
     }
 }
