@@ -10,8 +10,6 @@ import io.restassured.specification.RequestSpecification;
 import java.util.Base64;
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
-
 public class RequestSpecs {
 
     private RequestSpecs() {

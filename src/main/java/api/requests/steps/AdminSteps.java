@@ -1,6 +1,7 @@
 package api.requests.steps;
 
 import api.models.CreateBuildConfigurationRequest;
+import api.models.CreateNewRootRequest;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserRequest;
 import api.requests.skeleton.Endpoint;
@@ -40,6 +41,15 @@ public class AdminSteps {
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
                 .post(createBuildConfigurationRequest);
+    }
+   
+    public static void getAllRoots (){
+        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.GET_ALL_ROOTS, ResponseSpecs.ok()).get();
+    }
+    public static void createNewRoot (){
+        CreateNewRootRequest newRoot = new CreateNewRootRequest();
+        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.CREATE_NEW_ROOT, ResponseSpecs.created())
+        .post(newRoot);
     }
 
 }

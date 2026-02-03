@@ -24,4 +24,9 @@ public class ResponseSpecs {
                 .expectStatusCode(HttpStatus.SC_NO_CONTENT)
                 .build();
     }
+    public static ResponseSpecification created() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_CREATED)
+                .build();
+    }
 }
