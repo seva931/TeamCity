@@ -23,10 +23,6 @@ public enum Endpoint {
     private final Class<? extends BaseModel> requestModel;
     private final Class<? extends BaseModel> responseModel;
 
-    public String getUrlByID() {
-        return url + "{id}";
-    }
-
     public String getFormatedUrl(Object... args) {
         return String.format(url, args);
     }
