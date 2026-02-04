@@ -13,7 +13,8 @@ public enum Endpoint {
     PROJECT_BY_ID("/projects/id:{id}", BaseModel.class, ProjectResponse.class),
     BUILD_TYPES("/buildTypes", CreateBuildConfigurationRequest.class, BaseModel.class),
     GET_ALL_ROOTS("/vcs-roots?locator=string&fields=string",GetAllRootsRequest.class,GetAllRootResponse.class),
-    CREATE_NEW_ROOT("/vcs-roots?fields=string",CreateNewRootRequest.class,CreateNewRootResponse.class);
+    CREATE_NEW_ROOT("/vcs-roots?fields=string",CreateNewRootRequest.class,CreateNewRootResponse.class),
+    AGENTS("/agents", BaseModel.class, AgentsResponse.class);
 
 
     private final String url;

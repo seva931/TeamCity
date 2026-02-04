@@ -37,6 +37,7 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
                 .assertThat()
                 .spec(responseSpecification);
     }
+
     public ValidatableResponse get(long id) {
         return given()
                 .spec(requestSpecification)
