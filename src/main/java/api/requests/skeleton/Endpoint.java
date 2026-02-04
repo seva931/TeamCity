@@ -24,4 +24,8 @@ public enum Endpoint {
     public String getUrlByID() {
         return url + "{id}";
     }
+
+    public String getFormatedUrl(Object... args) {
+        return String.format(url, args);
+    }
 }
