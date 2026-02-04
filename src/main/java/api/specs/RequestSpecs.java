@@ -1,6 +1,7 @@
 package api.specs;
 
 import api.configs.Config;
+import api.models.CreateUserRequest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -21,6 +22,18 @@ public class RequestSpecs {
                         List.of(new RequestLoggingFilter(),
                                 new ResponseLoggingFilter()))
                 .setBaseUri(Config.getProperty("BaseUrl") + Config.getProperty("api"));
+    }
+
+    public static RequestSpecBuilder builder() {
+        return defaultRequestBuilder();
+    }
+
+    public static RequestSpecification authAsUser(String username, String password, RequestSpecBuilder builder) {
+        return builder
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((username + ":" + password)
+                                .getBytes()))
+                .build();
     }
 
     public static RequestSpecification authAsUser(String username, String password, ContentType type) {
