@@ -65,8 +65,7 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
     public ValidatableResponse delete(long id) {
         return given()
                 .spec(requestSpecification)
-                .pathParam("id", id)
-                .delete(endpoint.getUrl())
+                .delete(endpoint.getFormatedUrl(id))
                 .then()
                 .assertThat()
                 .spec(responseSpecification);

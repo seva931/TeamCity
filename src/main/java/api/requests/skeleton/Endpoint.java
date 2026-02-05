@@ -9,6 +9,7 @@ import lombok.Getter;
 public enum Endpoint {
     SERVER("/server", BaseModel.class, BaseModel.class),
     USERS("/users", CreateUserRequest.class, CreateUserResponse.class),
+    USERS_ID("/users/id:%s", BaseModel.class, BaseModel.class),
     PROJECTS("/projects", CreateProjectRequest.class, ProjectResponse.class),
     PROJECT_BY_ID("/projects/id:{id}", BaseModel.class, ProjectResponse.class),
     BUILD_TYPES("/buildTypes", CreateBuildConfigurationRequest.class, BaseModel.class),
