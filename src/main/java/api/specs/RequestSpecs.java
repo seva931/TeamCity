@@ -50,6 +50,10 @@ public class RequestSpecs {
         return authAsUser(username, password, ContentType.JSON);
     }
 
+    public static RequestSpecification authAsUser(CreateUserRequest user) {
+        return authAsUser(user.getUsername(), user.getPassword(), ContentType.JSON);
+    }
+
     public static RequestSpecification adminSpec() {
         return authAsUser(Config.getProperty("admin.login"), Config.getProperty("admin.password"));
     }
