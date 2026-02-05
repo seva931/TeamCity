@@ -56,5 +56,9 @@ public class AdminSteps {
         new CrudRequester(RequestSpecs.adminSpec(), Endpoint.CREATE_NEW_ROOT, ResponseSpecs.created())
         .post(newRoot);
     }
+    public static void getAllUsers (){
+        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok()).get();
+    }
+    
 
 }
