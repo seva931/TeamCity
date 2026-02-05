@@ -40,4 +40,12 @@ public class RequestSpecs {
     public static RequestSpecification adminSpec() {
         return authAsUser(Config.getProperty("admin.login"), Config.getProperty("admin.password"));
     }
+
+    public static RequestSpecification authAsUserWithBuilder(CreateUserRequest user, RequestSpecBuilder requestSpecBuilder) {
+        return requestSpecBuilder
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((user.getUsername() + ":" + user.getPassword())
+                                .getBytes()))
+                .build();
+    }
 }
