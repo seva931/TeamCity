@@ -2,7 +2,7 @@ package api;
 
 import api.models.AgentResponse;
 import api.models.AgentsResponse;
-import api.models.CreateUserRequest;
+import api.models.CreateUserResponse;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @WithUsersQueue
 public class AgentsTest extends BaseTest {
     @Test
-    void shouldProvideListOfAvailableAgents(CreateUserRequest user) {
+    void shouldProvideListOfAvailableAgents(CreateUserResponse user) {
         AgentsResponse response = new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS,
@@ -43,13 +43,13 @@ public class AgentsTest extends BaseTest {
 
     //TODO сделать парамтеризированным, проверять и true и false
     @Test
-    void shouldDisableAgentByLocator(CreateUserRequest user) {
-        AgentsResponse agents = AgentSteps.getAgents(user.getUsername(), user.getPassword());
+    void shouldDisableAgentByLocator(CreateUserResponse user) {
+        AgentsResponse agents = AgentSteps.getAgents(user.getUsername(), user.getTestData().getPassword());
         long agentId = agents.getAgent().getFirst().getId();
         String bodyMessage = "true";
 
         String response = new CrudRequester(
-                RequestSpecs.authAsUser(user.getUsername(), user.getPassword(), ContentType.TEXT),
+                RequestSpecs.authAsUser(user.getUsername(), user.getTestData().getPassword(), ContentType.TEXT),
                 Endpoint.AGENTS_ID_ENABLED,
                 ResponseSpecs.requestReturnsOk()
         ).put(agentId, bodyMessage)
@@ -59,14 +59,14 @@ public class AgentsTest extends BaseTest {
                 .as("текст в запросе и текст в ответе совпадают")
                 .isEqualTo(bodyMessage);
 
-        AgentResponse agentById = AgentSteps.getAgentById(user.getUsername(), user.getPassword(), agentId);
+        AgentResponse agentById = AgentSteps.getAgentById(user.getUsername(), user.getTestData().getPassword(), agentId);
         softly.assertThat(agentById.isEnabled())
                 .as("Поле enabled")
                 .isEqualTo(Boolean.parseBoolean(bodyMessage));
     }
 
     @Test
-    void shouldProvideInfoAboutAgentById(CreateUserRequest user) {
+    void shouldProvideInfoAboutAgentById(CreateUserResponse user) {
         AgentsResponse agents = AgentSteps.getAgents(user);
         long agentId = agents.getAgent().getFirst().getId();
 
@@ -85,7 +85,7 @@ public class AgentsTest extends BaseTest {
     }
 
     @Test
-    void shouldReturnListOfUnauthorizedAgents(CreateUserRequest user) {
+    void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
 
         RequestSpecBuilder requestSpecBuilder = RequestSpecs.builder().addQueryParam("locator", "authorized:false");
 
