@@ -2,6 +2,7 @@ package api.specs;
 
 import api.configs.Config;
 import api.models.CreateUserRequest;
+import api.models.CreateUserResponse;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -54,6 +55,10 @@ public class RequestSpecs {
         return authAsUser(user.getUsername(), user.getPassword(), ContentType.JSON);
     }
 
+    public static RequestSpecification authAsUser(CreateUserResponse user) {
+        return authAsUser(user.getUsername(), user.getTestData().getPassword(), ContentType.JSON);
+    }
+
     public static RequestSpecification adminSpec() {
         return authAsUser(Config.getProperty("admin.login"), Config.getProperty("admin.password"));
     }
@@ -62,6 +67,14 @@ public class RequestSpecs {
         return requestSpecBuilder
                 .addHeader("Authorization", "Basic " +
                         Base64.getEncoder().encodeToString((user.getUsername() + ":" + user.getPassword())
+                                .getBytes()))
+                .build();
+    }
+
+    public static RequestSpecification authAsUserWithBuilder(CreateUserResponse user, RequestSpecBuilder requestSpecBuilder) {
+        return requestSpecBuilder
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((user.getUsername() + ":" + user.getTestData().getPassword())
                                 .getBytes()))
                 .build();
     }
