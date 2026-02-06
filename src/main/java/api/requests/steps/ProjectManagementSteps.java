@@ -1,6 +1,7 @@
 package api.requests.steps;
 
 import api.models.*;
+import api.configs.Config;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -42,7 +43,11 @@ public class ProjectManagementSteps {
 
     public void updateProjectName(String projectId, String newName) {
         new CrudRequester(
-                RequestSpecs.adminSpec(ContentType.TEXT),
+                RequestSpecs.authAsUser(
+                        Config.getProperty("admin.login"),
+                        Config.getProperty("admin.password"),
+                        ContentType.TEXT
+                ),
                 Endpoint.PROJECT_NAME,
                 ResponseSpecs.requestReturnsOk()
         ).put(projectId, newName);
