@@ -47,6 +47,15 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
                 .spec(responseSpecification);
     }
 
+    public ValidatableResponse get(String id) {
+        return given()
+                .spec(requestSpecification)
+                .get(endpoint.getFormatedUrl(id))
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
     @Override
     public Object put(BaseModel model) {
         return null;
@@ -63,6 +72,15 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
 
     @Override
     public ValidatableResponse delete(long id) {
+        return given()
+                .spec(requestSpecification)
+                .delete(endpoint.getFormatedUrl(id))
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
+    public ValidatableResponse delete(String id) {
         return given()
                 .spec(requestSpecification)
                 .delete(endpoint.getFormatedUrl(id))

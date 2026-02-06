@@ -31,6 +31,9 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     public T get(long id) {
         return (T) crudRequester.get(id).extract().as(endpoint.getResponseModel());
     }
+    public T get(String id) {
+        return (T) crudRequester.get(id).extract().as(endpoint.getResponseModel());
+    }
 
     @Override
     public Object put(BaseModel model) {
