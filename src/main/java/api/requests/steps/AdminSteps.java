@@ -83,14 +83,10 @@ public class AdminSteps {
                 ResponseSpecs.requestReturnsOk())
                 .post(createBuildConfigurationRequest);
     }
-   
-    public static void getAllRoots (){
-        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.GET_ALL_ROOTS, ResponseSpecs.ok()).get();
-    }
 
-    public static void createNewRoot (){
-        CreateNewRootRequest newRoot = new CreateNewRootRequest();
-        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.CREATE_NEW_ROOT, ResponseSpecs.created())
-        .post(newRoot);
+    public static void getAllUsers (){
+        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok()).get();
     }
+    
+
 }
