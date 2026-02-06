@@ -17,12 +17,12 @@ public class AdminSteps {
                 TestDataGenerator.generateUsername(),
                 TestDataGenerator.generatePassword());
 
-        new CrudRequester(
+        CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpecs.adminSpec(),
                 Endpoint.USERS,
                 ResponseSpecs.requestReturnsOk())
                 .post(createUserRequest);
-
+        
         return createUserRequest;
     }
 
@@ -84,8 +84,44 @@ public class AdminSteps {
                 .post(createBuildConfigurationRequest);
     }
 
-    public static void getAllUsers (){
-        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok()).get();
+    public static GetUsersResponse getAllUsers (){
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok())
+                .get()
+                .extract()
+                .as(GetUsersResponse.class);
+    }
+
+    public static User getUserById(int id){
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID, ResponseSpecs.ok())
+                .get(id)
+                .extract()
+                .as(User.class);
+    }
+
+    public static PermissionsResponse getPermissionsForUser(int id){
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.ok())
+                .get(id)
+                .extract()
+                .as(PermissionsResponse.class);
+    }
+
+    public static Role getRoleForUser(int id){
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_ROLES, ResponseSpecs.ok())
+                .get(id)
+                .extract()
+                .as(Role.class);
+    }
+    public static PermissionsResponse getPermissionsWithInvalidId(int id){
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.notFound())
+                .get(id)
+                .extract()
+                .as(PermissionsResponse.class);
+    }
+    public static Role getRoleWithInvalidId(int id){
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_ROLES, ResponseSpecs.notFound())
+                .get(id)
+                .extract()
+                .as(Role.class);
     }
     
 
