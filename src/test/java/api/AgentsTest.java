@@ -15,10 +15,15 @@ import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 @ExtendWith({UsersQueueExtension.class})
 @WithUsersQueue
 public class AgentsTest extends BaseTest {
+
+    private static final long NON_EXISTENT_AGENT_ID = 999_999L;
+
     @Test
     void shouldProvideListOfAvailableAgents(CreateUserResponse user) {
         AgentsResponse response = new ValidatedCrudRequester<AgentsResponse>(
@@ -41,12 +46,11 @@ public class AgentsTest extends BaseTest {
                 .hasSize(response.getCount());
     }
 
-    //TODO сделать парамтеризированным, проверять и true и false
-    @Test
-    void shouldDisableAgentByLocator(CreateUserResponse user) {
+    @ParameterizedTest
+    @CsvSource({"false,false", "true,true"})
+    void shouldDisableAgentByLocator(String bodyMessage, String responseText, CreateUserResponse user) {
         AgentsResponse agents = AgentSteps.getAgents(user.getUsername(), user.getTestData().getPassword());
         long agentId = agents.getAgent().getFirst().getId();
-        String bodyMessage = "true";
 
         String response = new CrudRequester(
                 RequestSpecs.authAsUser(user.getUsername(), user.getTestData().getPassword(), ContentType.TEXT),
@@ -57,12 +61,12 @@ public class AgentsTest extends BaseTest {
 
         softly.assertThat(response)
                 .as("текст в запросе и текст в ответе совпадают")
-                .isEqualTo(bodyMessage);
+                .isEqualTo(responseText);
 
         AgentResponse agentById = AgentSteps.getAgentById(user.getUsername(), user.getTestData().getPassword(), agentId);
         softly.assertThat(agentById.isEnabled())
                 .as("Поле enabled")
-                .isEqualTo(Boolean.parseBoolean(bodyMessage));
+                .isEqualTo(Boolean.parseBoolean(responseText));
     }
 
     @Test
@@ -87,12 +91,26 @@ public class AgentsTest extends BaseTest {
     @Test
     void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
 
-        RequestSpecBuilder requestSpecBuilder = RequestSpecs.builder().addQueryParam("locator", "authorized:false");
+        RequestSpecBuilder requestSpecBuilder = RequestSpecs
+                .builder()
+                .addQueryParam("locator", "authorized:false")
+                .setAccept(ContentType.JSON)
+                .setContentType(ContentType.JSON);
 
         new CrudRequester(
                 RequestSpecs.authAsUserWithBuilder(user, requestSpecBuilder),
                 Endpoint.AGENTS,
                 ResponseSpecs.requestReturnsOk()
         ).get();
+    }
+
+    @Test
+    void shouldReturnNotFoundForNonexistentAgent(CreateUserResponse user) {
+
+        new CrudRequester(
+                RequestSpecs.authAsUser(user),
+                Endpoint.AGENTS_ID,
+                ResponseSpecs.requestReturnsNotFound()
+        ).get(NON_EXISTENT_AGENT_ID);
     }
 }
