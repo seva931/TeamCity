@@ -1,5 +1,6 @@
 package api;
 
+import api.requests.steps.VCSSteps;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;
 
@@ -19,13 +20,13 @@ public class UsersPermissions extends BaseTest {
 
     @Test
     public void createNewRoot (){
-        AdminSteps.createNewRoot();
+        VCSSteps.createNewRoot();
     }
 
     @Test
     public void getAllRoots (){
-        AdminSteps.createNewRoot();
-        AdminSteps.getAllRoots();
+        VCSSteps.createNewRoot();
+        VCSSteps.getAllRoots();
     }
 
 }

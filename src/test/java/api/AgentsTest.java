@@ -2,23 +2,27 @@ package api;
 
 import api.models.AgentResponse;
 import api.models.AgentsResponse;
-import api.models.CreateUserRequest;
+import api.models.CreateUserResponse;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
-import api.requests.steps.AdminSteps;
 import api.requests.steps.AgentSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith({UsersQueueExtension.class})
+@WithUsersQueue
 public class AgentsTest extends BaseTest {
     @Test
-    void shouldProvideListOfAvailableAgents() {
-        CreateUserRequest adminUser = AdminSteps.createAdminUser();
+    void shouldProvideListOfAvailableAgents(CreateUserResponse user) {
         AgentsResponse response = new ValidatedCrudRequester<AgentsResponse>(
-                RequestSpecs.authAsUser(adminUser.getUsername(), adminUser.getPassword()),
+                RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS,
                 ResponseSpecs.requestReturnsOk()
         ).get();
@@ -37,15 +41,15 @@ public class AgentsTest extends BaseTest {
                 .hasSize(response.getCount());
     }
 
+    //TODO сделать парамтеризированным, проверять и true и false
     @Test
-    void shouldDisableAgentByLocator() {
-        CreateUserRequest adminUser = AdminSteps.createAdminUser();
-        AgentsResponse agents = AgentSteps.getAgents(adminUser.getUsername(), adminUser.getPassword());
+    void shouldDisableAgentByLocator(CreateUserResponse user) {
+        AgentsResponse agents = AgentSteps.getAgents(user.getUsername(), user.getTestData().getPassword());
         long agentId = agents.getAgent().getFirst().getId();
         String bodyMessage = "true";
 
         String response = new CrudRequester(
-                RequestSpecs.authAsUser(adminUser.getUsername(), adminUser.getPassword(), ContentType.TEXT),
+                RequestSpecs.authAsUser(user.getUsername(), user.getTestData().getPassword(), ContentType.TEXT),
                 Endpoint.AGENTS_ID_ENABLED,
                 ResponseSpecs.requestReturnsOk()
         ).put(agentId, bodyMessage)
@@ -55,20 +59,19 @@ public class AgentsTest extends BaseTest {
                 .as("текст в запросе и текст в ответе совпадают")
                 .isEqualTo(bodyMessage);
 
-        AgentResponse agentById = AgentSteps.getAgentById(adminUser.getUsername(), adminUser.getPassword(), agentId);
+        AgentResponse agentById = AgentSteps.getAgentById(user.getUsername(), user.getTestData().getPassword(), agentId);
         softly.assertThat(agentById.isEnabled())
                 .as("Поле enabled")
                 .isEqualTo(Boolean.parseBoolean(bodyMessage));
     }
 
     @Test
-    void shouldProvideInfoAboutAgentById() {
-        CreateUserRequest adminUser = AdminSteps.createAdminUser();
-        AgentsResponse agents = AgentSteps.getAgents(adminUser.getUsername(), adminUser.getPassword());
+    void shouldProvideInfoAboutAgentById(CreateUserResponse user) {
+        AgentsResponse agents = AgentSteps.getAgents(user);
         long agentId = agents.getAgent().getFirst().getId();
 
         AgentResponse response = new ValidatedCrudRequester<AgentResponse>(
-                RequestSpecs.authAsUser(adminUser.getUsername(), adminUser.getPassword()),
+                RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS_ID,
                 ResponseSpecs.requestReturnsOk()
         ).get(agentId);
@@ -79,5 +82,17 @@ public class AgentsTest extends BaseTest {
         softly.assertThat(response.getName())
                 .as("Поле name")
                 .isEqualTo(agents.getAgent().getFirst().getName());
+    }
+
+    @Test
+    void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
+
+        RequestSpecBuilder requestSpecBuilder = RequestSpecs.builder().addQueryParam("locator", "authorized:false");
+
+        new CrudRequester(
+                RequestSpecs.authAsUserWithBuilder(user, requestSpecBuilder),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get();
     }
 }
