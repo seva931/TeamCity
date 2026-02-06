@@ -61,4 +61,11 @@ public class RequestSpecs {
                                 .getBytes()))
                 .build();
     }
+    public static RequestSpecification adminSpec(ContentType type) {
+        return authAsUser(
+                Config.getProperty("admin.login"),
+                Config.getProperty("admin.password"),
+                type
+        );
+    }
 }
