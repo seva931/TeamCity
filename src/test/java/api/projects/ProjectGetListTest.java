@@ -47,8 +47,7 @@ public class ProjectGetListTest extends BaseTest {
                 Endpoint.PROJECTS,
                 ResponseSpecs.requestReturnsOk()
         ).get().extract().asString();
-
-
+        
         softly.assertThat(projectsJson).as("Список проектов содержит id").contains(projectId);
         softly.assertThat(projectsJson).as("Список проектов содержит name").contains(projectName);
     }
