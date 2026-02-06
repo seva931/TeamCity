@@ -8,6 +8,7 @@ import api.requests.steps.BuildManageSteps;
 import api.requests.steps.ProjectManagementSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.ApiAtributesOfResponse;
 import common.generators.TestDataGenerator;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
@@ -20,29 +21,29 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith({UsersQueueExtension.class})
 @WithUsersQueue
 public class ManageBuildConfigurationTest extends BaseTest {
-    private String buildId;
-    private String projectId;
+    private static String buildId;
+    private static String projectId;
     private static CreateProjectRequest createProjectRequest;
 
     @AfterEach
     public void afterEach(CreateUserResponse user, TestInfo testInfo){
         if (!testInfo.getTags().contains("noCleanupBuild")) {
-            BuildManageSteps.deleteBuildConfiguration(this.buildId, user);
+            BuildManageSteps.deleteBuildConfiguration(buildId, user);
         }
 
-        if (this.projectId != null) {
-            ProjectManagementSteps.deleteProjectById(this.projectId, user);
+        if (projectId != null) {
+            ProjectManagementSteps.deleteProjectById(projectId, user);
         }
     }
 
     @Test
     public void userCreateBuildConfigurationTest(CreateUserResponse user) {
-        this.projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(this.projectId, TestDataGenerator.generateProjectName(), "_Root", user);
+        projectId = TestDataGenerator.generateProjectID();
+        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
         String buildName = TestDataGenerator.generateBuildName();
-        this.buildId = createProjectRequest.getId() + "_" + buildName;
+        buildId = createProjectRequest.getId() + "_" + buildName;
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(this.buildId, buildName, createProjectRequest.getId());
+        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, createProjectRequest.getId());
 
         CreateBuildConfigurationResponse createBuildConfigurationResponse = new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
                 RequestSpecs.authAsUser(user),
@@ -52,7 +53,7 @@ public class ManageBuildConfigurationTest extends BaseTest {
 
         softly.assertThat(createBuildConfigurationResponse.getId())
                 .as("Поле id")
-                .isEqualTo(this.buildId);
+                .isEqualTo(buildId);
 
         softly.assertThat(createBuildConfigurationResponse.getName())
                 .as("Поле name")
@@ -65,40 +66,40 @@ public class ManageBuildConfigurationTest extends BaseTest {
 
     @Test
     public void userCanNotCreateBuildConfigurationWithSameNameTest(CreateUserResponse user) {
-        this.projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(this.projectId, TestDataGenerator.generateProjectName(), "_Root", user);
+        projectId = TestDataGenerator.generateProjectID();
+        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
         String buildName = TestDataGenerator.generateBuildName();
-        this.buildId = createProjectRequest.getId() + "_" + buildName;
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), this.buildId, buildName);
+        buildId = createProjectRequest.getId() + "_" + buildName;
+        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(this.buildId + "1", buildName, createProjectRequest.getId());
+        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId + "1", buildName, createProjectRequest.getId());
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
-                ResponseSpecs.badRequestWithErrorText(String.format(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR, buildName, createProjectRequest.getName())))
+                ResponseSpecs.badRequestWithErrorText(String.format(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getMessage(), buildName, createProjectRequest.getName())))
                 .post(createBuildConfigurationRequest);
     }
 
     @Test
     public void userGetInfoBuildConfigurationTest(CreateUserResponse user) {
-        this.projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(this.projectId, TestDataGenerator.generateProjectName(), "_Root", user);
+        projectId = TestDataGenerator.generateProjectID();
+        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
 
         String buildName = TestDataGenerator.generateBuildName();
-        this.buildId = createProjectRequest.getId() + "_" + buildName;
+        buildId = createProjectRequest.getId() + "_" + buildName;
 
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), this.buildId, buildName);
+        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
 
         GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = new ValidatedCrudRequester<GetInfoBuildConfigurationResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.requestReturnsOk())
-                .get(this.buildId);
+                .get(buildId);
 
         softly.assertThat(getInfoBuildConfigurationResponse.getId())
                 .as("Поле id")
-                .isEqualTo(this.buildId);
+                .isEqualTo(buildId);
 
         softly.assertThat(getInfoBuildConfigurationResponse.getName())
                 .as("Поле name")
@@ -113,31 +114,31 @@ public class ManageBuildConfigurationTest extends BaseTest {
     @Tag("noCleanupBuild")
     @Test
     public void userDeleteBuildConfigurationTest(CreateUserResponse user) {
-        this.projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(this.projectId, TestDataGenerator.generateProjectName(), "_Root", user);
+        projectId = TestDataGenerator.generateProjectID();
+        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
 
         String buildName = TestDataGenerator.generateBuildName();
-        this.buildId = createProjectRequest.getId() + "_" + buildName;
+        buildId = createProjectRequest.getId() + "_" + buildName;
 
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), this.buildId, buildName);
+        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
 
         //проверка, что конфигурация создалась
-        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(this.buildId, user);
+        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
         softly.assertThat(getInfoBuildConfigurationResponse.getId())
                 .as("Поле id")
-                .isEqualTo(this.buildId);
+                .isEqualTo(buildId);
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.noContent())
-                .delete(this.buildId);
+                .delete(buildId);
 
         //проверка, что теперь getInfo возвращает ошибку
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
-                ResponseSpecs.notFoundWithErrorText(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR))
-                .get(this.buildId);
+                ResponseSpecs.notFoundWithErrorText(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getMessage()))
+                .get(buildId);
     }
 }
