@@ -7,21 +7,17 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-
-import static io.restassured.RestAssured.given;
+import io.restassured.http.ContentType;
 
 public class ProjectManagementSteps {
 
-  /*  public String getProjectsRaw() {
-        return given()
-                .spec(RequestSpecs.base())
-                .when()
-                .get(Endpoint.PROJECTS.getUrl())
-                .then()
-                .spec(ResponseSpecs.ok())
-                .extract()
-                .asString();
-    }*/
+    public void getAllProjects() {
+        new CrudRequester(
+                RequestSpecs.adminSpec(),
+                Endpoint.PROJECTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get();
+    }
 
     public ProjectResponse createProject(CreateProjectRequest body) {
        return new ValidatedCrudRequester<ProjectResponse>(RequestSpecs.adminSpec(),
@@ -36,5 +32,13 @@ public class ProjectManagementSteps {
     public void deleteProjectById(long projectId) {
          new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.PROJECTS, ResponseSpecs.requestReturnsOk()).delete(projectId);
+    }
+
+    public void updateProjectName(String projectId, String newName) {
+        new CrudRequester(
+                RequestSpecs.adminSpec(ContentType.TEXT),
+                Endpoint.PROJECT_NAME,
+                ResponseSpecs.requestReturnsOk()
+        ).put(projectId, newName);
     }
 }
