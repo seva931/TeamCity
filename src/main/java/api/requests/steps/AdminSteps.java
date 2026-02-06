@@ -63,30 +63,11 @@ public class AdminSteps {
         ).delete(id);
     }
 
-    public static CreateProjectRequest createProject(String projectId, String projectName, String parentProjectId) {
-        CreateProjectRequest createProjectRequest = new CreateProjectRequest(projectId, projectName, parentProjectId);
-
-        new CrudRequester(
-                RequestSpecs.adminSpec(),
-                Endpoint.PROJECTS,
-                ResponseSpecs.requestReturnsOk())
-                .post(createProjectRequest);
-        return createProjectRequest;
-    }
-
-    public static void createBuildConfiguration(CreateProjectRequest createProjectRequest, String buildName) {
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(createProjectRequest.getId() + "_" + buildName, buildName, createProjectRequest.getId());
-
-        new CrudRequester(
-                RequestSpecs.adminSpec(),
-                Endpoint.BUILD_TYPES,
-                ResponseSpecs.requestReturnsOk())
-                .post(createBuildConfigurationRequest);
+    public static void getAllRoots (){
+        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.GET_ALL_ROOTS, ResponseSpecs.ok()).get();
     }
 
     public static void getAllUsers (){
         new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok()).get();
     }
-    
-
 }

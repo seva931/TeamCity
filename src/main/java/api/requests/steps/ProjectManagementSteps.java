@@ -1,7 +1,6 @@
 package api.requests.steps;
 
-import api.models.CreateProjectRequest;
-import api.models.ProjectResponse;
+import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -34,11 +33,29 @@ public class ProjectManagementSteps {
                 Endpoint.PROJECTS, ResponseSpecs.requestReturnsOk()).delete(projectId);
     }
 
+    public static void deleteProjectById(String projectId, CreateUserResponse user) {
+         new CrudRequester(RequestSpecs.authAsUser(user),
+                Endpoint.PROJECT_BY_ID,
+                 ResponseSpecs.noContent())
+                 .delete(projectId);
+    }
+
     public void updateProjectName(String projectId, String newName) {
         new CrudRequester(
                 RequestSpecs.adminSpec(ContentType.TEXT),
                 Endpoint.PROJECT_NAME,
                 ResponseSpecs.requestReturnsOk()
         ).put(projectId, newName);
+    }
+
+    public static CreateProjectRequest createProject(String projectId, String projectName, String parentProjectId, CreateUserResponse user) {
+        CreateProjectRequest createProjectRequest = new CreateProjectRequest(projectId, projectName, parentProjectId);
+
+        new CrudRequester(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECTS,
+                ResponseSpecs.requestReturnsOk())
+                .post(createProjectRequest);
+        return createProjectRequest;
     }
 }
