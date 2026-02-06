@@ -17,6 +17,7 @@ public enum Endpoint {
     CREATE_NEW_ROOT("/vcs-roots?fields=string",CreateNewRootRequest.class,CreateNewRootResponse.class),
     AGENTS("/agents", BaseModel.class, AgentsResponse.class),
     AGENTS_ID("/agents/id:%s", BaseModel.class, AgentResponse.class),
+    PROJECT_NAME("/projects/id:%s/parameters/name", BaseModel.class, BaseModel.class),
     AGENTS_ID_ENABLED("/agents/id:%s/enabled", BaseModel.class, BaseModel.class);
 
 
