@@ -12,7 +12,9 @@ import common.generators.TestDataGenerator;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith({UsersQueueExtension.class})
@@ -23,9 +25,14 @@ public class ManageBuildConfigurationTest extends BaseTest {
     private static CreateProjectRequest createProjectRequest;
 
     @AfterEach
-    public void afterEach(CreateUserResponse user) {
-        BuildManageSteps.deleteBuildConfiguration(this.buildId, user);
-        ProjectManagementSteps.deleteProjectById(this.projectId, user);
+    public void afterEach(CreateUserResponse user, TestInfo testInfo){
+        if (!testInfo.getTags().contains("noCleanupBuild")) {
+            BuildManageSteps.deleteBuildConfiguration(this.buildId, user);
+        }
+
+        if (this.projectId != null) {
+            ProjectManagementSteps.deleteProjectById(this.projectId, user);
+        }
     }
 
     @Test
@@ -103,7 +110,7 @@ public class ManageBuildConfigurationTest extends BaseTest {
     }
 
 
-    //TODO: написать кастомную аннотацию для пропуска аннотации AfterEach
+    @Tag("noCleanupBuild")
     @Test
     public void userDeleteBuildConfigurationTest(CreateUserResponse user) {
         this.projectId = TestDataGenerator.generateProjectID();
