@@ -29,4 +29,15 @@ public class ResponseSpecs {
                 .expectStatusCode(HttpStatus.SC_CREATED)
                 .build();
     }
+    public static ResponseSpecification badRequest() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+                .build();
+    }
+
+    public static ResponseSpecification unauthorized() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_UNAUTHORIZED)
+                .build();
+    }
 }
