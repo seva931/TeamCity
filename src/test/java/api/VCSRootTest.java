@@ -31,7 +31,7 @@ public class VCSRootTest extends BaseTest {
     //Negative tests
     @Test
     public void createDuplicateVcsRoot() {
-        String rootName = TestDataGenerator.getName();
+        String rootName = TestDataGenerator.generateVCSName();
         VCSSteps.createNewRoot(rootName);
         ErrorResponse errorResponse = VCSSteps.createNewRootWithError(rootName);
         softly.assertThat(errorResponse.getErrors().get(0).getMessage())

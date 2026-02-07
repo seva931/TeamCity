@@ -17,7 +17,7 @@ public class TestDataGenerator {
         return prefix + "_" + UUID.randomUUID();
     }
 
-    public static String getName (){
+    public static String generateVCSName(){
         return RandomStringUtils.randomAlphabetic(5) + " " +
                 RandomStringUtils.randomAlphabetic(4);
     }

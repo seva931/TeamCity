@@ -16,7 +16,7 @@ public class VCSSteps {
 
     public static AddNewRootResponse createNewRoot() {
         AddNewRootRequest request = new AddNewRootRequest();
-        request.setName(TestDataGenerator.getName());
+        request.setName(TestDataGenerator.generateVCSName());
         request.setVcsName("jetbrains.git");
         request.setProject(new VcsProject() {{ setId("_Root"); }});
         request.setProperties(new VcsProperties() {{

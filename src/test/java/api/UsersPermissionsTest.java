@@ -13,14 +13,14 @@ import api.requests.steps.AdminSteps;
 public class UsersPermissionsTest extends BaseTest {
     // Positive tests
     @Test
-    public void getListOfUsers (){
+    public void getListOfUsers() {
         AdminSteps.createAdminUser();
         int totalUsers = AdminSteps.getAllUsers().getCount();
         softly.assertThat(totalUsers).isGreaterThanOrEqualTo(1);
     }
 
     @Test
-    public void createAdminUser (){
+    public void createAdminUser() {
         CreateUserResponse createdUser = AdminSteps.createUserWithRole(
                 TestDataGenerator.generateUsername(),
                 TestDataGenerator.generatePassword(),
@@ -36,7 +36,7 @@ public class UsersPermissionsTest extends BaseTest {
     }
 
     @Test
-    public void checkRoleForUser(){
+    public void checkRoleForUser() {
         CreateUserResponse user = AdminSteps.createUserWithRole(
                 TestDataGenerator.generateUsername(),
                 TestDataGenerator.generatePassword(),
@@ -50,8 +50,8 @@ public class UsersPermissionsTest extends BaseTest {
         softly.assertThat(user.getRoles()).isEqualTo(response.getRoles());
     }
 
-    @Test 
-    public void getPermissionsForUser (){
+    @Test
+    public void getPermissionsForUser() {
         CreateUserResponse user = AdminSteps.createUserWithRole(
                 TestDataGenerator.generateUsername(),
                 TestDataGenerator.generatePassword(),
@@ -80,8 +80,9 @@ public class UsersPermissionsTest extends BaseTest {
         softly.assertThat(notFoundResponse.getErrors().get(0).getMessage())
                 .isEqualTo("User not found");
     }
+
     @Test
-    public void getRoleWithInvalidId(){
+    public void getRoleWithInvalidId() {
         ErrorResponse errorResponse = new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID, ResponseSpecs.notFound())
                 .get(-1)
                 .extract()
