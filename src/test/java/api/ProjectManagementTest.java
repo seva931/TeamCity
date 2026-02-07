@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.util.ArrayList;
 import java.util.List;
 
+import static api.requests.steps.ProjectManagementSteps.deleteProjectById;
 import static common.generators.TestDataGenerator.generateProjectID;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -249,7 +250,7 @@ public class ProjectManagementTest extends BaseTest {
 
     private ProjectResponse createProject(String projectId, String projectName,CreateUserResponse user) {
         CreateProjectRequest request = new CreateProjectRequest(projectId, projectName, PARENT_PROJECT_ID);
-        ProjectResponse response = .createProject(request,user);
+        ProjectResponse response = createProject(request,user);
         projectsToCleanup.add(projectId);
         return response;
     }
