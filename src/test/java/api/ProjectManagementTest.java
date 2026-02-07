@@ -39,16 +39,20 @@ public class ProjectManagementTest extends BaseTest {
 
     @BeforeEach
     void preconditions() {
-        /*this. = new ProjectManagementSteps(userSpec);*/
+        */
+/*this. = new ProjectManagementSteps(userSpec);*//*
+
     }
 
-    /*@AfterEach
+    */
+/*@AfterEach
     void cleanup() {
         for (String projectId : projectsToCleanup) {
             deleteProjectSilently(projectId);
         }
         projectsToCleanup.clear();
-    }*/
+    }*//*
+
 
     @WithUsersQueue
     @DisplayName("Успешное создание проекта")
@@ -186,7 +190,8 @@ public class ProjectManagementTest extends BaseTest {
                 .isEqualTo(updatedName);
     }
 
- /*   @Disabled
+ */
+/*   @Disabled
     @WithUsersQueue
     @DisplayName("Негативный тест: обновление имени проекта с неверным Content-Type")
     @Test
@@ -204,7 +209,8 @@ public class ProjectManagementTest extends BaseTest {
         softly.assertThat(getProjectNameParam(projectId))
                 .as("Параметр name не изменился")
                 .isEqualTo(initialName);
-    }*/
+    }*//*
+
 
     @WithUsersQueue
     @DisplayName("Удаление проекта по id")
