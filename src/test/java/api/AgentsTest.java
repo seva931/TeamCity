@@ -11,9 +11,9 @@ import api.requests.steps.AgentSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
+import common.data.UsersTestData;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
-import io.restassured.response.ValidatableResponse;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
@@ -21,12 +21,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 @ExtendWith({UsersQueueExtension.class})
-@WithUsersQueue
 public class AgentsTest extends BaseTest {
 
     private static final long NON_EXISTENT_AGENT_ID = 999_999L;
 
+    @WithUsersQueue
     @Test
     void shouldProvideListOfAvailableAgents(CreateUserResponse user) {
         AgentsResponse response = new ValidatedCrudRequester<AgentsResponse>(
@@ -49,10 +51,11 @@ public class AgentsTest extends BaseTest {
                 .hasSize(response.getCount());
     }
 
+    @WithUsersQueue
     @ParameterizedTest
     @CsvSource({"false,false", "true,true"})
-    void shouldDisableAgentByLocator(String bodyMessage, String responseText, CreateUserResponse user) {
-        AgentsResponse agents = AgentSteps.getAgents(user.getUsername(), user.getTestData().getPassword());
+    void shouldDisableOrEnableAgentByLocator(String bodyMessage, String responseText, CreateUserResponse user) {
+        AgentsResponse agents = AgentSteps.getAgents(user);
         long agentId = agents.getAgent().getFirst().getId();
 
         String response = new CrudRequester(
@@ -72,6 +75,7 @@ public class AgentsTest extends BaseTest {
                 .isEqualTo(Boolean.parseBoolean(responseText));
     }
 
+    @WithUsersQueue
     @Test
     void shouldProvideInfoAboutAgentById(CreateUserResponse user) {
         AgentsResponse agents = AgentSteps.getAgents(user);
@@ -91,6 +95,7 @@ public class AgentsTest extends BaseTest {
                 .isEqualTo(agents.getAgent().getFirst().getName());
     }
 
+    @WithUsersQueue
     @Test
     void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
         RequestSpecBuilder requestSpecBuilder = RequestSpecs
@@ -106,6 +111,7 @@ public class AgentsTest extends BaseTest {
         ).get();
     }
 
+    @WithUsersQueue
     @Test
     void shouldReturnNotFoundForNonexistentAgent(CreateUserResponse user) {
         ErrorsResponse response = new CrudRequester(
@@ -115,10 +121,30 @@ public class AgentsTest extends BaseTest {
         ).get(NON_EXISTENT_AGENT_ID)
                 .extract().as(ErrorsResponse.class);
 
-        softly.assertThat(response.getErrors())
+        assertThat(response.getErrors())
                 .hasSize(1)
                 .filteredOn(e ->
                         e.getMessage().equals(ApiAtributesOfResponse.NO_AGENT_CAN_BE_FOUND_BY_ID.getFormatedUrl(NON_EXISTENT_AGENT_ID)))
+                .hasSize(1);
+    }
+
+    @WithUsersQueue
+    @Test
+    void shouldNotBeAbleToEnableAgentWithoutPermissions(CreateUserResponse user) {
+        CreateUserResponse projectViewerUser = UsersTestData.projectViewerUser;
+        long agentId = AgentSteps.getAgent(user).getId();
+
+
+        ErrorsResponse response = new CrudRequester(
+                RequestSpecs.authAsUser(projectViewerUser.getUsername(), projectViewerUser.getTestData().getPassword(), ContentType.TEXT),
+                Endpoint.AGENTS_ID_ENABLED,
+                ResponseSpecs.forbidden()
+        ).put(agentId, "true").extract().as(ErrorsResponse.class);
+
+        assertThat(response.getErrors())
+                .hasSize(1)
+                .filteredOn(e ->
+                        e.getMessage().equals(ApiAtributesOfResponse.YOU_DO_NOT_HAVE_ENABLE_DISABLE_AGENTS_ASSOCIATED_WITH_PROJECT_PERMISSION_FOR_POOL_DEFAULT.getMessage()))
                 .hasSize(1);
     }
 }

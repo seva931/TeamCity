@@ -64,6 +64,12 @@ public class ResponseSpecs {
                 .build();
     }
 
+    public static ResponseSpecification forbidden() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .build();
+    }
+
     public static ResponseSpecification deletesQuietly() {
         return new ResponseSpecBuilder()
                 .expectStatusCode(
