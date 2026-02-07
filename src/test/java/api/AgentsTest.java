@@ -119,7 +119,7 @@ public class AgentsTest extends BaseTest {
         assertThat(response.getErrors())
                 .hasSize(1)
                 .filteredOn(e ->
-                        e.getMessage().equals(ApiAtributesOfResponse.NO_AGENT_CAN_BE_FOUND_BY_ID.getFormatedUrl(NON_EXISTENT_AGENT_ID)))
+                        e.getMessage().equals(ApiAtributesOfResponse.NO_AGENT_CAN_BE_FOUND_BY_ID.getFormatedText(NON_EXISTENT_AGENT_ID)))
                 .hasSize(1);
     }
 

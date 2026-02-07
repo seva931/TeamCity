@@ -6,43 +6,29 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.BuildManageSteps;
-import api.requests.steps.ProjectManagementSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
 import common.generators.TestDataGenerator;
+import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.ProjectExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({UsersQueueExtension.class})
-@WithUsersQueue
-public class ManageBuildConfigurationTest extends BaseTest {
-    private static String buildId;
-    private static String projectId;
-    private static CreateProjectRequest createProjectRequest;
-
-    @AfterEach
-    public void afterEach(CreateUserResponse user, TestInfo testInfo){
-        if (!testInfo.getTags().contains("noCleanupBuild")) {
-            BuildManageSteps.deleteBuildConfiguration(buildId, user);
-        }
-
-        if (!testInfo.getTags().contains("noCleanupProject")) {
-            ProjectManagementSteps.deleteProjectById(projectId, user);
-        }
-    }
+@ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
+    public class ManageBuildConfigurationTest extends BaseTest {
 
     @DisplayName("Позитивный тест: создание билд конфигурации")
+    @WithUsersQueue
+    @WithProject
     @Test
-    public void userCreateBuildConfigurationTest(CreateUserResponse user) {
-        projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
+    public void userCreateBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
-        buildId = createProjectRequest.getId() + "_" + buildName;
+        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, createProjectRequest.getId());
+        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, project.getId());
 
         CreateBuildConfigurationResponse createBuildConfigurationResponse = new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
                 RequestSpecs.authAsUser(user),
@@ -60,37 +46,36 @@ public class ManageBuildConfigurationTest extends BaseTest {
 
         softly.assertThat(createBuildConfigurationResponse.getProjectId())
                 .as("Поле ProjectId")
-                .isEqualTo(createProjectRequest.getId());
+                .isEqualTo(project.getId());
     }
 
     @DisplayName("Негативный тест: создание билд конфигурации с именем уже созданной конфигурации")
+    @WithUsersQueue
+    @WithProject
     @Test
-    public void userCanNotCreateBuildConfigurationWithSameNameTest(CreateUserResponse user) {
-        projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
+    public void userCanNotCreateBuildConfigurationWithSameNameTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
-        buildId = createProjectRequest.getId() + "_" + buildName;
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
+        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
+        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId + "1", buildName, createProjectRequest.getId());
+        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId + "1", buildName, project.getId());
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
-                ResponseSpecs.badRequestWithErrorText(String.format(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getMessage(), buildName, createProjectRequest.getName())))
+                ResponseSpecs.badRequestWithErrorText(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getFormatedText(buildName, project.getName())))
                 .post(createBuildConfigurationRequest);
     }
 
     @DisplayName("Позитивный тест: получение информации о созданной билд конфигурации")
+    @WithUsersQueue
+    @WithProject
     @Test
-    public void userGetInfoBuildConfigurationTest(CreateUserResponse user) {
-        projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
-
+    public void userGetInfoBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
-        buildId = createProjectRequest.getId() + "_" + buildName;
+        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
+        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
 
         GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = new ValidatedCrudRequester<GetInfoBuildConfigurationResponse>(
                 RequestSpecs.authAsUser(user),
@@ -108,12 +93,11 @@ public class ManageBuildConfigurationTest extends BaseTest {
 
         softly.assertThat(getInfoBuildConfigurationResponse.getProjectId())
                 .as("Поле ProjectId")
-                .isEqualTo(createProjectRequest.getId());
+                .isEqualTo(project.getId());
     }
 
     @DisplayName("Негативный тест: получение информации о не существующей билд конфигурации")
-    @Tag("noCleanupBuild")
-    @Tag("noCleanupProject")
+    @WithUsersQueue
     @Test
     public void userGetInfoAboutNotExistBuildConfigurationTest(CreateUserResponse user) {
         String buildId = TestDataGenerator.generateBuildId();
@@ -121,19 +105,19 @@ public class ManageBuildConfigurationTest extends BaseTest {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
-                ResponseSpecs.notFoundWithErrorText(String.format(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getMessage(), buildId)))
+                ResponseSpecs.notFoundWithErrorText(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getFormatedText(buildId)))
                 .get(buildId);
     }
 
     @DisplayName("Позитивный тест: получение информации о списке созданных билд конфигураций")
+    @WithUsersQueue
+    @WithProject
     @Test
-    public void userGetInfoBuildConfigurationsListTest(CreateUserResponse user) {
-        projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
-
+    public void userGetInfoBuildConfigurationsListTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
-        buildId = createProjectRequest.getId() + "_" + buildName;
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
+        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
+
+        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
 
         GetBuldListInfoResponse getBuldListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
@@ -150,16 +134,14 @@ public class ManageBuildConfigurationTest extends BaseTest {
     }
 
     @DisplayName("Позитивный тест: удаление билд конфигурации")
-    @Tag("noCleanupBuild")
+    @WithUsersQueue
+    @WithProject
     @Test
-    public void userDeleteBuildConfigurationTest(CreateUserResponse user) {
-        projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
-
+    public void userDeleteBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
-        buildId = createProjectRequest.getId() + "_" + buildName;
+        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
+        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
 
         //проверка, что конфигурация создалась
         GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
@@ -177,13 +159,12 @@ public class ManageBuildConfigurationTest extends BaseTest {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
-                ResponseSpecs.notFoundWithErrorText(String.format(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getMessage(), buildId)))
+                ResponseSpecs.notFoundWithErrorText(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getFormatedText(buildId)))
                 .get(buildId);
     }
 
     @DisplayName("Негативный тест: удаление несуществующей билд конфигурации")
-    @Tag("noCleanupBuild")
-    @Tag("noCleanupProject")
+    @WithUsersQueue
     @Test
     public void userDeleteNotExistBuildConfigurationTest(CreateUserResponse user) {
         String buildId = TestDataGenerator.generateBuildId();
@@ -191,21 +172,19 @@ public class ManageBuildConfigurationTest extends BaseTest {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
-                ResponseSpecs.notFoundWithErrorText(String.format(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getMessage(), buildId)))
+                ResponseSpecs.notFoundWithErrorText(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getFormatedText(buildId)))
                 .delete(buildId);
     }
 
     @DisplayName("Негативный тест: удаление билд конфигурации без прав админа")
-    @Tag("noCleanupBuild")
+    @WithUsersQueue
+    @WithProject
     @Test
-    public void userDeleteBuildConfigurationWithoutRulesTest(CreateUserResponse user) {
-        projectId = TestDataGenerator.generateProjectID();
-        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
-
+    public void userDeleteBuildConfigurationWithoutRulesTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
-        buildId = createProjectRequest.getId() + "_" + buildName;
+        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
+        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
 
         //проверка, что конфигурация создалась
         GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
@@ -218,7 +197,7 @@ public class ManageBuildConfigurationTest extends BaseTest {
         new CrudRequester(
                 RequestSpecs.authAsUser(usualUser.getUsername(), usualUser.getPassword()),
                 Endpoint.BUILD_TYPES_ID,
-                ResponseSpecs.forbiddenWithErrorText(String.format(ApiAtributesOfResponse.YOU_DONT_HAVE_ENOUGH_PERMISSIONS_ERROR.getMessage(), projectId)))
+                ResponseSpecs.forbiddenWithErrorText(ApiAtributesOfResponse.YOU_DONT_HAVE_ENOUGH_PERMISSIONS_ERROR.getFormatedText(project.getId())))
                 .delete(buildId);
     }
 }
