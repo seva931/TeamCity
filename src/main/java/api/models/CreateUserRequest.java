@@ -19,6 +19,12 @@ public class CreateUserRequest extends BaseModel {
     private String email;
     private Roles roles;
 
+    public CreateUserRequest(String username, String password) {
+        super();
+        this.username = username;
+        this.password = password;
+    }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor

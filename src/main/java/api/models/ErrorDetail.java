@@ -2,15 +2,18 @@ package api.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class ProjectResponse extends BaseModel {
-    private String id;
-    private String name;
-    private ParentProject parentProject;
+public class ErrorDetail {
+    private String stackTrace;
+    private String message;
+    private String statusText;
+    private String additionalMessage;
 }

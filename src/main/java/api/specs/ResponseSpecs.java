@@ -3,6 +3,9 @@ package api.specs;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
+
+import static org.hamcrest.Matchers.containsString;
 
 public class ResponseSpecs {
 
@@ -40,4 +43,59 @@ public class ResponseSpecs {
                 .build();
     }
 
+
+    public static ResponseSpecification notFoundWithErrorText(String errorText) {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_NOT_FOUND)
+                .expectBody("errors[0].additionalMessage", containsString(errorText))
+                .build();
+    }
+
+    public static ResponseSpecification badRequestWithErrorText(String errorText) {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+                .expectBody("errors[0].additionalMessage", containsString(errorText))
+                .build();
+    }
+
+    public static ResponseSpecification forbiddenWithErrorText(String errorText) {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .expectBody("errors[0].additionalMessage", containsString(errorText))
+                .build();
+    }
+
+
+    public static ResponseSpecification badRequest() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+                .build();
+    }
+
+    public static ResponseSpecification unauthorized() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_UNAUTHORIZED)
+                .build();
+    }
+    public static ResponseSpecification notAcceptable() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_NOT_ACCEPTABLE)
+                .build();
+    }
+
+    public static ResponseSpecification forbidden() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .build();
+    }
+
+    public static ResponseSpecification deletesQuietly() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(
+                        Matchers.anyOf(
+                                Matchers.is(HttpStatus.SC_OK),
+                                Matchers.is(HttpStatus.SC_NO_CONTENT),
+                                Matchers.is(HttpStatus.SC_NOT_FOUND)))
+                .build();
+    }
 }
