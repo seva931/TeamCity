@@ -3,14 +3,17 @@ package api;
 import api.models.AgentResponse;
 import api.models.AgentsResponse;
 import api.models.CreateUserResponse;
+import api.models.ErrorsResponse;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.requests.steps.AgentSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.ApiAtributesOfResponse;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
@@ -90,7 +93,6 @@ public class AgentsTest extends BaseTest {
 
     @Test
     void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
-
         RequestSpecBuilder requestSpecBuilder = RequestSpecs
                 .builder()
                 .addQueryParam("locator", "authorized:false")
@@ -106,11 +108,17 @@ public class AgentsTest extends BaseTest {
 
     @Test
     void shouldReturnNotFoundForNonexistentAgent(CreateUserResponse user) {
-
-        new CrudRequester(
+        ErrorsResponse response = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS_ID,
-                ResponseSpecs.requestReturnsNotFound()
-        ).get(NON_EXISTENT_AGENT_ID);
+                ResponseSpecs.notFound()
+        ).get(NON_EXISTENT_AGENT_ID)
+                .extract().as(ErrorsResponse.class);
+
+        softly.assertThat(response.getErrors())
+                .hasSize(1)
+                .filteredOn(e ->
+                        e.getMessage().equals(ApiAtributesOfResponse.NO_AGENT_CAN_BE_FOUND_BY_ID.getFormatedUrl(NON_EXISTENT_AGENT_ID)))
+                .hasSize(1);
     }
 }
