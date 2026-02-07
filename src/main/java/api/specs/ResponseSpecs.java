@@ -3,6 +3,7 @@ package api.specs;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
 
 import static org.hamcrest.Matchers.containsString;
 
@@ -72,6 +73,22 @@ public class ResponseSpecs {
     public static ResponseSpecification notAcceptable() {
         return new ResponseSpecBuilder()
                 .expectStatusCode(HttpStatus.SC_NOT_ACCEPTABLE)
+                .build();
+    }
+
+    public static ResponseSpecification forbidden() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .build();
+    }
+
+    public static ResponseSpecification deletesQuietly() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(
+                        Matchers.anyOf(
+                                Matchers.is(HttpStatus.SC_OK),
+                                Matchers.is(HttpStatus.SC_NO_CONTENT),
+                                Matchers.is(HttpStatus.SC_NOT_FOUND)))
                 .build();
     }
 }
