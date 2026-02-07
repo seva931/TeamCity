@@ -38,7 +38,10 @@ public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         CreateProjectRequest project = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateProjectRequest.class);
-        ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+        if(project != null) {
+            ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+        }
+
     }
 
     @Override
