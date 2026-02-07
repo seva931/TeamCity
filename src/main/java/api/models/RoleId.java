@@ -1,5 +1,5 @@
 package api.models;
 
 public enum RoleId {
-    SYSTEM_ADMIN
+    PROJECT_VIEWER, SYSTEM_ADMIN
 }
