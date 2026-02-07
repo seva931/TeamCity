@@ -11,9 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Role {
+public class Role extends BaseModel {
     private String roleId;
     private String scope;
+    private String href;
 
     public static Role projectAdmin() {
         return Role.builder()

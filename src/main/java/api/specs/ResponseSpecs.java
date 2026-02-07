@@ -32,6 +32,17 @@ public class ResponseSpecs {
                 .expectStatusCode(HttpStatus.SC_CREATED)
                 .build();
     }
+    public static ResponseSpecification notFound() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_NOT_FOUND)
+                .build();
+    }
+    public static ResponseSpecification InternalServerError() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                .build();
+    }
+
 
     public static ResponseSpecification notFoundWithErrorText(String errorText) {
         return new ResponseSpecBuilder()
@@ -54,11 +65,7 @@ public class ResponseSpecs {
                 .build();
     }
 
-    public static ResponseSpecification notFound() {
-        return new ResponseSpecBuilder()
-                .expectStatusCode(HttpStatus.SC_NOT_FOUND)
-                .build();
-    }
+
     public static ResponseSpecification badRequest() {
         return new ResponseSpecBuilder()
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)

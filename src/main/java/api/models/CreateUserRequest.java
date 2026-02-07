@@ -14,6 +14,7 @@ import java.util.List;
 public class CreateUserRequest extends BaseModel {
     private String username;
     private String password;
+    private int id;
     private String name;
     private String email;
     private Roles roles;
