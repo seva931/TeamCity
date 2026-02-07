@@ -11,7 +11,7 @@ public enum Endpoint {
     USERS("/users", CreateUserRequest.class, CreateUserResponse.class),
     USERS_ID("/users/id:%s", BaseModel.class, BaseModel.class),
     PROJECTS("/projects", CreateProjectRequest.class, ProjectResponse.class),
-    PROJECT_BY_ID("/projects/id:%s", BaseModel.class, ProjectResponse.class),
+    PROJECT_ID("/projects/id:%s", BaseModel.class, ProjectResponse.class),
     BUILD_TYPES("/buildTypes", CreateBuildConfigurationRequest.class, CreateBuildConfigurationResponse.class),
     BUILD_TYPES_GET("/buildTypes", BaseModel.class, GetBuldListInfoResponse.class),
     BUILD_TYPES_ID("/buildTypes/id:%s", BaseModel.class, GetInfoBuildConfigurationResponse.class),
