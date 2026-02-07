@@ -1,5 +1,7 @@
 package common.generators;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 import java.util.UUID;
 
 public class TestDataGenerator {
@@ -13,5 +15,10 @@ public class TestDataGenerator {
 
     public static String generateUsername(String prefix) {
         return prefix + "_" + UUID.randomUUID();
+    }
+
+    public static String getName (){
+        return RandomStringUtils.randomAlphabetic(5) + " " +
+                RandomStringUtils.randomAlphabetic(4);
     }
 }

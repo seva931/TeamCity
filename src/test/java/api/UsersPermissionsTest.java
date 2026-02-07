@@ -1,5 +1,11 @@
 package api;
 
+import api.models.*;
+import api.requests.skeleton.Endpoint;
+import api.requests.skeleton.requesters.CrudRequester;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
+import common.generators.TestDataGenerator;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;
 
@@ -9,33 +15,82 @@ public class UsersPermissionsTest extends BaseTest {
     @Test
     public void getListOfUsers (){
         AdminSteps.createAdminUser();
-        int userCountAfterCreate = AdminSteps.getAllUsers().getCount();
-        softly.assertThat(userCountAfterCreate).isGreaterThanOrEqualTo(1);
+        int totalUsers = AdminSteps.getAllUsers().getCount();
+        softly.assertThat(totalUsers).isGreaterThanOrEqualTo(1);
     }
 
     @Test
     public void createAdminUser (){
-        int userId = AdminSteps.createAdminUser().getId();
-        int user = AdminSteps.getUserById(userId).getId();
-        softly.assertThat(user).isEqualTo(userId);
+        CreateUserResponse createdUser = AdminSteps.createUserWithRole(
+                TestDataGenerator.generateUsername(),
+                TestDataGenerator.generatePassword(),
+                RoleId.SYSTEM_ADMIN
+        );
+        int createdUserId = createdUser.getId();
+        int fetchedUserId = new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID, ResponseSpecs.ok())
+                .get(createdUserId)
+                .extract()
+                .as(User.class)
+                .getId();
+        softly.assertThat(createdUserId).isEqualTo(fetchedUserId);
     }
 
     @Test
-    public void getRoleForUser (){
-        String roleId = AdminSteps.getRoleForUser(1).getRoleId();
-        softly.assertThat(roleId).isNotEmpty();
+    public void checkRoleForUser(){
+        CreateUserResponse user = AdminSteps.createUserWithRole(
+                TestDataGenerator.generateUsername(),
+                TestDataGenerator.generatePassword(),
+                RoleId.SYSTEM_ADMIN
+        );
+        int createdUserId = user.getId();
+        CreateUserResponse response = new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID, ResponseSpecs.ok())
+                .get(createdUserId)
+                .extract()
+                .as(CreateUserResponse.class);
+        softly.assertThat(user.getRoles()).isEqualTo(response.getRoles());
     }
 
     @Test 
     public void getPermissionsForUser (){
-        int permissions = AdminSteps.getPermissionsForUser(1).getCount();
-        // softly.assertThat(permissions).isNotEmpty();
+        CreateUserResponse user = AdminSteps.createUserWithRole(
+                TestDataGenerator.generateUsername(),
+                TestDataGenerator.generatePassword(),
+                RoleId.SYSTEM_ADMIN
+        );
+        int createdUserId = user.getId();
+        PermissionsResponse userPermissions = AdminSteps.getPermissionsForUser(createdUserId);
+        softly.assertThat(userPermissions).isNotNull();
+
     }
 
     // Negative tests
+    @Test
+    public void getPermissionsWithInvalidId() {
+        ErrorResponse notFoundResponse = new CrudRequester(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS_ID_PERMISSIONS,
+                ResponseSpecs.notFound()
+        ).get(-1)
+                .extract()
+                .as(ErrorResponse.class);
 
-    public void getPermissionsForUserWithInvalidId (){
-        Response response = AdminSteps.getPermissionsWithInvalidId(0);
-        softly.assertThat(response.getStatusCode()).isEqualTo(404);
+        softly.assertThat(notFoundResponse.getErrors())
+                .isNotEmpty();
+
+        softly.assertThat(notFoundResponse.getErrors().get(0).getMessage())
+                .isEqualTo("User not found");
+    }
+    @Test
+    public void getRoleWithInvalidId(){
+        ErrorResponse errorResponse = new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID, ResponseSpecs.notFound())
+                .get(-1)
+                .extract()
+                .as(ErrorResponse.class);
+
+        softly.assertThat(errorResponse.getErrors())
+                .isNotEmpty();
+
+        softly.assertThat(errorResponse.getErrors().get(0).getMessage())
+                .isEqualTo("User not found");
     }
 }

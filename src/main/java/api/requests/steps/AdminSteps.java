@@ -91,12 +91,6 @@ public class AdminSteps {
                 .as(GetUsersResponse.class);
     }
 
-    public static User getUserById(int id){
-        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID, ResponseSpecs.ok())
-                .get(id)
-                .extract()
-                .as(User.class);
-    }
 
     public static PermissionsResponse getPermissionsForUser(int id){
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.ok())
@@ -104,25 +98,5 @@ public class AdminSteps {
                 .extract()
                 .as(PermissionsResponse.class);
     }
-
-    public static Role getRoleForUser(int id){
-        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_ROLES, ResponseSpecs.ok())
-                .get(id)
-                .extract()
-                .as(Role.class);
-    }
-    public static PermissionsResponse getPermissionsWithInvalidId(int id){
-        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.notFound())
-                .get(id)
-                .extract()
-                .as(PermissionsResponse.class);
-    }
-    public static Role getRoleWithInvalidId(int id){
-        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_ROLES, ResponseSpecs.notFound())
-                .get(id)
-                .extract()
-                .as(Role.class);
-    }
-    
 
 }
