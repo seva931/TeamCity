@@ -53,11 +53,10 @@ public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback,
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         WithUsersQueue anno = AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), WithUsersQueue.class)
-                .orElseGet(() -> AnnotationSupport.findAnnotation(context.getRequiredTestClass(), WithUsersQueue.class)
-                        .orElse(null));
+                .orElse(null);
 
         if (anno == null) {
-            throw new ExtensionConfigurationException("Не задана аннотация @WithUsersQueue над классом или методом");
+            throw new ExtensionConfigurationException("Не задана аннотация @WithUsersQueue над методом");
         }
 
         if (USER_POOL_QUEUE.isEmpty()) {
