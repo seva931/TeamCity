@@ -135,11 +135,11 @@ public class ManageBuildConfigurationTest extends BaseTest {
         buildId = createProjectRequest.getId() + "_" + buildName;
         BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
 
-        GetBuldListInfoResponse getBuldListInfoResponse = new ValidatedCrudRequester<GetBuldListInfoResponse>(
+        GetBuldListInfoResponse getBuldListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
-                Endpoint.BUILD_TYPES_GET,
+                Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .get();
+                .get().extract().as(GetBuldListInfoResponse.class);
 
         softly.assertThat(getBuldListInfoResponse.getCount())
                 .as("Поле count")

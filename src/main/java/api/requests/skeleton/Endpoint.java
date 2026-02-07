@@ -13,7 +13,6 @@ public enum Endpoint {
     PROJECTS("/projects", CreateProjectRequest.class, ProjectResponse.class),
     PROJECT_ID("/projects/id:%s", BaseModel.class, ProjectResponse.class),
     BUILD_TYPES("/buildTypes", CreateBuildConfigurationRequest.class, CreateBuildConfigurationResponse.class),
-    BUILD_TYPES_GET("/buildTypes", BaseModel.class, GetBuldListInfoResponse.class),
     BUILD_TYPES_ID("/buildTypes/id:%s", BaseModel.class, GetInfoBuildConfigurationResponse.class),
     GET_ALL_ROOTS("/vcs-roots?locator=string&fields=string",GetAllRootsRequest.class,GetAllRootResponse.class),
     CREATE_NEW_ROOT("/vcs-roots?fields=string",CreateNewRootRequest.class,CreateNewRootResponse.class),
