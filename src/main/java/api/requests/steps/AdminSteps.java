@@ -75,17 +75,12 @@ public class AdminSteps {
         ).delete(id);
     }
 
-    public static void getAllRoots (){
-        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.GET_ALL_ROOTS, ResponseSpecs.ok()).get();
-    }
-
     public static GetUsersResponse getAllUsers (){
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok())
                 .get()
                 .extract()
                 .as(GetUsersResponse.class);
     }
-
 
     public static PermissionsResponse getPermissionsForUser(int id){
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.ok())
