@@ -20,7 +20,7 @@ public class ProjectManagementSteps {
         this.spec = spec;
     }
 
-    public String getAllProjectsRaw() {
+    public  String getAllProjectsRaw() {
         return new CrudRequester(
                 spec,
                 Endpoint.PROJECTS,
@@ -28,9 +28,9 @@ public class ProjectManagementSteps {
         ).get().extract().asString();
     }
 
-    public ProjectResponse createProject(CreateProjectRequest body) {
+    public ProjectResponse createProject(CreateProjectRequest body,CreateUserResponse user) {
         return new ValidatedCrudRequester<ProjectResponse>(
-                spec,
+                RequestSpecs.authAsUser(user),
                 Endpoint.PROJECTS,
                 ResponseSpecs.requestReturnsOk()
         ).post(body);
@@ -47,7 +47,7 @@ public class ProjectManagementSteps {
     public static void deleteProjectByIdQuietly(String projectId, CreateUserResponse user) {
         new CrudRequester(RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
-                ResponseSpecs.noContent())
+                ResponseSpecs.deletesQuietly())
                 .delete(projectId);
     }
 
@@ -59,15 +59,15 @@ public class ProjectManagementSteps {
         ).delete(projectId);
     }
 
-//    public void updateProjectName(String projectId, String newName) {
-//        new CrudRequester(
-//                spec,
-//                Endpoint.PROJECT_ID,
-//                ResponseSpecs.noContent()
-//        ).delete(projectId);
-//    }
+  /*public  void updateProjectName(String projectId, String newName) {
+      new CrudRequester(
+             spec,
+             Endpoint.PROJECT_ID,
+              ResponseSpecs.noContent()
+    ).delete(projectId);
+    }*/
 
-    public String updateProjectName(String projectId, String newName) {
+   /* public static String updateProjectName(String projectId, String newName) {
         RequestSpecification textSpec = new RequestSpecBuilder()
                 .addRequestSpecification(spec)
                 .setContentType(ContentType.TEXT)
@@ -80,7 +80,7 @@ public class ProjectManagementSteps {
                 ResponseSpecs.requestReturnsOk()
         ).put(projectId, newName)
                 .extract().asString();
-    }
+    }*/
 
     public void updateProjectNameWithWrongContentType(String projectId, String newName) {
         RequestSpecification wrongSpec = new RequestSpecBuilder()
@@ -101,7 +101,7 @@ public class ProjectManagementSteps {
                                                      String parentProjectId,
                                                      CreateUserResponse user) {
         CreateProjectRequest request = new CreateProjectRequest(projectId, projectName, parentProjectId);
-        new ProjectManagementSteps(RequestSpecs.authAsUser(user)).createProject(request);
+        new ProjectManagementSteps(RequestSpecs.authAsUser(user)).createProject(request,user);
         return request;
     }
 

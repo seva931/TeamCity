@@ -46,6 +46,15 @@ public class RequestSpecs {
                                 .getBytes()))
                 .build();
     }
+    public static RequestSpecification authAsUser(CreateUserResponse userResponse, ContentType type) {
+        return defaultRequestBuilder()
+                .setContentType(type)
+                .setAccept(type)
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((userResponse.getUsername() + ":" + userResponse.getTestData().getPassword())
+                                .getBytes()))
+                .build();
+    }
 
     public static RequestSpecification authAsUser(String username, String password) {
         return authAsUser(username, password, ContentType.JSON);
