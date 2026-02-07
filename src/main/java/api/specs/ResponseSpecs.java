@@ -62,8 +62,9 @@ public class ResponseSpecs {
                 .expectStatusCode(HttpStatus.SC_UNAUTHORIZED)
                 .build();
     }
-
-    public static ResponseSpecification any() {
-        return new ResponseSpecBuilder().build();
+    public static ResponseSpecification notAcceptable() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_NOT_ACCEPTABLE)
+                .build();
     }
 }

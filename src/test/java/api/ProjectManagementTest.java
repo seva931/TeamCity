@@ -66,7 +66,7 @@ public class ProjectManagementTest extends BaseTest {
         String duplicateId = generateProjectId();
 
         String firstName = TestDataGenerator.generateProjectName();
-        String secondName = firstName + "_second";
+        String secondName = (firstName + "_second").toLowerCase();
 
         createProject(duplicateId, firstName);
 
@@ -77,7 +77,10 @@ public class ProjectManagementTest extends BaseTest {
         ).post(new CreateProjectRequest(duplicateId, secondName, PARENT_PROJECT_ID));
 
         ProjectResponse project = projectSteps.getProjectById(duplicateId);
-        softly.assertThat(project.getName()).as("Имя проекта не изменилось").isEqualTo(firstName);
+
+        softly.assertThat(project.getName())
+                .as("Имя проекта не изменилось")
+                .isEqualTo(firstName);
     }
 
     @DisplayName("Позитивный тест: получение списка проектов")
@@ -97,15 +100,21 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Негативный тест: получение списка без авторизации")
     @Test
     void shouldReturn401WithoutAuth() {
-        var response = new CrudRequester(
+        String body = new CrudRequester(
                 RequestSpecs.builder().build(),
                 Endpoint.PROJECTS,
                 ResponseSpecs.unauthorized()
-        ).get();
+        ).get().extract().asString();
 
-        softly.assertThat(response.extract().statusCode())
-                .as("HTTP статус ответа")
-                .isEqualTo(401);
+        softly.assertThat(body)
+                .as("Тело ответа содержит сообщение об авторизации")
+                .contains("Authentication required");
+
+        softly.assertThat(body)
+                .as("Тело ответа не содержит данных проектов")
+                .doesNotContain("\"project\"")
+                .doesNotContain("\"webUrl\"")
+                .doesNotContain("\"href\"");
     }
 
     @DisplayName("Получение информации о проекте по id")
@@ -131,13 +140,11 @@ public class ProjectManagementTest extends BaseTest {
                 ResponseSpecs.notFound()
         ).get(NOT_EXISTS_ID);
 
-        String body = response.extract().asString();
+        String message = response.extract().path("errors[0].message");
 
-        softly.assertThat(body).as("Тело ответа содержит ошибки").contains("\"errors\"");
-        softly.assertThat(body).as("Тело ответа не содержит полей проекта")
-                .doesNotContain("\"webUrl\"")
-                .doesNotContain("\"href\"")
-                .doesNotContain("\"parentProjectId\"");
+        softly.assertThat(message)
+                .as("errors[0].message содержит запрошенный id")
+                .contains(NOT_EXISTS_ID);
     }
 
     @DisplayName("Обновление имени проекта")
@@ -153,19 +160,9 @@ public class ProjectManagementTest extends BaseTest {
         String responseBody = projectSteps.updateProjectName(projectId, updatedName);
         softly.assertThat(responseBody).as("Тело ответа").isEqualTo(updatedName);
 
-        RequestSpecification textSpec = new RequestSpecBuilder()
-                .addRequestSpecification(userSpec)
-                .setAccept(ContentType.TEXT)
-                .setContentType(ContentType.TEXT)
-                .build();
-
-        String actualNameParam = new CrudRequester(
-                textSpec,
-                Endpoint.PROJECT_NAME,
-                ResponseSpecs.requestReturnsOk()
-        ).get(projectId).extract().asString();
-
-        softly.assertThat(actualNameParam).as("Параметр name").isEqualTo(updatedName);
+        softly.assertThat(getProjectNameParam(projectId))
+                .as("Параметр name")
+                .isEqualTo(updatedName);
     }
 
     @DisplayName("Негативный тест: обновление имени проекта с неверным Content-Type")
@@ -173,16 +170,16 @@ public class ProjectManagementTest extends BaseTest {
     void shouldNotUpdateProjectNameWithWrongContentType() {
         String projectId = generateProjectId();
         String initialName = TestDataGenerator.generateProjectName();
-
         createProject(projectId, initialName);
+
+        projectSteps.updateProjectName(projectId, initialName);
 
         String updatedName = (initialName + "_updated").toLowerCase();
 
-        int statusCode = projectSteps.updateProjectNameWithWrongContentType(projectId, updatedName);
+        projectSteps.updateProjectNameWithWrongContentType(projectId, updatedName);
 
-        softly.assertThat(statusCode).as("HTTP статус ответа").isNotEqualTo(200);
-        softly.assertThat(projectSteps.getProjectById(projectId).getName())
-                .as("Имя проекта не изменилось")
+        softly.assertThat(getProjectNameParam(projectId))
+                .as("Параметр name не изменился")
                 .isEqualTo(initialName);
     }
 
@@ -196,15 +193,11 @@ public class ProjectManagementTest extends BaseTest {
 
         projectSteps.deleteProjectById(projectId);
 
-        var getAfterDeleteResponse = new CrudRequester(
+        new CrudRequester(
                 userSpec,
                 Endpoint.PROJECT_ID,
                 ResponseSpecs.notFound()
         ).get(projectId);
-
-        softly.assertThat(getAfterDeleteResponse.extract().statusCode())
-                .as("HTTP статус получения удалённого проекта")
-                .isEqualTo(404);
 
         projectsToCleanup.remove(projectId);
     }
@@ -212,15 +205,11 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Удаление несуществующего проекта")
     @Test
     void shouldReturn404WhenDeleteNonExistingProject() {
-        var response = new CrudRequester(
+        new CrudRequester(
                 userSpec,
                 Endpoint.PROJECT_ID,
                 ResponseSpecs.notFound()
         ).delete(NOT_EXISTS_ID);
-
-        softly.assertThat(response.extract().statusCode())
-                .as("HTTP статус ответа")
-                .isEqualTo(404);
     }
 
     private ProjectResponse createProject(String projectId, String projectName) {
@@ -228,6 +217,20 @@ public class ProjectManagementTest extends BaseTest {
         ProjectResponse response = projectSteps.createProject(request);
         projectsToCleanup.add(projectId);
         return response;
+    }
+
+    private String getProjectNameParam(String projectId) {
+        RequestSpecification textSpec = new RequestSpecBuilder()
+                .addRequestSpecification(userSpec)
+                .setAccept(ContentType.TEXT)
+                .setContentType(ContentType.TEXT)
+                .build();
+
+        return new CrudRequester(
+                textSpec,
+                Endpoint.PROJECT_NAME,
+                ResponseSpecs.requestReturnsOk()
+        ).get(projectId).extract().asString();
     }
 
     private void deleteProjectSilently(String projectId) {

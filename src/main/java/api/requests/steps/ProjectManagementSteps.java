@@ -67,19 +67,18 @@ public class ProjectManagementSteps {
                 .extract().asString();
     }
 
-    public int updateProjectNameWithWrongContentType(String projectId, String newName) {
+    public void updateProjectNameWithWrongContentType(String projectId, String newName) {
         RequestSpecification wrongSpec = new RequestSpecBuilder()
                 .addRequestSpecification(spec)
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.TEXT)
                 .build();
 
-        return new CrudRequester(
+        new CrudRequester(
                 wrongSpec,
                 Endpoint.PROJECT_NAME,
-                ResponseSpecs.any()
-        ).put(projectId, newName)
-                .extract().statusCode();
+                ResponseSpecs.notAcceptable()
+        ).put(projectId, newName);
     }
 
     public static CreateProjectRequest createProject(String projectId,
