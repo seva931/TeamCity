@@ -4,6 +4,7 @@ import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
+import api.requests.steps.AdminSteps;
 import api.requests.steps.BuildManageSteps;
 import api.requests.steps.ProjectManagementSteps;
 import api.specs.RequestSpecs;
@@ -124,6 +125,30 @@ public class ManageBuildConfigurationTest extends BaseTest {
                 .get(buildId);
     }
 
+    @DisplayName("Позитивный тест: получение информации о списке созданных билд конфигураций")
+    @Test
+    public void userGetInfoBuildConfigurationsListTest(CreateUserResponse user) {
+        projectId = TestDataGenerator.generateProjectID();
+        createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
+
+        String buildName = TestDataGenerator.generateBuildName();
+        buildId = createProjectRequest.getId() + "_" + buildName;
+        BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
+
+        GetBuldListInfoResponse getBuldListInfoResponse = new ValidatedCrudRequester<GetBuldListInfoResponse>(
+                RequestSpecs.authAsUser(user),
+                Endpoint.BUILD_TYPES_GET,
+                ResponseSpecs.requestReturnsOk())
+                .get();
+
+        softly.assertThat(getBuldListInfoResponse.getCount())
+                .as("Поле count")
+                .isNotNull();
+        softly.assertThat(getBuldListInfoResponse.getBuildType())
+                .as("Список билд конфигураций существующих")
+                .isNotEmpty();
+    }
+
     @DisplayName("Позитивный тест: удаление билд конфигурации")
     @Tag("noCleanupBuild")
     @Test
@@ -170,27 +195,30 @@ public class ManageBuildConfigurationTest extends BaseTest {
                 .delete(buildId);
     }
 
-    @DisplayName("Позитивный тест: получение информации о списке созданных билд конфигураций")
+    @DisplayName("Негативный тест: удаление билд конфигурации без прав админа")
+    @Tag("noCleanupBuild")
     @Test
-    public void userGetInfoBuildConfigurationsListTest(CreateUserResponse user) {
+    public void userDeleteBuildConfigurationWithoutRulesTest(CreateUserResponse user) {
         projectId = TestDataGenerator.generateProjectID();
         createProjectRequest = ProjectManagementSteps.createProject(projectId, TestDataGenerator.generateProjectName(), "_Root", user);
 
         String buildName = TestDataGenerator.generateBuildName();
         buildId = createProjectRequest.getId() + "_" + buildName;
+
         BuildManageSteps.createBuildConfiguration(createProjectRequest.getId(), buildId, buildName);
 
-        GetBuldListInfoResponse getBuldListInfoResponse = new ValidatedCrudRequester<GetBuldListInfoResponse>(
-                RequestSpecs.authAsUser(user),
-                Endpoint.BUILD_TYPES_GET,
-                ResponseSpecs.requestReturnsOk())
-                .get();
+        //проверка, что конфигурация создалась
+        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
+        softly.assertThat(getInfoBuildConfigurationResponse.getId())
+                .as("Поле id")
+                .isEqualTo(buildId);
 
-        softly.assertThat(getBuldListInfoResponse.getCount())
-                .as("Поле count")
-                .isNotNull();
-        softly.assertThat(getBuldListInfoResponse.getBuildType())
-                .as("Список билд конфигураций существующих")
-                .isNotEmpty();
+        CreateUserRequest usualUser = AdminSteps.createUserByAdmin(TestDataGenerator.generateUsername(), TestDataGenerator.generatePassword());
+
+        new CrudRequester(
+                RequestSpecs.authAsUser(usualUser.getUsername(), usualUser.getPassword()),
+                Endpoint.BUILD_TYPES_ID,
+                ResponseSpecs.forbiddenWithErrorText(String.format(ApiAtributesOfResponse.YOU_DONT_HAVE_ENOUGH_PERMISSIONS_ERROR.getMessage(), projectId)))
+                .delete(buildId);
     }
 }
