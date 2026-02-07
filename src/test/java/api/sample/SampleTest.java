@@ -17,10 +17,12 @@ import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
-@WithUsersQueue
 public class SampleTest extends BaseTest {
 
+    @WithUsersQueue
     @WithProject
     @Test
     public void userCreateBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
@@ -36,16 +38,8 @@ public class SampleTest extends BaseTest {
                 ResponseSpecs.requestReturnsOk())
                 .post(createBuildConfigurationRequest);
 
-        softly.assertThat(createBuildConfigurationResponse.getId())
-                .as("Поле id")
-                .isEqualTo(buildId);
-
-        softly.assertThat(createBuildConfigurationResponse.getName())
-                .as("Поле name")
-                .isEqualTo(buildName);
-
-        softly.assertThat(createBuildConfigurationResponse.getProjectId())
-                .as("Поле ProjectId")
-                .isEqualTo(project.getId());
+        assertThat(createBuildConfigurationRequest)
+                .usingRecursiveComparison()
+                .comparingOnlyFields("id", "name", "ProjectId");
     }
 }

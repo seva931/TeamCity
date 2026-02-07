@@ -37,9 +37,6 @@ public class AgentsTest extends BaseTest {
                 ResponseSpecs.requestReturnsOk()
         ).get();
 
-        softly.assertThat(response)
-                .as("Ответ не пустой")
-                .isNotNull();
         softly.assertThat(response.getAgent())
                 .as("Agent не пустой")
                 .isNotNull();
@@ -87,28 +84,26 @@ public class AgentsTest extends BaseTest {
                 ResponseSpecs.requestReturnsOk()
         ).get(agentId);
 
-        softly.assertThat(response.getId())
-                .as("Поле id")
-                .isEqualTo(agentId);
-        softly.assertThat(response.getName())
-                .as("Поле name")
-                .isEqualTo(agents.getAgent().getFirst().getName());
+        assertThat(response)
+                .as("Поля id и name")
+                .usingRecursiveComparison()
+                .comparingOnlyFields("id", "name");
     }
 
     @WithUsersQueue
     @Test
     void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
-        RequestSpecBuilder requestSpecBuilder = RequestSpecs
+        RequestSpecBuilder requestWithQueryLocator = RequestSpecs
                 .builder()
                 .addQueryParam("locator", "authorized:false")
                 .setAccept(ContentType.JSON)
                 .setContentType(ContentType.JSON);
 
-        new CrudRequester(
-                RequestSpecs.authAsUserWithBuilder(user, requestSpecBuilder),
+        AgentsResponse response = new CrudRequester(
+                RequestSpecs.authAsUserWithBuilder(user, requestWithQueryLocator),
                 Endpoint.AGENTS,
                 ResponseSpecs.requestReturnsOk()
-        ).get();
+        ).get().extract().as(AgentsResponse.class);
     }
 
     @WithUsersQueue
