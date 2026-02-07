@@ -2,12 +2,14 @@ package api;
 
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
+import api.models.ErrorResponse;
 import api.models.ProjectResponse;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.steps.ProjectManagementSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.ApiAtributesOfResponse;
 import common.generators.TestDataGenerator;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
@@ -21,7 +23,9 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static common.generators.TestDataGenerator.generateProjectID;
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @WithUsersQueue
 public class ProjectManagementTest extends BaseTest {
@@ -51,7 +55,7 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Успешное создание проекта")
     @Test
     void shouldCreateProjectSuccessfully() {
-        String projectId = generateProjectId();
+        String projectId = generateProjectID();
         String projectName = TestDataGenerator.generateProjectName();
 
         ProjectResponse response = createProject(projectId, projectName);
@@ -63,7 +67,7 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Негативный тест: создание проекта с тем же id")
     @Test
     void shouldNotCreateProjectWithExistingId() {
-        String duplicateId = generateProjectId();
+        String duplicateId = generateProjectID();
 
         String firstName = TestDataGenerator.generateProjectName();
         String secondName = (firstName + "_second").toLowerCase();
@@ -86,7 +90,7 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Позитивный тест: получение списка проектов")
     @Test
     void shouldGetProjectsListSuccessfully() {
-        String projectId = generateProjectId();
+        String projectId = generateProjectID();
         String projectName = TestDataGenerator.generateProjectName();
 
         createProject(projectId, projectName);
@@ -120,7 +124,7 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Получение информации о проекте по id")
     @Test
     void shouldGetProjectByIdSuccessfully() {
-        String projectId = generateProjectId();
+        String projectId = generateProjectID();
         String projectName = TestDataGenerator.generateProjectName();
 
         createProject(projectId, projectName);
@@ -150,7 +154,7 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Обновление имени проекта")
     @Test
     void shouldUpdateProjectNameSuccessfully() {
-        String projectId = generateProjectId();
+        String projectId = generateProjectID();
         String initialName = TestDataGenerator.generateProjectName();
 
         createProject(projectId, initialName);
@@ -168,7 +172,7 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Негативный тест: обновление имени проекта с неверным Content-Type")
     @Test
     void shouldNotUpdateProjectNameWithWrongContentType() {
-        String projectId = generateProjectId();
+        String projectId = generateProjectID();
         String initialName = TestDataGenerator.generateProjectName();
         createProject(projectId, initialName);
 
@@ -186,7 +190,7 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Удаление проекта по id")
     @Test
     void shouldDeleteProjectByIdSuccessfully() {
-        String projectId = generateProjectId();
+        String projectId = generateProjectID();
         String projectName = TestDataGenerator.generateProjectName();
 
         createProject(projectId, projectName);
@@ -205,11 +209,22 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Удаление несуществующего проекта")
     @Test
     void shouldReturn404WhenDeleteNonExistingProject() {
-        new CrudRequester(
+        ErrorResponse errorResponse = new CrudRequester(
                 userSpec,
                 Endpoint.PROJECT_ID,
                 ResponseSpecs.notFound()
-        ).delete(NOT_EXISTS_ID);
+        ).delete(NOT_EXISTS_ID)
+                .extract().as(ErrorResponse.class);
+
+        assertThat(errorResponse.getErrors())
+                .hasSize(1)
+                .filteredOn(e ->
+                        e.getMessage().equals(
+                                ApiAtributesOfResponse.NO_PROJECT_FOUND_BY_ID_ERROR.getFormatedUrl(
+                                        NOT_EXISTS_ID,
+                                        NOT_EXISTS_ID
+                                )))
+                .hasSize(1);
     }
 
     private ProjectResponse createProject(String projectId, String projectName) {
@@ -237,9 +252,5 @@ public class ProjectManagementTest extends BaseTest {
         given()
                 .spec(userSpec)
                 .delete(Endpoint.PROJECT_ID.getFormatedUrl(projectId));
-    }
-
-    private String generateProjectId() {
-        return TestDataGenerator.generateUsername("PRJ").replace("-", "").toUpperCase();
     }
 }
