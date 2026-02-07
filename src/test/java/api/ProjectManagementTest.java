@@ -220,7 +220,7 @@ public class ProjectManagementTest extends BaseTest {
                 .hasSize(1)
                 .filteredOn(e ->
                         e.getMessage().equals(
-                                ApiAtributesOfResponse.NO_PROJECT_FOUND_BY_ID_ERROR.getFormatedUrl(
+                                ApiAtributesOfResponse.NO_PROJECT_FOUND_BY_ID_ERROR.getFormatedText(
                                         NOT_EXISTS_ID,
                                         NOT_EXISTS_ID
                                 )))
