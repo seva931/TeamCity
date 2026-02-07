@@ -46,6 +46,13 @@ public class ResponseSpecs {
                 .build();
     }
 
+    public static ResponseSpecification forbiddenWithErrorText(String errorText) {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .expectBody("errors[0].additionalMessage", containsString(errorText))
+                .build();
+    }
+
     public static ResponseSpecification notFound() {
         return new ResponseSpecBuilder()
                 .expectStatusCode(HttpStatus.SC_NOT_FOUND)

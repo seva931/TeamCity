@@ -55,6 +55,18 @@ public class AdminSteps {
                 .build();
     }
 
+    public static CreateUserRequest createUserByAdmin(String username, String password) {
+        CreateUserRequest createUserRequest = new CreateUserRequest(username, password);
+
+        new CrudRequester(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS,
+                ResponseSpecs.requestReturnsOk())
+                .post(createUserRequest);
+
+        return createUserRequest;
+    }
+
     public static void deleteUser(long id) {
         new CrudRequester(
                 RequestSpecs.adminSpec(),
