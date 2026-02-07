@@ -11,13 +11,14 @@ public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, 
 
     public static final ExtensionContext.Namespace NAMESPACE =
             ExtensionContext.Namespace.create(ProjectExtension.class);
+    private CreateUserResponse user;
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         WithProject annotation = context.getRequiredTestMethod().getAnnotation(WithProject.class);
 
         if(annotation != null) {
-            CreateUserResponse user = context.getStore(
+            user = context.getStore(
                     UsersQueueExtension.NAMESPACE).get(context.getUniqueId(),
                     CreateUserResponse.class);
 
@@ -27,16 +28,17 @@ public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, 
                 CreateProjectRequest project = ProjectManagementSteps.createProject(
                         TestDataGenerator.generateProjectID(),
                         TestDataGenerator.generateProjectName(),
-                        "_Root",
+                        annotation.parentProjectId().value,
                         user);
 
-                context.getStore(NAMESPACE).put("project", project);
+                context.getStore(NAMESPACE).put(context.getUniqueId(), project);
         }
     }
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-
+        CreateProjectRequest project = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateProjectRequest.class);
+        ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
     }
 
     @Override
@@ -46,6 +48,6 @@ public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, 
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return extensionContext.getStore(NAMESPACE).get("project", CreateProjectRequest.class);
+        return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), CreateProjectRequest.class);
     }
 }
