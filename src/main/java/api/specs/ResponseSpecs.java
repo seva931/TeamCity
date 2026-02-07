@@ -3,6 +3,7 @@ package api.specs;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
 
 import static org.hamcrest.Matchers.containsString;
 
@@ -63,9 +64,13 @@ public class ResponseSpecs {
                 .build();
     }
 
-    public static ResponseSpecification requestReturnsNotFound() {
+    public static ResponseSpecification deletesQuietly() {
         return new ResponseSpecBuilder()
-                .expectStatusCode(HttpStatus.SC_NOT_FOUND)
+                .expectStatusCode(
+                        Matchers.anyOf(
+                                Matchers.is(HttpStatus.SC_OK),
+                                Matchers.is(HttpStatus.SC_NO_CONTENT),
+                                Matchers.is(HttpStatus.SC_NOT_FOUND)))
                 .build();
     }
 }
