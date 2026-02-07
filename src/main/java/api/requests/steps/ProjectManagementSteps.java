@@ -41,6 +41,13 @@ public class ProjectManagementSteps {
                  .delete(projectId);
     }
 
+    public static void deleteProjectByIdQuietly(String projectId, CreateUserResponse user) {
+        new CrudRequester(RequestSpecs.authAsUser(user),
+                Endpoint.PROJECT_BY_ID,
+                ResponseSpecs.noContent())
+                .delete(projectId);
+    }
+
     public void updateProjectName(String projectId, String newName) {
         new CrudRequester(
                 RequestSpecs.authAsUser(
