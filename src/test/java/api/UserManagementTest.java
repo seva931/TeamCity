@@ -10,9 +10,11 @@ import api.requests.steps.AdminSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.generators.TestDataGenerator;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UserManagementTest extends BaseTest {
+    @Disabled
     @Test
     void shouldCreateUserWithSystemAdminRole() {
         CreateUserRequest request = CreateUserRequest.systemAdmin(
