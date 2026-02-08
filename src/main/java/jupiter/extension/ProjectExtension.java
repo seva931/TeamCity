@@ -2,6 +2,7 @@ package jupiter.extension;
 
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
+import api.models.ParentProject;
 import api.requests.steps.ProjectManagementSteps;
 import common.generators.TestDataGenerator;
 import jupiter.annotation.WithProject;
@@ -17,21 +18,28 @@ public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, 
     public void beforeEach(ExtensionContext context) throws Exception {
         WithProject annotation = context.getRequiredTestMethod().getAnnotation(WithProject.class);
 
-        if(annotation != null) {
-            user = context.getStore(
-                    UsersQueueExtension.NAMESPACE).get(context.getUniqueId(),
-                    CreateUserResponse.class);
+        if (annotation != null) {
+            user = context.getStore(UsersQueueExtension.NAMESPACE)
+                    .get(context.getUniqueId(), CreateUserResponse.class);
 
-            if(user == null) {
+            if (user == null) {
                 throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue");
             }
-                CreateProjectRequest project = ProjectManagementSteps.createProject(
-                        TestDataGenerator.generateProjectID(),
-                        TestDataGenerator.generateProjectName(),
-                        annotation.parentProjectId().value,
-                        user);
 
-                context.getStore(NAMESPACE).put(context.getUniqueId(), project);
+            CreateProjectRequest project = CreateProjectRequest.builder()
+                    .id(TestDataGenerator.generateProjectID())
+                    .name(TestDataGenerator.generateProjectName())
+                    .parentProject(new ParentProject(annotation.parentProjectId().value))
+                    .build();
+
+            ProjectManagementSteps.createProject(
+                    project.getId(),
+                    project.getName(),
+                    project.getParentProject(),
+                    user
+            );
+
+            context.getStore(NAMESPACE).put(context.getUniqueId(), project);
         }
     }
 

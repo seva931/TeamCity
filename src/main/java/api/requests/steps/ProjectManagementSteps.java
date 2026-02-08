@@ -10,29 +10,31 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
-import static java.lang.reflect.Array.get;
-
 public class ProjectManagementSteps {
 
 
-    public static ProjectResponse getAllProjectsRaw() {
-        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.PROJECTS, ResponseSpecs.ok());
+    public static ProjectListResponse getAllProjects(CreateUserResponse user) {
+        return new CrudRequester(RequestSpecs.authAsUser(user), Endpoint.PROJECTS, ResponseSpecs.ok())
                 .get()
                 .extract()
-                .as(ProjectResponse.class);
-
+                .as(ProjectListResponse.class);
     }
 
     public static ProjectResponse createProject(String id, String name, ParentProject parentProject, CreateUserResponse user) {
-        ProjectResponse projectResponse = new ProjectResponse(id, name, parentProject);
+        CreateProjectRequest request = CreateProjectRequest.builder()
+                .id(id)
+                .name(name)
+                .parentProject(parentProject)
+                .build();
+
         return new ValidatedCrudRequester<ProjectResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECTS,
                 ResponseSpecs.requestReturnsOk())
-                .post(projectResponse);
+                .post(request);
     }
 
-    public static ProjectResponse getProjectById(String projectId,CreateUserResponse user) {
+    public static ProjectResponse getProjectById(String projectId, CreateUserResponse user) {
         return new ValidatedCrudRequester<ProjectResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
@@ -46,10 +48,10 @@ public class ProjectManagementSteps {
                 ResponseSpecs.deletesQuietly())
                 .delete(projectId);
     }
-     public static String updateProjectName(String projectId, String newName,CreateUserResponse user) {
-        RequestSpecification textSpec = new RequestSpecBuilder();
-         new CrudRequester(RequestSpecs.authAsUser(user),
-                 Endpoint.PROJECT_ID,
+
+    public static String updateProjectName(String projectId, String newName, CreateUserResponse user) {
+        RequestSpecification textSpec = new RequestSpecBuilder()
+                .addRequestSpecification(RequestSpecs.authAsUser(user))
                 .setContentType(ContentType.TEXT)
                 .setAccept(ContentType.TEXT)
                 .build();
@@ -59,13 +61,13 @@ public class ProjectManagementSteps {
                 Endpoint.PROJECT_NAME,
                 ResponseSpecs.requestReturnsOk()
         ).put(projectId, newName)
-                .extract().asString();
+                .extract()
+                .asString();
     }
 
-    public static void updateProjectNameWithWrongContentType(String projectId, String newName,CreateUserResponse user) {
-        RequestSpecification wrongSpec = new RequestSpecBuilder();
-        new CrudRequester(RequestSpecs.authAsUser(user),
-                Endpoint.PROJECT_ID,
+    public static void updateProjectNameWithWrongContentType(String projectId, String newName, CreateUserResponse user) {
+        RequestSpecification wrongSpec = new RequestSpecBuilder()
+                .addRequestSpecification(RequestSpecs.authAsUser(user))
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.TEXT)
                 .build();
@@ -77,48 +79,13 @@ public class ProjectManagementSteps {
         ).put(projectId, newName);
     }
 
-   /* public static CreateProjectRequest createProject(String projectId,
-                                                     String projectName,
-                                                     String parentProjectId,
-                                                     CreateUserResponse user) {
-        CreateProjectRequest request = new CreateProjectRequest(projectId, projectName, parentProjectId);
-        new ProjectManagementSteps(RequestSpecs.authAsUser(user)).createProject(request, user);
-        return request;
-    }
-
-    public static void deleteProjectById(String projectId, CreateUserResponse user) {
-        new ProjectManagementSteps(RequestSpecs.authAsUser(user)).deleteProjectById(projectId);
-    }*/
-
-
-   /* public void deleteProjectById(String projectId) {
-        new CrudRequester(
-                spec,
-                Endpoint.PROJECT_ID,
-                ResponseSpecs.noContent()
-        ).delete(projectId);
-    }*/
-
-  /*public  void updateProjectName(String projectId, String newName) {
-      new CrudRequester(
-             spec,
-             Endpoint.PROJECT_ID,
-              ResponseSpecs.noContent()
-    ).delete(projectId);
-    }*/
-
-   /* public static String updateProjectName(String projectId, String newName) {
-        RequestSpecification textSpec = new RequestSpecBuilder()
-                .addRequestSpecification(spec)
-                .setContentType(ContentType.TEXT)
-                .setAccept(ContentType.TEXT)
-                .build();
-
+    public static String getProjectNameParam(String projectId, CreateUserResponse user) {
         return new CrudRequester(
-                textSpec,
+                RequestSpecs.authAsUser(user, ContentType.TEXT),
                 Endpoint.PROJECT_NAME,
                 ResponseSpecs.requestReturnsOk()
-        ).put(projectId, newName)
-                .extract().asString();
-    }*/
+        ).get(projectId)
+                .extract()
+                .asString();
+    }
 }
