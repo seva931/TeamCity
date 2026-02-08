@@ -11,4 +11,8 @@ import lombok.NoArgsConstructor;
 @Data
 public class ParentProject extends BaseModel {
     private String id;
+
+    public static ParentProject root() {
+        return new ParentProject("_Root");
+    }
 }
