@@ -48,6 +48,9 @@ public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback,
         for (CreateUserResponse user : USER_POOL_LIST) {
             AdminSteps.deleteUser(user.getId());
         }
+
+        USER_POOL_LIST.clear();
+        USER_POOL_QUEUE.clear();
     }
 
     @Override
