@@ -1,45 +1,44 @@
 package api.sample;
 
 import api.BaseTest;
-import api.models.CreateBuildConfigurationRequest;
 import api.models.CreateBuildConfigurationResponse;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
+import api.models.GetBuldListInfoResponse;
 import api.requests.skeleton.Endpoint;
-import api.requests.skeleton.requesters.ValidatedCrudRequester;
+import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import common.generators.TestDataGenerator;
+import jupiter.annotation.WithBuild;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.BuildExtension;
 import jupiter.extension.ProjectExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
+@ExtendWith({
+        UsersQueueExtension.class,
+        ProjectExtension.class,
+        BuildExtension.class
+})
 public class SampleTest extends BaseTest {
 
     @WithUsersQueue
-    @WithProject
+    @WithProject(
+            @WithBuild
+    )
     @Test
-    public void userCreateBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
+    public void buildSampleTest(
+            CreateUserResponse user,
+            CreateProjectRequest project,
+            CreateBuildConfigurationResponse build) {
 
-        String buildId = project.getId() + "_" + buildName;
-
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, project.getId());
-
-        CreateBuildConfigurationResponse createBuildConfigurationResponse = new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+        GetBuldListInfoResponse getBuldListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .post(createBuildConfigurationRequest);
-
-        assertThat(createBuildConfigurationRequest)
-                .usingRecursiveComparison()
-                .comparingOnlyFields("id", "name", "ProjectId");
+                .get().extract().as(GetBuldListInfoResponse.class);
     }
 }

@@ -11,4 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WithProject {
     ProjectData parentProjectId() default ProjectData.PARENT_PROJECT;
+    WithBuild[] value() default {};
 }

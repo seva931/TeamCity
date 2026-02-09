@@ -19,11 +19,28 @@ public class BuildManageSteps {
                 .post(createBuildConfigurationRequest);
     }
 
+    public static CreateBuildConfigurationResponse createBuildConfiguration(String projectId, CreateUserResponse user) {
+
+        return new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+                RequestSpecs.authAsUser(user),
+                Endpoint.BUILD_TYPES,
+                ResponseSpecs.requestReturnsOk())
+                .post(CreateBuildConfigurationRequest.createBuildConfig(projectId));
+    }
+
     public static void deleteBuildConfiguration(String buildId, CreateUserResponse user) {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.noContent())
+                .delete(buildId);
+    }
+
+    public static void deleteBuildConfigurationQuietly(String buildId, CreateUserResponse user) {
+        new CrudRequester(
+                RequestSpecs.authAsUser(user),
+                Endpoint.BUILD_TYPES_ID,
+                ResponseSpecs.deletesQuietly())
                 .delete(buildId);
     }
 
