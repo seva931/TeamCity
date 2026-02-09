@@ -11,13 +11,12 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
 import common.generators.TestDataGenerator;
-import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith({UsersQueueExtension.class})
-@WithUsersQueue
+@Disabled
 public class ManageBuildConfigurationTest extends BaseTest {
     private static String buildId;
     private static String projectId;

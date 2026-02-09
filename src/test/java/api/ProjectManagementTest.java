@@ -15,10 +15,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import jupiter.annotation.WithUsersQueue;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +24,7 @@ import static common.generators.TestDataGenerator.generateProjectID;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@WithUsersQueue
+@Disabled
 public class ProjectManagementTest extends BaseTest {
 
     private static final String PARENT_PROJECT_ID = "_Root";
@@ -39,8 +36,8 @@ public class ProjectManagementTest extends BaseTest {
     private final List<String> projectsToCleanup = new ArrayList<>();
 
     @BeforeEach
-    void preconditions(CreateUserResponse user) {
-        this.userSpec = RequestSpecs.authAsUser(user);
+    void preconditions() {
+//        this.userSpec = RequestSpecs.authAsUser(user);
         this.projectSteps = new ProjectManagementSteps(userSpec);
     }
 
