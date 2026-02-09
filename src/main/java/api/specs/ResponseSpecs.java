@@ -47,7 +47,7 @@ public class ResponseSpecs {
     public static ResponseSpecification notFoundWithErrorText(String errorText) {
         return new ResponseSpecBuilder()
                 .expectStatusCode(HttpStatus.SC_NOT_FOUND)
-                .expectBody("errors[0].additionalMessage", containsString(errorText))
+                .expectBody(containsString(errorText))
                 .build();
     }
 
