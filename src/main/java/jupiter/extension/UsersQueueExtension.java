@@ -30,21 +30,11 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
             return;
         }
 
-        if(POOL_SIZE < 2) {
-            throw new ExtensionConfigurationException("Количество пользователей не может быть меньше 2. Увеличьте users.pool.size в config.properties");
-        }
-
         for (int i = 0; i < POOL_SIZE - 1; i++) {
             CreateUserResponse user = AdminSteps.createUserWithRole(RoleId.SYSTEM_ADMIN);
             USER_POOL_QUEUE.add(user);
             USER_POOL_LIST.add(user);
         }
-
-        //добавление пользователя с ролью PROJECT_VIEWER
-        CreateUserResponse projectViewer = AdminSteps.createUserWithRole(RoleId.PROJECT_VIEWER);
-        USER_POOL_QUEUE.add(projectViewer);
-        USER_POOL_LIST.add(projectViewer);
-    }
 
         context.getRoot().getStore(NAMESPACE).put("cleanup", (ExtensionContext.Store.CloseableResource) () -> {
             for (CreateUserResponse user : USER_POOL_LIST) {
@@ -75,7 +65,7 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
         return parameterContext.getParameter().getType().equals(CreateUserResponse.class);
     }
 

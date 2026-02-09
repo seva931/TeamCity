@@ -127,7 +127,6 @@ public class AgentsTest extends BaseTest {
                 .hasSize(1);
     }
 
-    @Disabled
     @WithUsersQueue
     @Disabled
     @Test
