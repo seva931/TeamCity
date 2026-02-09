@@ -1,8 +1,6 @@
 package api.requests.steps;
 
-import api.models.CreateProjectRequest;
-import api.models.CreateUserResponse;
-import api.models.ProjectResponse;
+import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -14,62 +12,46 @@ import io.restassured.specification.RequestSpecification;
 
 public class ProjectManagementSteps {
 
-    private final RequestSpecification spec;
 
-    public ProjectManagementSteps(RequestSpecification spec) {
-        this.spec = spec;
+    public static ProjectListResponse getAllProjects(CreateUserResponse user) {
+        return new CrudRequester(RequestSpecs.authAsUser(user), Endpoint.PROJECTS, ResponseSpecs.ok())
+                .get()
+                .extract()
+                .as(ProjectListResponse.class);
     }
 
-    public String getAllProjectsRaw() {
-        return new CrudRequester(
-                spec,
-                Endpoint.PROJECTS,
-                ResponseSpecs.requestReturnsOk()
-        ).get().extract().asString();
-    }
+    public static ProjectResponse createProject(String id, String name, ParentProject parentProject, CreateUserResponse user) {
+        CreateProjectRequest request = CreateProjectRequest.builder()
+                .id(id)
+                .name(name)
+                .parentProject(parentProject)
+                .build();
 
-    public ProjectResponse createProject(CreateProjectRequest body) {
         return new ValidatedCrudRequester<ProjectResponse>(
-                spec,
+                RequestSpecs.authAsUser(user),
                 Endpoint.PROJECTS,
-                ResponseSpecs.requestReturnsOk()
-        ).post(body);
+                ResponseSpecs.requestReturnsOk())
+                .post(request);
     }
 
-    public ProjectResponse getProjectById(String projectId) {
+    public static ProjectResponse getProjectById(String projectId, CreateUserResponse user) {
         return new ValidatedCrudRequester<ProjectResponse>(
-                spec,
+                RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
-                ResponseSpecs.requestReturnsOk()
-        ).get(projectId);
+                ResponseSpecs.requestReturnsOk())
+                .get(projectId);
     }
 
     public static void deleteProjectByIdQuietly(String projectId, CreateUserResponse user) {
         new CrudRequester(RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
-                ResponseSpecs.noContent())
+                ResponseSpecs.deletesQuietly())
                 .delete(projectId);
     }
 
-    public void deleteProjectById(String projectId) {
-        new CrudRequester(
-                spec,
-                Endpoint.PROJECT_ID,
-                ResponseSpecs.noContent()
-        ).delete(projectId);
-    }
-
-//    public void updateProjectName(String projectId, String newName) {
-//        new CrudRequester(
-//                spec,
-//                Endpoint.PROJECT_ID,
-//                ResponseSpecs.noContent()
-//        ).delete(projectId);
-//    }
-
-    public String updateProjectName(String projectId, String newName) {
+    public static String updateProjectName(String projectId, String newName, CreateUserResponse user) {
         RequestSpecification textSpec = new RequestSpecBuilder()
-                .addRequestSpecification(spec)
+                .addRequestSpecification(RequestSpecs.authAsUser(user))
                 .setContentType(ContentType.TEXT)
                 .setAccept(ContentType.TEXT)
                 .build();
@@ -79,12 +61,13 @@ public class ProjectManagementSteps {
                 Endpoint.PROJECT_NAME,
                 ResponseSpecs.requestReturnsOk()
         ).put(projectId, newName)
-                .extract().asString();
+                .extract()
+                .asString();
     }
 
-    public void updateProjectNameWithWrongContentType(String projectId, String newName) {
+    public static void updateProjectNameWithWrongContentType(String projectId, String newName, CreateUserResponse user) {
         RequestSpecification wrongSpec = new RequestSpecBuilder()
-                .addRequestSpecification(spec)
+                .addRequestSpecification(RequestSpecs.authAsUser(user))
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.TEXT)
                 .build();
@@ -96,16 +79,13 @@ public class ProjectManagementSteps {
         ).put(projectId, newName);
     }
 
-    public static CreateProjectRequest createProject(String projectId,
-                                                     String projectName,
-                                                     String parentProjectId,
-                                                     CreateUserResponse user) {
-        CreateProjectRequest request = new CreateProjectRequest(projectId, projectName, parentProjectId);
-        new ProjectManagementSteps(RequestSpecs.authAsUser(user)).createProject(request);
-        return request;
-    }
-
-    public static void deleteProjectById(String projectId, CreateUserResponse user) {
-        new ProjectManagementSteps(RequestSpecs.authAsUser(user)).deleteProjectById(projectId);
+    public static String getProjectNameParam(String projectId, CreateUserResponse user) {
+        return new CrudRequester(
+                RequestSpecs.authAsUser(user, ContentType.TEXT),
+                Endpoint.PROJECT_NAME,
+                ResponseSpecs.requestReturnsOk()
+        ).get(projectId)
+                .extract()
+                .asString();
     }
 }

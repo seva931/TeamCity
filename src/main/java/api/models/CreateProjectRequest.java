@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class CreateProjectRequest extends BaseModel{
     private String id;
     private String name;
-    private String parentProjectId;
+    private ParentProject parentProject;
 }

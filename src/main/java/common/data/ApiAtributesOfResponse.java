@@ -15,7 +15,7 @@ public enum ApiAtributesOfResponse {
 
     private final String message;
 
-    public String getFormatedUrl(Object... args) {
+    public String getFormatedText(Object... args) {
         return String.format(message, args);
     }
 }

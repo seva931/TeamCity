@@ -2,6 +2,7 @@ package jupiter.extension;
 
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
+import api.models.ParentProject;
 import api.requests.steps.ProjectManagementSteps;
 import common.generators.TestDataGenerator;
 import jupiter.annotation.WithProject;
@@ -17,28 +18,38 @@ public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, 
     public void beforeEach(ExtensionContext context) throws Exception {
         WithProject annotation = context.getRequiredTestMethod().getAnnotation(WithProject.class);
 
-        if(annotation != null) {
-            user = context.getStore(
-                    UsersQueueExtension.NAMESPACE).get(context.getUniqueId(),
-                    CreateUserResponse.class);
+        if (annotation != null) {
+            user = context.getStore(UsersQueueExtension.NAMESPACE)
+                    .get(context.getUniqueId(), CreateUserResponse.class);
 
-            if(user == null) {
+            if (user == null) {
                 throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue");
             }
-                CreateProjectRequest project = ProjectManagementSteps.createProject(
-                        TestDataGenerator.generateProjectID(),
-                        TestDataGenerator.generateProjectName(),
-                        annotation.parentProjectId().value,
-                        user);
 
-                context.getStore(NAMESPACE).put(context.getUniqueId(), project);
+            CreateProjectRequest project = CreateProjectRequest.builder()
+                    .id(TestDataGenerator.generateProjectID())
+                    .name(TestDataGenerator.generateProjectName())
+                    .parentProject(new ParentProject(annotation.parentProjectId().value))
+                    .build();
+
+            ProjectManagementSteps.createProject(
+                    project.getId(),
+                    project.getName(),
+                    project.getParentProject(),
+                    user
+            );
+
+            context.getStore(NAMESPACE).put(context.getUniqueId(), project);
         }
     }
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         CreateProjectRequest project = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateProjectRequest.class);
-        ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+        if(project != null) {
+            ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+        }
+
     }
 
     @Override
