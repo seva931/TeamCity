@@ -17,9 +17,7 @@ public class UserManagementTest extends BaseTest {
     @Disabled
     @Test
     void shouldCreateUserWithSystemAdminRole() {
-        CreateUserRequest request = CreateUserRequest.systemAdmin(
-                TestDataGenerator.generateUsername(),
-                TestDataGenerator.generatePassword());
+        CreateUserRequest request = CreateUserRequest.systemAdmin();
 
         CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpecs.adminSpec(),

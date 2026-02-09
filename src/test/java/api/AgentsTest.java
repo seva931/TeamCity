@@ -12,7 +12,6 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
 import common.data.UsersTestData;
-import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
@@ -57,7 +56,11 @@ public class AgentsTest extends BaseTest {
         long agentId = agents.getAgent().getFirst().getId();
 
         String response = new CrudRequester(
-                RequestSpecs.authAsUser(user.getUsername(), user.getTestData().getPassword(), ContentType.TEXT),
+
+                RequestSpecs.withBasicAuth(user)
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
                 Endpoint.AGENTS_ID_ENABLED,
                 ResponseSpecs.requestReturnsOk()
         ).put(agentId, bodyMessage)
@@ -94,14 +97,14 @@ public class AgentsTest extends BaseTest {
     @WithUsersQueue
     @Test
     void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
-        RequestSpecBuilder requestWithQueryLocator = RequestSpecs
-                .builder()
-                .addQueryParam("locator", "authorized:false")
-                .setAccept(ContentType.JSON)
-                .setContentType(ContentType.JSON);
 
         AgentsResponse response = new CrudRequester(
-                RequestSpecs.authAsUserWithBuilder(user, requestWithQueryLocator),
+                RequestSpecs
+                        .withBasicAuth(user)
+                        .addQueryParam("locator", "authorized:false")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
                 Endpoint.AGENTS,
                 ResponseSpecs.requestReturnsOk()
         ).get().extract().as(AgentsResponse.class);
@@ -126,6 +129,7 @@ public class AgentsTest extends BaseTest {
 
     @Disabled
     @WithUsersQueue
+    @Disabled
     @Test
     void shouldNotBeAbleToEnableAgentWithoutPermissions(CreateUserResponse user) {
         CreateUserResponse projectViewerUser = UsersTestData.projectViewerUser;
@@ -133,7 +137,11 @@ public class AgentsTest extends BaseTest {
 
 
         ErrorsResponse response = new CrudRequester(
-                RequestSpecs.authAsUser(projectViewerUser.getUsername(), projectViewerUser.getTestData().getPassword(), ContentType.TEXT),
+                RequestSpecs
+                        .withBasicAuth(user)
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
                 Endpoint.AGENTS_ID_ENABLED,
                 ResponseSpecs.forbidden()
         ).put(agentId, "true").extract().as(ErrorsResponse.class);
