@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
     private static final String USER_POOL_PROPERTY = Config.getProperty("users.pool.size");
     private static final int POOL_SIZE =
             USER_POOL_PROPERTY == null
@@ -46,14 +46,11 @@ public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback,
         USER_POOL_LIST.add(projectViewer);
     }
 
-    @Override
-    public void afterAll(ExtensionContext context) throws Exception {
-        for (CreateUserResponse user : USER_POOL_LIST) {
-            AdminSteps.deleteUser(user.getId());
-        }
-
-        USER_POOL_LIST.clear();
-        USER_POOL_QUEUE.clear();
+        context.getRoot().getStore(NAMESPACE).put("cleanup", (ExtensionContext.Store.CloseableResource) () -> {
+            for (CreateUserResponse user : USER_POOL_LIST) {
+                AdminSteps.deleteUser(user.getId());
+            }
+        });
     }
 
     @Override
