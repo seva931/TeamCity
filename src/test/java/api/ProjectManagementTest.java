@@ -134,11 +134,20 @@ public class ProjectManagementTest extends BaseTest {
     @WithUsersQueue
     @Test
     public void userGetProjectByNotExistIdTest(CreateUserResponse user) {
-        new CrudRequester(
+        String message = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
                 ResponseSpecs.notFound()
-        ).get(NOT_EXISTS_ID);
+        ).get(NOT_EXISTS_ID)
+                .extract()
+                .path("errors[0].message");
+
+        softly.assertThat(message)
+                .as("errors[0].message")
+                .isEqualTo(ApiAtributesOfResponse.NO_PROJECT_FOUND_BY_ID_ERROR.getFormatedText(
+                        NOT_EXISTS_ID,
+                        NOT_EXISTS_ID
+                ));
     }
 
     @DisplayName("Позитивный тест: обновление имени проекта")
