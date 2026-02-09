@@ -5,6 +5,7 @@ import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.RoleId;
 import common.generators.TestDataGenerator;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;

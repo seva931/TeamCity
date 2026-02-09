@@ -6,6 +6,7 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.RoleId;
 import common.generators.TestDataGenerator;
 
 import java.util.List;
@@ -30,6 +31,35 @@ public class AdminSteps {
         CreateUserRequest request = CreateUserRequest.builder()
                 .username(username)
                 .password(password)
+                .roles(CreateUserRequest.Roles.builder()
+                        .role(List.of(
+                                Role.builder()
+                                        .roleId(role.name())
+                                        .scope("g")
+                                        .build()
+                        ))
+                        .build())
+                .build();
+
+        CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS,
+                ResponseSpecs.requestReturnsOk()
+        ).post(request);
+
+        return CreateUserResponse.builder()
+                .username(response.getUsername())
+                .id(response.getId())
+                .roles(response.getRoles())
+                .testData(CreateUserResponse.TestData.builder()
+                        .password(request.getPassword()).build())
+                .build();
+    }
+
+    public static CreateUserResponse createUserWithRole(RoleId role) {
+        CreateUserRequest request = CreateUserRequest.builder()
+                .username(TestDataGenerator.generateUsername())
+                .password(TestDataGenerator.generatePassword())
                 .roles(CreateUserRequest.Roles.builder()
                         .role(List.of(
                                 Role.builder()

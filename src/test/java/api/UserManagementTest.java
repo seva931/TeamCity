@@ -2,7 +2,7 @@ package api;
 
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
-import api.models.RoleId;
+import common.data.RoleId;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;

@@ -2,9 +2,8 @@ package jupiter.extension;
 
 import api.configs.Config;
 import api.models.CreateUserResponse;
-import api.models.RoleId;
 import api.requests.steps.AdminSteps;
-import common.generators.TestDataGenerator;
+import common.data.RoleId;
 import jupiter.annotation.WithUsersQueue;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -31,16 +30,20 @@ public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback,
             return;
         }
 
-        for (int i = 0; i < POOL_SIZE; i++) {
+        if(POOL_SIZE < 2) {
+            throw new ExtensionConfigurationException("Количество пользователей не может быть меньше 2. Увеличьте users.pool.size в config.properties");
+        }
 
-            CreateUserResponse user = AdminSteps.createUserWithRole(
-                    TestDataGenerator.generateUsername(),
-                    TestDataGenerator.generatePassword(),
-                    RoleId.SYSTEM_ADMIN);
-
+        for (int i = 0; i < POOL_SIZE - 1; i++) {
+            CreateUserResponse user = AdminSteps.createUserWithRole(RoleId.SYSTEM_ADMIN);
             USER_POOL_QUEUE.add(user);
             USER_POOL_LIST.add(user);
         }
+
+        //добавление пользователя с ролью PROJECT_VIEWER
+        CreateUserResponse projectViewer = AdminSteps.createUserWithRole(RoleId.PROJECT_VIEWER);
+        USER_POOL_QUEUE.add(projectViewer);
+        USER_POOL_LIST.add(projectViewer);
     }
 
     @Override

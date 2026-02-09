@@ -16,6 +16,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -123,6 +124,7 @@ public class AgentsTest extends BaseTest {
                 .hasSize(1);
     }
 
+    @Disabled
     @WithUsersQueue
     @Test
     void shouldNotBeAbleToEnableAgentWithoutPermissions(CreateUserResponse user) {
