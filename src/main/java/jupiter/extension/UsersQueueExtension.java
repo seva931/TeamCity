@@ -36,12 +36,6 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
             USER_POOL_QUEUE.add(user);
             USER_POOL_LIST.add(user);
         }
-
-        context.getRoot().getStore(NAMESPACE).put("cleanup", (ExtensionContext.Store.CloseableResource) () -> {
-            for (CreateUserResponse user : USER_POOL_LIST) {
-                AdminSteps.deleteUser(user.getId());
-            }
-        });
     }
 
     @Override
@@ -55,6 +49,14 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
 
         if (USER_POOL_QUEUE.isEmpty()) {
             throw new ExtensionConfigurationException("Очередь пуста: увеличь users.pool.size или уменьшай параллелизм");
+        }
+
+        if(anno.addToCleanup()) {
+            context.getRoot().getStore(NAMESPACE).put("cleanup", (ExtensionContext.Store.CloseableResource) () -> {
+                for (CreateUserResponse user : USER_POOL_LIST) {
+                    AdminSteps.deleteUser(user.getId());
+                }
+            });
         }
 
         context.getStore(NAMESPACE).put(context.getUniqueId(), USER_POOL_QUEUE.poll());

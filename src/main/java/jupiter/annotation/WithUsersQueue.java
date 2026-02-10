@@ -12,4 +12,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith({UsersQueueExtension.class})
 public @interface WithUsersQueue {
+    boolean addToCleanup() default true;
 }
