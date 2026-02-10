@@ -95,7 +95,8 @@ public class AgentsTest extends BaseTest {
         assertThat(response)
                 .as("Поля id и name")
                 .usingRecursiveComparison()
-                .comparingOnlyFields("id", "name");
+                .comparingOnlyFields("id", "name")
+                .isEqualTo(agents.getAgent().getFirst());
     }
 
     @WithUsersQueue

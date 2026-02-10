@@ -3,6 +3,7 @@ package jupiter.extension;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
 import api.models.ParentProject;
+import api.models.ProjectResponse;
 import api.requests.steps.ProjectManagementSteps;
 import common.data.ProjectData;
 import common.generators.TestDataGenerator;
@@ -13,14 +14,13 @@ public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE =
             ExtensionContext.Namespace.create(ProjectExtension.class);
-    private CreateUserResponse user;
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         WithProject annotation = context.getRequiredTestMethod().getAnnotation(WithProject.class);
 
         if (annotation != null) {
-            user = context.getStore(UsersQueueExtension.NAMESPACE)
+            CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE)
                     .get(context.getUniqueId(), CreateUserResponse.class);
 
             if (user == null) {
@@ -31,19 +31,28 @@ public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
             String projectId = annotation.projectId().equals("default") ? TestDataGenerator.generateProjectID() : annotation.projectId();
             String projectName = annotation.projectName().equals("default") ? TestDataGenerator.generateProjectName() : annotation.projectName();
 
-            CreateProjectRequest project = CreateProjectRequest.builder()
-                    .id(projectId)
-                    .name(projectName)
-                    .parentProject(new ParentProject(parentProjectId))
-                    .build();
+            CreateProjectRequest project;
 
-            if(!annotation.useExisting()) {
-                ProjectManagementSteps.createProject(
-                        project.getId(),
-                        project.getName(),
-                        project.getParentProject(),
+            if(annotation.useExisting()) {
+                ProjectResponse projectById = ProjectManagementSteps.getProjectById(projectId, user);
+                project = CreateProjectRequest.builder()
+                        .parentProject(new ParentProject(projectById.getParentProject().getId()))
+                        .id(projectById.getId())
+                        .name(projectById.getName())
+                        .build();
+            } else {
+                ProjectResponse projectById = ProjectManagementSteps.createProject(
+                        projectId,
+                        projectName,
+                        new ParentProject(parentProjectId),
                         user
                 );
+
+                project = CreateProjectRequest.builder()
+                        .parentProject(new ParentProject(projectById.getParentProject().getId()))
+                        .id(projectById.getId())
+                        .name(projectById.getName())
+                        .build();
             }
 
             context.getStore(NAMESPACE).put(context.getUniqueId(), project);
