@@ -105,4 +105,11 @@ public class AdminSteps {
                 .as(PermissionsResponse.class);
     }
 
+    public static CreateUserResponse getUserInfoByUsername(String username){
+        return new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS_USERNAME,
+                ResponseSpecs.requestReturnsOk())
+                .get(username);
+    }
 }

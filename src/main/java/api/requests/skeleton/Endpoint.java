@@ -10,6 +10,7 @@ public enum Endpoint {
     SERVER("/server", BaseModel.class, BaseModel.class),
     USERS("/users", CreateUserRequest.class, CreateUserResponse.class),
     USERS_ID("/users/id:%s", BaseModel.class, User.class),
+    USERS_USERNAME("/users/username:%s", BaseModel.class, CreateUserResponse.class),
     PROJECTS("/projects", CreateProjectRequest.class, ProjectResponse.class),
     PROJECT_ID("/projects/id:%s", BaseModel.class, ProjectResponse.class),
     BUILD_TYPES("/buildTypes", CreateBuildConfigurationRequest.class, CreateBuildConfigurationResponse.class),
