@@ -11,9 +11,12 @@ import api.requests.steps.AgentSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
+import common.data.RoleId;
 import common.data.UsersTestData;
 import io.restassured.http.ContentType;
+import jupiter.annotation.User;
 import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.UserExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -23,7 +26,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@ExtendWith({UsersQueueExtension.class})
+@ExtendWith({
+        UsersQueueExtension.class,
+        UserExtension.class
+})
 public class AgentsTest extends BaseTest {
 
     private static final long NON_EXISTENT_AGENT_ID = 999_999L;
@@ -126,14 +132,10 @@ public class AgentsTest extends BaseTest {
                         e.getMessage().equals(ApiAtributesOfResponse.NO_AGENT_CAN_BE_FOUND_BY_ID.getFormatedText(NON_EXISTENT_AGENT_ID)))
                 .hasSize(1);
     }
-
     @WithUsersQueue
-    @Disabled
     @Test
-    void shouldNotBeAbleToEnableAgentWithoutPermissions(CreateUserResponse user) {
-        CreateUserResponse projectViewerUser = UsersTestData.projectViewerUser;
-        long agentId = AgentSteps.getAgent(user).getId();
-
+    void shouldNotBeAbleToEnableAgentWithoutPermissions(@User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user, CreateUserResponse admin) {
+        long agentId = AgentSteps.getAgent(admin).getId();
 
         ErrorsResponse response = new CrudRequester(
                 RequestSpecs

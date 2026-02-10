@@ -9,11 +9,15 @@ import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.RoleId;
+import groovy.json.JsonOutput;
 import jupiter.annotation.Build;
+import jupiter.annotation.User;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.BuildExtension;
 import jupiter.extension.ProjectExtension;
+import jupiter.extension.UserExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +25,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith({
         UsersQueueExtension.class,
         ProjectExtension.class,
-        BuildExtension.class
+        BuildExtension.class,
+        UserExtension.class
 })
 public class SampleTest extends BaseTest {
 
@@ -29,14 +34,21 @@ public class SampleTest extends BaseTest {
     @WithProject
     @Test
     public void buildSampleTest(
-            CreateUserResponse user,
+            CreateUserResponse admin,
             CreateProjectRequest project,
-            @Build CreateBuildConfigurationResponse build) {
+            @Build CreateBuildConfigurationResponse build,
+            @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user
+    ) {
+        System.out.println("Building Sample Test");
+        System.out.println(build);
 
-        GetBuldListInfoResponse getBuldListInfoResponse = new CrudRequester(
-                RequestSpecs.authAsUser(user),
-                Endpoint.BUILD_TYPES,
-                ResponseSpecs.requestReturnsOk())
-                .get().extract().as(GetBuldListInfoResponse.class);
+        System.out.println("Project Sample Test");
+        System.out.println(project);
+
+        System.out.println("User Sample Test");
+        System.out.println(user);
+
+        System.out.println("Admin Sample Test");
+        System.out.println(admin);
     }
 }

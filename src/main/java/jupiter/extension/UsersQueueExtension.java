@@ -4,6 +4,7 @@ import api.configs.Config;
 import api.models.CreateUserResponse;
 import api.requests.steps.AdminSteps;
 import common.data.RoleId;
+import jupiter.annotation.User;
 import jupiter.annotation.WithUsersQueue;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -66,7 +67,8 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-        return parameterContext.getParameter().getType().equals(CreateUserResponse.class);
+        return parameterContext.getParameter().getType().equals(CreateUserResponse.class)
+                && !parameterContext.isAnnotated(User.class);
     }
 
     @Override
