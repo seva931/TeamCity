@@ -137,7 +137,12 @@ public class ProjectManagementTest extends BaseTest {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
-                ResponseSpecs.notFound()
+                ResponseSpecs.notFoundWithErrorText(
+                        ApiAtributesOfResponse.NO_PROJECT_FOUND_BY_ID_ERROR.getFormatedText(
+                                NOT_EXISTS_ID,
+                                NOT_EXISTS_ID
+                        )
+                )
         ).get(NOT_EXISTS_ID);
     }
 
