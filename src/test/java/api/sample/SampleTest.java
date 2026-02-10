@@ -9,7 +9,7 @@ import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import jupiter.annotation.WithBuild;
+import jupiter.annotation.Build;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.BuildExtension;
@@ -26,14 +26,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class SampleTest extends BaseTest {
 
     @WithUsersQueue
-    @WithProject(
-            @WithBuild
-    )
+    @WithProject
     @Test
     public void buildSampleTest(
             CreateUserResponse user,
             CreateProjectRequest project,
-            CreateBuildConfigurationResponse build) {
+            @Build CreateBuildConfigurationResponse build) {
 
         GetBuldListInfoResponse getBuldListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
