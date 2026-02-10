@@ -2,9 +2,9 @@ package jupiter.extension;
 
 import api.configs.Config;
 import api.models.CreateUserResponse;
-import api.models.RoleId;
 import api.requests.steps.AdminSteps;
-import common.generators.TestDataGenerator;
+import common.data.RoleId;
+import jupiter.annotation.User;
 import jupiter.annotation.WithUsersQueue;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
     private static final String USER_POOL_PROPERTY = Config.getProperty("users.pool.size");
     private static final int POOL_SIZE =
             USER_POOL_PROPERTY == null
@@ -31,26 +31,17 @@ public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback,
             return;
         }
 
-        for (int i = 0; i < POOL_SIZE; i++) {
-
-            CreateUserResponse user = AdminSteps.createUserWithRole(
-                    TestDataGenerator.generateUsername(),
-                    TestDataGenerator.generatePassword(),
-                    RoleId.SYSTEM_ADMIN);
-
+        for (int i = 0; i < POOL_SIZE - 1; i++) {
+            CreateUserResponse user = AdminSteps.createUserWithRole(RoleId.SYSTEM_ADMIN);
             USER_POOL_QUEUE.add(user);
             USER_POOL_LIST.add(user);
         }
-    }
 
-    @Override
-    public void afterAll(ExtensionContext context) throws Exception {
-        for (CreateUserResponse user : USER_POOL_LIST) {
-            AdminSteps.deleteUser(user.getId());
-        }
-
-        USER_POOL_LIST.clear();
-        USER_POOL_QUEUE.clear();
+        context.getRoot().getStore(NAMESPACE).put("cleanup", (ExtensionContext.Store.CloseableResource) () -> {
+            for (CreateUserResponse user : USER_POOL_LIST) {
+                AdminSteps.deleteUser(user.getId());
+            }
+        });
     }
 
     @Override
@@ -75,8 +66,9 @@ public class UsersQueueExtension implements BeforeAllCallback, AfterAllCallback,
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.getParameter().getType().equals(CreateUserResponse.class);
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        return parameterContext.getParameter().getType().equals(CreateUserResponse.class)
+                && !parameterContext.isAnnotated(User.class);
     }
 
     @Override

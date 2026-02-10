@@ -6,16 +6,14 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import common.generators.TestDataGenerator;
+import common.data.RoleId;
 
 import java.util.List;
 
 public class AdminSteps {
 
     public static CreateUserRequest createAdminUser() {
-        CreateUserRequest createUserRequest = CreateUserRequest.systemAdmin(
-                TestDataGenerator.generateUsername(),
-                TestDataGenerator.generatePassword());
+        CreateUserRequest createUserRequest = CreateUserRequest.systemAdmin();
 
         new CrudRequester(
                 RequestSpecs.adminSpec(),
@@ -39,6 +37,24 @@ public class AdminSteps {
                         ))
                         .build())
                 .build();
+
+        CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS,
+                ResponseSpecs.requestReturnsOk()
+        ).post(request);
+
+        return CreateUserResponse.builder()
+                .username(response.getUsername())
+                .id(response.getId())
+                .roles(response.getRoles())
+                .testData(CreateUserResponse.TestData.builder()
+                        .password(request.getPassword()).build())
+                .build();
+    }
+
+    public static CreateUserResponse createUserWithRole(RoleId role) {
+        CreateUserRequest request = CreateUserRequest.withRole(role);
 
         CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpecs.adminSpec(),

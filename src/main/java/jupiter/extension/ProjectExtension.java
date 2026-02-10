@@ -8,7 +8,7 @@ import common.generators.TestDataGenerator;
 import jupiter.annotation.WithProject;
 import org.junit.jupiter.api.extension.*;
 
-public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE =
             ExtensionContext.Namespace.create(ProjectExtension.class);
@@ -40,16 +40,11 @@ public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, 
             );
 
             context.getStore(NAMESPACE).put(context.getUniqueId(), project);
-        }
-    }
 
-    @Override
-    public void afterEach(ExtensionContext context) throws Exception {
-        CreateProjectRequest project = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateProjectRequest.class);
-        if(project != null) {
-            ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+            context.getStore(NAMESPACE).put("project_cleanup", (ExtensionContext.Store.CloseableResource) () -> {
+                    ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+            });
         }
-
     }
 
     @Override

@@ -1,45 +1,48 @@
 package api.sample;
 
 import api.BaseTest;
-import api.models.CreateBuildConfigurationRequest;
 import api.models.CreateBuildConfigurationResponse;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
-import api.requests.skeleton.Endpoint;
-import api.requests.skeleton.requesters.ValidatedCrudRequester;
-import api.specs.RequestSpecs;
-import api.specs.ResponseSpecs;
-import common.generators.TestDataGenerator;
+import common.data.RoleId;
+import jupiter.annotation.Build;
+import jupiter.annotation.User;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.BuildExtension;
 import jupiter.extension.ProjectExtension;
+import jupiter.extension.UserExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
+@ExtendWith({
+        UsersQueueExtension.class,
+        ProjectExtension.class,
+        BuildExtension.class,
+        UserExtension.class
+})
 public class SampleTest extends BaseTest {
 
     @WithUsersQueue
     @WithProject
     @Test
-    public void userCreateBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
+    public void buildSampleTest(
+            CreateUserResponse admin,
+            CreateProjectRequest project,
+            @Build CreateBuildConfigurationResponse build,
+            @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user
+    ) {
+        System.out.println("Building Sample Test");
+        System.out.println(build);
 
-        String buildId = project.getId() + "_" + buildName;
+        System.out.println("Project Sample Test");
+        System.out.println(project);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, project.getId());
+        System.out.println("User Sample Test");
+        System.out.println(user);
 
-        CreateBuildConfigurationResponse createBuildConfigurationResponse = new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
-                RequestSpecs.authAsUser(user),
-                Endpoint.BUILD_TYPES,
-                ResponseSpecs.requestReturnsOk())
-                .post(createBuildConfigurationRequest);
-
-        assertThat(createBuildConfigurationRequest)
-                .usingRecursiveComparison()
-                .comparingOnlyFields("id", "name", "ProjectId");
+        System.out.println("Admin Sample Test");
+        System.out.println(admin);
     }
 }
