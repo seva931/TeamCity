@@ -13,5 +13,4 @@ public @interface Build {
     String buildId() default "default";
     boolean useExisting() default false;
     boolean addToCleanup() default true;
-
 }

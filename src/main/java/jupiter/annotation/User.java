@@ -11,5 +11,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 public @interface User {
     RoleId role() default RoleId.SYSTEM_ADMIN;
-
+    String username() default "default";
+    String password() default "default";
+    boolean useExisting() default false;
+    boolean addToCleanup() default true;
 }
