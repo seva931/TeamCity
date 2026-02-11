@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
         ModelAssertions.assertThatModels(createBuildTypeRequest, createBuildTypeResponse).match();
 
-        CreateBuildTypeResponse createdBuild = BuildManageSteps.getAllBuilds().stream()
+        CreateBuildTypeResponse createdBuild = BuildManageSteps.getAllBuildTypes().stream()
                 .filter(build -> build.getId().equals(createBuildTypeResponse.getId())).findFirst().get();
 
         ModelAssertions.assertThatModels(createBuildTypeRequest, createdBuild).match();
@@ -65,7 +65,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 ResponseSpecs.badRequestWithErrorText(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getFormatedText(buildName, project.getName())))
                 .post(createBuildTypeRequest);
 
-        boolean isFind = BuildManageSteps.getAllBuilds().stream()
+        boolean isFind = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
         assertFalse(isFind);
@@ -123,7 +123,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 .as("Поле count")
                 .isNotNull();
 
-        boolean isFind = BuildManageSteps.getAllBuilds().stream()
+        boolean isFind = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
         assertTrue(isFind);
@@ -139,7 +139,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
         CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
 
-        boolean isFindCreatedBuildType = BuildManageSteps.getAllBuilds().stream()
+        boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
         assertTrue(isFindCreatedBuildType);
@@ -150,7 +150,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 ResponseSpecs.noContent())
                 .delete(buildId);
 
-        boolean isFindDeletedBuildType = BuildManageSteps.getAllBuilds().stream()
+        boolean isFindDeletedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
         assertFalse(isFindDeletedBuildType);
@@ -179,7 +179,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
         CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
 
-        boolean isFindCreatedBuildType = BuildManageSteps.getAllBuilds().stream()
+        boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
         assertTrue(isFindCreatedBuildType);
@@ -192,7 +192,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 ResponseSpecs.forbiddenWithErrorText(ApiAtributesOfResponse.YOU_DONT_HAVE_ENOUGH_PERMISSIONS_ERROR.getFormatedText(project.getId())))
                 .delete(buildId);
 
-        boolean isFindDeletedBuildType = BuildManageSteps.getAllBuilds().stream()
+        boolean isFindDeletedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
         assertTrue(isFindDeletedBuildType);

@@ -72,10 +72,10 @@ public class BuildManageSteps {
                 .get(buildId);
     }
 
-    public static List<CreateBuildTypeResponse> getAllBuilds() {
+    public static List<CreateBuildTypeResponse> getAllBuildTypes() {
         return new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.adminSpec(),
                 Endpoint.BUILD_TYPES,
-                ResponseSpecs.requestReturnsOk()).getAllBuilds(CreateBuildTypeResponse[].class);
+                ResponseSpecs.requestReturnsOk()).getAllBuildTypes(CreateBuildTypeResponse[].class);
     }
 }
