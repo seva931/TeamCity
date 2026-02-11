@@ -11,10 +11,11 @@ import api.requests.steps.AgentSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
-import common.data.UsersTestData;
-import io.restassured.builder.RequestSpecBuilder;
+import common.data.RoleId;
 import io.restassured.http.ContentType;
+import jupiter.annotation.User;
 import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.UserExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +24,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@ExtendWith({UsersQueueExtension.class})
+@ExtendWith({
+        UsersQueueExtension.class,
+        UserExtension.class
+})
 public class AgentsTest extends BaseTest {
 
     private static final long NON_EXISTENT_AGENT_ID = 999_999L;
@@ -56,7 +60,11 @@ public class AgentsTest extends BaseTest {
         long agentId = agents.getAgent().getFirst().getId();
 
         String response = new CrudRequester(
-                RequestSpecs.authAsUser(user.getUsername(), user.getTestData().getPassword(), ContentType.TEXT),
+
+                RequestSpecs.withBasicAuth(user)
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
                 Endpoint.AGENTS_ID_ENABLED,
                 ResponseSpecs.requestReturnsOk()
         ).put(agentId, bodyMessage)
@@ -87,20 +95,21 @@ public class AgentsTest extends BaseTest {
         assertThat(response)
                 .as("Поля id и name")
                 .usingRecursiveComparison()
-                .comparingOnlyFields("id", "name");
+                .comparingOnlyFields("id", "name")
+                .isEqualTo(agents.getAgent().getFirst());
     }
 
     @WithUsersQueue
     @Test
     void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
-        RequestSpecBuilder requestWithQueryLocator = RequestSpecs
-                .builder()
-                .addQueryParam("locator", "authorized:false")
-                .setAccept(ContentType.JSON)
-                .setContentType(ContentType.JSON);
 
         AgentsResponse response = new CrudRequester(
-                RequestSpecs.authAsUserWithBuilder(user, requestWithQueryLocator),
+                RequestSpecs
+                        .withBasicAuth(user)
+                        .addQueryParam("locator", "authorized:false")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
                 Endpoint.AGENTS,
                 ResponseSpecs.requestReturnsOk()
         ).get().extract().as(AgentsResponse.class);
@@ -125,13 +134,15 @@ public class AgentsTest extends BaseTest {
 
     @WithUsersQueue
     @Test
-    void shouldNotBeAbleToEnableAgentWithoutPermissions(CreateUserResponse user) {
-        CreateUserResponse projectViewerUser = UsersTestData.projectViewerUser;
-        long agentId = AgentSteps.getAgent(user).getId();
-
+    void shouldNotBeAbleToEnableAgentWithoutPermissions(@User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user, CreateUserResponse admin) {
+        long agentId = AgentSteps.getAgent(admin).getId();
 
         ErrorsResponse response = new CrudRequester(
-                RequestSpecs.authAsUser(projectViewerUser.getUsername(), projectViewerUser.getTestData().getPassword(), ContentType.TEXT),
+                RequestSpecs
+                        .withBasicAuth(user)
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
                 Endpoint.AGENTS_ID_ENABLED,
                 ResponseSpecs.forbidden()
         ).put(agentId, "true").extract().as(ErrorsResponse.class);

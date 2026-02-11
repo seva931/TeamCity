@@ -6,16 +6,14 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import common.generators.TestDataGenerator;
+import common.data.RoleId;
 
 import java.util.List;
 
 public class AdminSteps {
 
     public static CreateUserRequest createAdminUser() {
-        CreateUserRequest createUserRequest = CreateUserRequest.systemAdmin(
-                TestDataGenerator.generateUsername(),
-                TestDataGenerator.generatePassword());
+        CreateUserRequest createUserRequest = CreateUserRequest.systemAdmin();
 
         new CrudRequester(
                 RequestSpecs.adminSpec(),
@@ -55,6 +53,24 @@ public class AdminSteps {
                 .build();
     }
 
+    public static CreateUserResponse createUserWithRole(RoleId role) {
+        CreateUserRequest request = CreateUserRequest.withRole(role);
+
+        CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS,
+                ResponseSpecs.requestReturnsOk()
+        ).post(request);
+
+        return CreateUserResponse.builder()
+                .username(response.getUsername())
+                .id(response.getId())
+                .roles(response.getRoles())
+                .testData(CreateUserResponse.TestData.builder()
+                        .password(request.getPassword()).build())
+                .build();
+    }
+
     public static CreateUserRequest createUserByAdmin(String username, String password) {
         CreateUserRequest createUserRequest = new CreateUserRequest(username, password);
 
@@ -71,22 +87,29 @@ public class AdminSteps {
         new CrudRequester(
                 RequestSpecs.adminSpec(),
                 Endpoint.USERS_ID,
-                ResponseSpecs.noContent()
+                ResponseSpecs.deletesQuietly()
         ).delete(id);
     }
 
-    public static GetUsersResponse getAllUsers (){
+    public static GetUsersResponse getAllUsers() {
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok())
                 .get()
                 .extract()
                 .as(GetUsersResponse.class);
     }
 
-    public static PermissionsResponse getPermissionsForUser(int id){
+    public static PermissionsResponse getPermissionsForUser(int id) {
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.ok())
                 .get(id)
                 .extract()
                 .as(PermissionsResponse.class);
     }
 
+    public static CreateUserResponse getUserInfoByUsername(String username) {
+        return new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS_USERNAME,
+                ResponseSpecs.requestReturnsOk())
+                .get(username);
+    }
 }

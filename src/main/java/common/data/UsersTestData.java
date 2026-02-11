@@ -1,7 +1,6 @@
 package common.data;
 
 import api.models.CreateUserResponse;
-import api.models.RoleId;
 import api.requests.steps.AdminSteps;
 import common.generators.TestDataGenerator;
 

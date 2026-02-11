@@ -5,8 +5,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WithUsersQueue {
+@Target(ElementType.PARAMETER)
+public @interface Build {
+    String projectId() default "default";
+    String buildName() default "default";
+    String buildId() default "default";
+    boolean useExisting() default false;
     boolean addToCleanup() default true;
 }

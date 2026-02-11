@@ -3,53 +3,66 @@ package jupiter.extension;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
 import api.models.ParentProject;
+import api.models.ProjectResponse;
 import api.requests.steps.ProjectManagementSteps;
+import common.data.ProjectData;
 import common.generators.TestDataGenerator;
 import jupiter.annotation.WithProject;
 import org.junit.jupiter.api.extension.*;
 
-public class ProjectExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE =
             ExtensionContext.Namespace.create(ProjectExtension.class);
-    private CreateUserResponse user;
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         WithProject annotation = context.getRequiredTestMethod().getAnnotation(WithProject.class);
 
         if (annotation != null) {
-            user = context.getStore(UsersQueueExtension.NAMESPACE)
+            CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE)
                     .get(context.getUniqueId(), CreateUserResponse.class);
 
             if (user == null) {
                 throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue");
             }
 
-            CreateProjectRequest project = CreateProjectRequest.builder()
-                    .id(TestDataGenerator.generateProjectID())
-                    .name(TestDataGenerator.generateProjectName())
-                    .parentProject(new ParentProject(annotation.parentProjectId().value))
-                    .build();
+            String parentProjectId = annotation.parentProjectId().equals("default") ? ProjectData.PARENT_PROJECT.value : annotation.parentProjectId();
+            String projectId = annotation.projectId().equals("default") ? TestDataGenerator.generateProjectID() : annotation.projectId();
+            String projectName = annotation.projectName().equals("default") ? TestDataGenerator.generateProjectName() : annotation.projectName();
 
-            ProjectManagementSteps.createProject(
-                    project.getId(),
-                    project.getName(),
-                    project.getParentProject(),
-                    user
-            );
+            CreateProjectRequest project;
+
+            if(annotation.useExisting()) {
+                ProjectResponse projectById = ProjectManagementSteps.getProjectById(projectId, user);
+                project = CreateProjectRequest.builder()
+                        .parentProject(new ParentProject(projectById.getParentProject().getId()))
+                        .id(projectById.getId())
+                        .name(projectById.getName())
+                        .build();
+            } else {
+                ProjectResponse projectById = ProjectManagementSteps.createProject(
+                        projectId,
+                        projectName,
+                        new ParentProject(parentProjectId),
+                        user
+                );
+
+                project = CreateProjectRequest.builder()
+                        .parentProject(new ParentProject(projectById.getParentProject().getId()))
+                        .id(projectById.getId())
+                        .name(projectById.getName())
+                        .build();
+            }
 
             context.getStore(NAMESPACE).put(context.getUniqueId(), project);
-        }
-    }
 
-    @Override
-    public void afterEach(ExtensionContext context) throws Exception {
-        CreateProjectRequest project = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateProjectRequest.class);
-        if(project != null) {
-            ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+            if(annotation.addToCleanup() && !annotation.useExisting()) {
+                context.getStore(NAMESPACE).put("project_cleanup", (ExtensionContext.Store.CloseableResource) () -> {
+                    ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
+                });
+            }
         }
-
     }
 
     @Override
