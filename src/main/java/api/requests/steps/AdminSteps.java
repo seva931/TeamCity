@@ -87,25 +87,25 @@ public class AdminSteps {
         new CrudRequester(
                 RequestSpecs.adminSpec(),
                 Endpoint.USERS_ID,
-                ResponseSpecs.noContent()
+                ResponseSpecs.deletesQuietly()
         ).delete(id);
     }
 
-    public static GetUsersResponse getAllUsers (){
+    public static GetUsersResponse getAllUsers() {
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok())
                 .get()
                 .extract()
                 .as(GetUsersResponse.class);
     }
 
-    public static PermissionsResponse getPermissionsForUser(int id){
+    public static PermissionsResponse getPermissionsForUser(int id) {
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.ok())
                 .get(id)
                 .extract()
                 .as(PermissionsResponse.class);
     }
 
-    public static CreateUserResponse getUserInfoByUsername(String username){
+    public static CreateUserResponse getUserInfoByUsername(String username) {
         return new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpecs.adminSpec(),
                 Endpoint.USERS_USERNAME,

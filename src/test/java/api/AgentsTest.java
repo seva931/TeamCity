@@ -131,6 +131,7 @@ public class AgentsTest extends BaseTest {
                         e.getMessage().equals(ApiAtributesOfResponse.NO_AGENT_CAN_BE_FOUND_BY_ID.getFormatedText(NON_EXISTENT_AGENT_ID)))
                 .hasSize(1);
     }
+
     @WithUsersQueue
     @Test
     void shouldNotBeAbleToEnableAgentWithoutPermissions(@User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user, CreateUserResponse admin) {
