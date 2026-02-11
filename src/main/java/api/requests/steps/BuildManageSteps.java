@@ -7,6 +7,8 @@ import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
+import java.util.List;
+
 public class BuildManageSteps {
 
     public static CreateBuildConfigurationResponse createBuildConfiguration(String projectId, String buildId, String buildName) {
@@ -33,5 +35,12 @@ public class BuildManageSteps {
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.requestReturnsOk())
                 .get(buildId);
+    }
+
+    public static List<CreateBuildConfigurationResponse> getAllBuilds() {
+        return new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.BUILD_TYPES,
+                ResponseSpecs.requestReturnsOk()).getAll(CreateBuildConfigurationResponse[].class);
     }
 }

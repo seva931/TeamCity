@@ -1,6 +1,7 @@
 package api;
 
 import api.models.*;
+import api.models.comparison.ModelAssertions;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -16,6 +17,8 @@ import jupiter.extension.ProjectExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
 
 @ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
     public class ManageBuildConfigurationTest extends BaseTest {
@@ -36,17 +39,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
                 ResponseSpecs.requestReturnsOk())
                 .post(createBuildConfigurationRequest);
 
-        softly.assertThat(createBuildConfigurationResponse.getId())
-                .as("Поле id")
-                .isEqualTo(buildId);
+        ModelAssertions.assertThatModels(createBuildConfigurationRequest, createBuildConfigurationResponse).match();
 
-        softly.assertThat(createBuildConfigurationResponse.getName())
-                .as("Поле name")
-                .isEqualTo(buildName);
+        //TODO: через гет олл получить список билд конфигураций и найти там нужную (показать, что она там появилась)
+        List<CreateBuildConfigurationResponse> listOfBuild = BuildManageSteps.getAllBuilds();
+        System.out.println(listOfBuild);
 
-        softly.assertThat(createBuildConfigurationResponse.getProjectId())
-                .as("Поле ProjectId")
-                .isEqualTo(project.getId());
     }
 
     @DisplayName("Негативный тест: создание билд конфигурации с именем уже созданной конфигурации")
