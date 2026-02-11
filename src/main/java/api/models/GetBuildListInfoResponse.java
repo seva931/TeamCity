@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GetBuldListInfoResponse extends BaseModel{
+public class GetBuildListInfoResponse extends BaseModel{
     private long count;
     private List<CreateBuildConfigurationResponse> buildType;
 }

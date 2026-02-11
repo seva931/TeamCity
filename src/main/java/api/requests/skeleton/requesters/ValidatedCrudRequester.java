@@ -1,5 +1,6 @@
 package api.requests.skeleton.requesters;
 
+import api.models.GetBuildListInfoResponse;
 import api.requests.skeleton.interfaces.GetAllEndpointInterface;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
@@ -8,6 +9,7 @@ import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.HttpRequest;
 import api.requests.skeleton.interfaces.CrudEndpointInterface;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,5 +55,12 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     public List<T> getAll(Class<?> clazz) {
         T[] array = (T[]) crudRequester.getAll(clazz).extract().as(clazz);
         return Arrays.asList(array);
+    }
+
+    public List<T> getAllBuilds(Class<?> clazz) {
+        GetBuildListInfoResponse response = crudRequester.getAll(clazz).extract().as(GetBuildListInfoResponse.class);
+
+        List<T> builds = (List<T>) response.getBuildType();
+        return builds;
     }
 }

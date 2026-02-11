@@ -18,7 +18,7 @@ import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
     public class ManageBuildConfigurationTest extends BaseTest {
@@ -41,10 +41,10 @@ import java.util.List;
 
         ModelAssertions.assertThatModels(createBuildConfigurationRequest, createBuildConfigurationResponse).match();
 
-        //TODO: через гет олл получить список билд конфигураций и найти там нужную (показать, что она там появилась)
-        List<CreateBuildConfigurationResponse> listOfBuild = BuildManageSteps.getAllBuilds();
-        System.out.println(listOfBuild);
+        CreateBuildConfigurationResponse createdBuild = BuildManageSteps.getAllBuilds().stream()
+                .filter(build -> build.getId().equals(createBuildConfigurationResponse.getId())).findFirst().get();
 
+        ModelAssertions.assertThatModels(createBuildConfigurationRequest, createdBuild).match();
     }
 
     @DisplayName("Негативный тест: создание билд конфигурации с именем уже созданной конфигурации")
@@ -63,6 +63,11 @@ import java.util.List;
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.badRequestWithErrorText(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getFormatedText(buildName, project.getName())))
                 .post(createBuildConfigurationRequest);
+
+        boolean isFind = BuildManageSteps.getAllBuilds().stream()
+                .anyMatch(build -> build.getId().equals(createBuildConfigurationRequest.getId()));
+
+        assertFalse(isFind);
     }
 
     @DisplayName("Позитивный тест: получение информации о созданной билд конфигурации")
@@ -117,16 +122,16 @@ import java.util.List;
 
         BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
 
-        GetBuldListInfoResponse getBuldListInfoResponse = new CrudRequester(
+        GetBuildListInfoResponse getBuildListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .get().extract().as(GetBuldListInfoResponse.class);
+                .get().extract().as(GetBuildListInfoResponse.class);
 
-        softly.assertThat(getBuldListInfoResponse.getCount())
+        softly.assertThat(getBuildListInfoResponse.getCount())
                 .as("Поле count")
                 .isNotNull();
-        softly.assertThat(getBuldListInfoResponse.getBuildType())
+        softly.assertThat(getBuildListInfoResponse.getBuildType())
                 .as("Список билд конфигураций существующих")
                 .isNotEmpty();
     }

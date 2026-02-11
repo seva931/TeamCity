@@ -41,6 +41,6 @@ public class BuildManageSteps {
         return new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
                 RequestSpecs.adminSpec(),
                 Endpoint.BUILD_TYPES,
-                ResponseSpecs.requestReturnsOk()).getAll(CreateBuildConfigurationResponse[].class);
+                ResponseSpecs.requestReturnsOk()).getAllBuilds(CreateBuildConfigurationResponse[].class);
     }
 }
