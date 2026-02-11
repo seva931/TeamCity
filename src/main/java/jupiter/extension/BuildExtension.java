@@ -1,6 +1,6 @@
 package jupiter.extension;
 
-import api.models.CreateBuildConfigurationResponse;
+import api.models.CreateBuildTypeResponse;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
 import api.requests.steps.BuildManageSteps;
@@ -30,37 +30,37 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
         String buildName = anno.buildName().equals("default") ? TestDataGenerator.generateBuildName() : anno.buildName();
         String buildId = anno.buildId().equals("default") ? TestDataGenerator.generateBuildId() : anno.buildId();
 
-        CreateBuildConfigurationResponse buildConfiguration;
+        CreateBuildTypeResponse buildConfiguration;
         if (anno.useExisting()) {
-            buildConfiguration = CreateBuildConfigurationResponse.builder()
+            buildConfiguration = CreateBuildTypeResponse.builder()
                     .id(buildId)
                     .name(buildName)
                     .projectId(projectId)
                     .build();
         } else {
-            buildConfiguration = BuildManageSteps.createBuildConfiguration(projectId, buildId, buildName, user);
+            buildConfiguration = BuildManageSteps.createBuildType(projectId, buildId, buildName, user);
         }
 
         extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), buildConfiguration);
         extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId() + ":cleanup",
                 anno.addToCleanup() && !anno.useExisting());
 
-        return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), CreateBuildConfigurationResponse.class);
+        return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), CreateBuildTypeResponse.class);
     }
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-        CreateBuildConfigurationResponse build = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateBuildConfigurationResponse.class);
+        CreateBuildTypeResponse build = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateBuildTypeResponse.class);
         CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class);
         Boolean cleanup = context.getStore(NAMESPACE).get(context.getUniqueId() + ":cleanup", Boolean.class);
         if (Boolean.TRUE.equals(cleanup) && build != null) {
-            BuildManageSteps.deleteBuildConfigurationQuietly(build.getId(), user);
+            BuildManageSteps.deleteBuildTypeQuietly(build.getId(), user);
         }
     }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.getParameter().getType().equals(CreateBuildConfigurationResponse.class)
+        return parameterContext.getParameter().getType().equals(CreateBuildTypeResponse.class)
                 && parameterContext.isAnnotated(Build.class);
     }
 }

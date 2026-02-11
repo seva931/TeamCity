@@ -15,8 +15,8 @@ public class CreateBuildTypeRequest extends BaseModel {
     private String name;
     private String projectId;
 
-    public static CreateBuildConfigurationRequest createBuildConfig(String projectId) {
-        return CreateBuildConfigurationRequest.builder()
+    public static CreateBuildTypeRequest createBuildConfig(String projectId) {
+        return CreateBuildTypeRequest.builder()
                 .id(TestDataGenerator.generateBuildId())
                 .name(TestDataGenerator.generateBuildName())
                 .projectId(projectId)

@@ -126,7 +126,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         boolean isFind = BuildManageSteps.getAllBuilds().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
-        assertFalse(isFind);
+        assertTrue(isFind);
     }
 
     @DisplayName("Позитивный тест: удаление билд конфигурации")

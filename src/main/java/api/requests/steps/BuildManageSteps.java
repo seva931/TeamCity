@@ -25,30 +25,30 @@ public class BuildManageSteps {
         return new CreateBuildTypeResult(createBuildTypeRequest, createBuildTypeResponse);
     }
 
-    public static CreateBuildConfigurationResponse createBuildConfiguration(
+    public static CreateBuildTypeResponse createBuildType(
             String projectId,
             String buildId,
             String buildName,
             CreateUserResponse user) {
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, projectId);
+        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, projectId);
 
-        return new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+        return new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .post(createBuildConfigurationRequest);
+                .post(createBuildTypeRequest);
     }
 
-    public static CreateBuildConfigurationResponse createBuildConfiguration(String projectId, CreateUserResponse user) {
+    public static CreateBuildTypeResponse createBuildType(String projectId, CreateUserResponse user) {
 
-        return new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+        return new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .post(CreateBuildConfigurationRequest.createBuildConfig(projectId));
+                .post(CreateBuildTypeRequest.createBuildConfig(projectId));
     }
 
-    public static void deleteBuildConfiguration(String buildId, CreateUserResponse user) {
+    public static void deleteBuildType(String buildId, CreateUserResponse user) {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
@@ -56,7 +56,7 @@ public class BuildManageSteps {
                 .delete(buildId);
     }
 
-    public static void deleteBuildConfigurationQuietly(String buildId, CreateUserResponse user) {
+    public static void deleteBuildTypeQuietly(String buildId, CreateUserResponse user) {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
