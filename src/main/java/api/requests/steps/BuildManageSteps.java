@@ -19,6 +19,20 @@ public class BuildManageSteps {
                 .post(createBuildConfigurationRequest);
     }
 
+    public static CreateBuildConfigurationResponse createBuildConfiguration(
+            String projectId,
+            String buildId,
+            String buildName,
+            CreateUserResponse user) {
+        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, projectId);
+
+        return new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+                RequestSpecs.authAsUser(user),
+                Endpoint.BUILD_TYPES,
+                ResponseSpecs.requestReturnsOk())
+                .post(createBuildConfigurationRequest);
+    }
+
     public static CreateBuildConfigurationResponse createBuildConfiguration(String projectId, CreateUserResponse user) {
 
         return new ValidatedCrudRequester<CreateBuildConfigurationResponse>(

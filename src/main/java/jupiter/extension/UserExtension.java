@@ -2,6 +2,7 @@ package jupiter.extension;
 
 import api.models.CreateUserResponse;
 import api.requests.steps.AdminSteps;
+import common.generators.TestDataGenerator;
 import jupiter.annotation.User;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -12,19 +13,32 @@ public class UserExtension implements ParameterResolver, AfterEachCallback {
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
 
-        User user = AnnotationSupport.findAnnotation(parameterContext.getParameter(), User.class).get();
+        User anno = AnnotationSupport.findAnnotation(parameterContext.getParameter(), User.class).get();
 
-        CreateUserResponse userWithRole = AdminSteps.createUserWithRole(user.role());
+        String username = anno.username().equals("default") ? TestDataGenerator.generateUsername() : anno.username();
+        String password = anno.password().equals("default") ? TestDataGenerator.generatePassword() : anno.password();
 
-        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), userWithRole);
+        CreateUserResponse user;
 
-        return userWithRole;
+        if (anno.useExisting()) {
+            user = AdminSteps.getUserInfoByUsername(username);
+            user.setTestData(CreateUserResponse.TestData.builder().password(password).build());
+        } else {
+            user = AdminSteps.createUserWithRole(username, password, anno.role());
+        }
+
+        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), user);
+        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId() + ":cleanup", anno.addToCleanup() && !anno.useExisting()
+        );
+        return user;
     }
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         CreateUserResponse response = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class);
-        if (response != null) {
+        Boolean cleanup = context.getStore(NAMESPACE).get(context.getUniqueId() + ":cleanup", Boolean.class);
+
+        if (Boolean.TRUE.equals(cleanup) && response != null) {
             AdminSteps.deleteUser(response.getId());
         }
     }

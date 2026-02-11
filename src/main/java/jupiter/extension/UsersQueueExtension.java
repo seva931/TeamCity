@@ -36,12 +36,6 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
             USER_POOL_QUEUE.add(user);
             USER_POOL_LIST.add(user);
         }
-
-        context.getRoot().getStore(NAMESPACE).put("cleanup", (ExtensionContext.Store.CloseableResource) () -> {
-            for (CreateUserResponse user : USER_POOL_LIST) {
-                AdminSteps.deleteUser(user.getId());
-            }
-        });
     }
 
     @Override
@@ -49,20 +43,33 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
         WithUsersQueue anno = AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), WithUsersQueue.class)
                 .orElse(null);
 
-        if (anno == null) {
-            throw new ExtensionConfigurationException("Не задана аннотация @WithUsersQueue над методом");
+        if (anno != null) {
+            if (USER_POOL_QUEUE.isEmpty()) {
+                throw new ExtensionConfigurationException("Очередь пуста: увеличь users.pool.size или уменьшай параллелизм");
+            }
+
+            if (anno.addToCleanup()) {
+                context.getRoot().getStore(NAMESPACE).getOrComputeIfAbsent(
+                        "cleanup",
+                        key -> (ExtensionContext.Store.CloseableResource) () -> {
+                            for (CreateUserResponse user : USER_POOL_LIST) {
+                                AdminSteps.deleteUser(user.getId());
+                            }
+                        }
+                );
+            }
+            context.getStore(NAMESPACE).put(context.getUniqueId(), USER_POOL_QUEUE.poll());
         }
 
-        if (USER_POOL_QUEUE.isEmpty()) {
-            throw new ExtensionConfigurationException("Очередь пуста: увеличь users.pool.size или уменьшай параллелизм");
-        }
 
-        context.getStore(NAMESPACE).put(context.getUniqueId(), USER_POOL_QUEUE.poll());
     }
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-        USER_POOL_QUEUE.add(context.getStore(NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class));
+        CreateUserResponse response = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class);
+        if(response != null) {
+            USER_POOL_QUEUE.add(context.getStore(NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class));
+        }
     }
 
     @Override

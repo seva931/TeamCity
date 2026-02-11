@@ -4,8 +4,10 @@ import api.models.CreateBuildConfigurationResponse;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
 import api.requests.steps.BuildManageSteps;
+import common.generators.TestDataGenerator;
 import jupiter.annotation.Build;
 import org.junit.jupiter.api.extension.*;
+import org.junit.platform.commons.support.AnnotationSupport;
 
 public class BuildExtension implements AfterEachCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE =
@@ -22,9 +24,26 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
             throw new ExtensionConfigurationException("User and Project annotation are mandatory");
         }
 
-        CreateBuildConfigurationResponse buildConfiguration = BuildManageSteps.createBuildConfiguration(project.getId(), user);
+        Build anno = AnnotationSupport.findAnnotation(parameterContext.getParameter(), Build.class).get();
+
+        String projectId = anno.projectId().equals("default") ? project.getId() : anno.projectId();
+        String buildName = anno.buildName().equals("default") ? TestDataGenerator.generateBuildName() : anno.buildName();
+        String buildId = anno.buildId().equals("default") ? TestDataGenerator.generateBuildId() : anno.buildId();
+
+        CreateBuildConfigurationResponse buildConfiguration;
+        if (anno.useExisting()) {
+            buildConfiguration = CreateBuildConfigurationResponse.builder()
+                    .id(buildId)
+                    .name(buildName)
+                    .projectId(projectId)
+                    .build();
+        } else {
+            buildConfiguration = BuildManageSteps.createBuildConfiguration(projectId, buildId, buildName, user);
+        }
 
         extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), buildConfiguration);
+        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId() + ":cleanup",
+                anno.addToCleanup() && !anno.useExisting());
 
         return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), CreateBuildConfigurationResponse.class);
     }
@@ -32,9 +51,9 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         CreateBuildConfigurationResponse build = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateBuildConfigurationResponse.class);
-
         CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class);
-        if (build != null) {
+        Boolean cleanup = context.getStore(NAMESPACE).get(context.getUniqueId() + ":cleanup", Boolean.class);
+        if (Boolean.TRUE.equals(cleanup) && build != null) {
             BuildManageSteps.deleteBuildConfigurationQuietly(build.getId(), user);
         }
     }
