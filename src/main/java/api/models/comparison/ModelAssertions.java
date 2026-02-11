@@ -2,6 +2,8 @@ package api.models.comparison;
 
 import org.assertj.core.api.AbstractAssert;
 
+import java.util.List;
+
 public class ModelAssertions extends AbstractAssert<ModelAssertions, Object> {
 
     private final Object request;
@@ -19,20 +21,37 @@ public class ModelAssertions extends AbstractAssert<ModelAssertions, Object> {
 
     public ModelAssertions match() {
         ModelComparisonConfigLoader configLoader = new ModelComparisonConfigLoader("model-comparison.properties");
-        ModelComparisonConfigLoader.ComparisonRule rule = configLoader.getRuleFor(request.getClass());
+        List<ModelComparisonConfigLoader.ComparisonRule> rules = configLoader.getRulesFor(request.getClass());
 
-        if (rule != null) {
-            ModelComparator.ComparisonResult result = ModelComparator.compareFields(
-                    request,
-                    response,
-                    rule.getFieldMappings()
-            );
+        if (rules.isEmpty()) {
+            failWithMessage("No comparison rules found for class %s", request.getClass().getSimpleName());
+        }
 
-            if (!result.isSuccess()) {
-                failWithMessage("Model comparison failed with mismatched fields:\n%s", result);
+        boolean foundMatchingRule = false;
+
+        for (ModelComparisonConfigLoader.ComparisonRule rule : rules) {
+            // Проверяем, подходит ли это правило для текущего response
+            if (rule.getResponseClassSimpleName().equals(response.getClass().getSimpleName())) {
+                foundMatchingRule = true;
+
+                ModelComparator.ComparisonResult result = ModelComparator.compareFields(
+                        request,
+                        response,
+                        rule.getFieldMappings()
+                );
+
+                if (!result.isSuccess()) {
+                    failWithMessage("Model comparison failed for response %s with mismatched fields:\n%s",
+                            response.getClass().getSimpleName(), result);
+                }
+
+                break; // Нашли подходящее правило и успешно сравнили
             }
-        } else {
-            failWithMessage("No comparison rule found for class %s", request.getClass().getSimpleName());
+        }
+
+        if (!foundMatchingRule) {
+            failWithMessage("No matching comparison rule found for request %s and response %s",
+                    request.getClass().getSimpleName(), response.getClass().getSimpleName());
         }
 
         return this;

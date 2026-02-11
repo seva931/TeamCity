@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateBuildConfigurationRequest extends BaseModel {
+public class CreateBuildTypeRequest extends BaseModel {
     private String id;
     private String name;
     private String projectId;

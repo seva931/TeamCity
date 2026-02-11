@@ -1,8 +1,8 @@
 package api.sample;
 
 import api.BaseTest;
-import api.models.CreateBuildConfigurationRequest;
-import api.models.CreateBuildConfigurationResponse;
+import api.models.CreateBuildTypeRequest;
+import api.models.CreateBuildTypeResponse;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
 import api.requests.skeleton.Endpoint;
@@ -30,15 +30,15 @@ public class SampleTest extends BaseTest {
 
         String buildId = project.getId() + "_" + buildName;
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, project.getId());
+        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, project.getId());
 
-        CreateBuildConfigurationResponse createBuildConfigurationResponse = new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+        CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .post(createBuildConfigurationRequest);
+                .post(createBuildTypeRequest);
 
-        assertThat(createBuildConfigurationRequest)
+        assertThat(createBuildTypeRequest)
                 .usingRecursiveComparison()
                 .comparingOnlyFields("id", "name", "ProjectId");
     }

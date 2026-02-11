@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
-    public class ManageBuildConfigurationTest extends BaseTest {
+    public class ManageBuildTypeTest extends BaseTest {
 
     @DisplayName("Позитивный тест: создание билд конфигурации")
     @WithUsersQueue
@@ -31,20 +31,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, project.getId());
+        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, project.getId());
 
-        CreateBuildConfigurationResponse createBuildConfigurationResponse = new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+        CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .post(createBuildConfigurationRequest);
+                .post(createBuildTypeRequest);
 
-        ModelAssertions.assertThatModels(createBuildConfigurationRequest, createBuildConfigurationResponse).match();
+        ModelAssertions.assertThatModels(createBuildTypeRequest, createBuildTypeResponse).match();
 
-        CreateBuildConfigurationResponse createdBuild = BuildManageSteps.getAllBuilds().stream()
-                .filter(build -> build.getId().equals(createBuildConfigurationResponse.getId())).findFirst().get();
+        CreateBuildTypeResponse createdBuild = BuildManageSteps.getAllBuilds().stream()
+                .filter(build -> build.getId().equals(createBuildTypeResponse.getId())).findFirst().get();
 
-        ModelAssertions.assertThatModels(createBuildConfigurationRequest, createdBuild).match();
+        ModelAssertions.assertThatModels(createBuildTypeRequest, createdBuild).match();
     }
 
     @DisplayName("Негативный тест: создание билд конфигурации с именем уже созданной конфигурации")
@@ -54,18 +54,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
     public void userCanNotCreateBuildConfigurationWithSameNameTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        BuildManageSteps.createBuildType(project.getId(), buildId, buildName);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId + "1", buildName, project.getId());
+        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId + "1", buildName, project.getId());
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.badRequestWithErrorText(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getFormatedText(buildName, project.getName())))
-                .post(createBuildConfigurationRequest);
+                .post(createBuildTypeRequest);
 
         boolean isFind = BuildManageSteps.getAllBuilds().stream()
-                .anyMatch(build -> build.getId().equals(createBuildConfigurationRequest.getId()));
+                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
 
         assertFalse(isFind);
     }
@@ -78,23 +78,25 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
 
-        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = new ValidatedCrudRequester<GetInfoBuildConfigurationResponse>(
+        GetInfoBuildTypeResponse getInfoBuildTypeResponse = new ValidatedCrudRequester<GetInfoBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.requestReturnsOk())
                 .get(buildId);
 
-        softly.assertThat(getInfoBuildConfigurationResponse.getId())
+        ModelAssertions.assertThatModels(createBuildTypeRequest, getInfoBuildTypeResponse).match();
+
+        softly.assertThat(getInfoBuildTypeResponse.getId())
                 .as("Поле id")
                 .isEqualTo(buildId);
 
-        softly.assertThat(getInfoBuildConfigurationResponse.getName())
+        softly.assertThat(getInfoBuildTypeResponse.getName())
                 .as("Поле name")
                 .isEqualTo(buildName);
 
-        softly.assertThat(getInfoBuildConfigurationResponse.getProjectId())
+        softly.assertThat(getInfoBuildTypeResponse.getProjectId())
                 .as("Поле ProjectId")
                 .isEqualTo(project.getId());
     }
@@ -120,7 +122,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        BuildManageSteps.createBuildType(project.getId(), buildId, buildName);
 
         GetBuildListInfoResponse getBuildListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
@@ -144,11 +146,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        BuildManageSteps.createBuildType(project.getId(), buildId, buildName);
 
         //проверка, что конфигурация создалась
-        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
-        softly.assertThat(getInfoBuildConfigurationResponse.getId())
+        GetInfoBuildTypeResponse getInfoBuildTypeResponse = BuildManageSteps.getInfoBuildType(buildId, user);
+        softly.assertThat(getInfoBuildTypeResponse.getId())
                 .as("Поле id")
                 .isEqualTo(buildId);
 
@@ -187,11 +189,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        BuildManageSteps.createBuildType(project.getId(), buildId, buildName);
 
         //проверка, что конфигурация создалась
-        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
-        softly.assertThat(getInfoBuildConfigurationResponse.getId())
+        GetInfoBuildTypeResponse getInfoBuildTypeResponse = BuildManageSteps.getInfoBuildType(buildId, user);
+        softly.assertThat(getInfoBuildTypeResponse.getId())
                 .as("Поле id")
                 .isEqualTo(buildId);
 

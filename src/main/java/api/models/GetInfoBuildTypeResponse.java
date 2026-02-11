@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GetInfoBuildConfigurationResponse extends BaseModel {
+public class GetInfoBuildTypeResponse extends BaseModel {
     private String id;
     private String name;
     private String projectName;

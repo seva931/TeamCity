@@ -6,7 +6,7 @@ import java.util.*;
 
 public class ModelComparisonConfigLoader {
 
-    private final Map<String, ComparisonRule> rules = new HashMap<>();
+    private final Map<String, List<ComparisonRule>> rules = new HashMap<>();
 
     public ModelComparisonConfigLoader(String configFile) {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(configFile)) {
@@ -15,22 +15,41 @@ public class ModelComparisonConfigLoader {
             }
             Properties props = new Properties();
             props.load(input);
+
             for (String key : props.stringPropertyNames()) {
-                String[] target = props.getProperty(key).split(":");
-                if (target.length != 2) continue;
+                // Поддерживаем формат: RequestClass.ResponseClass=field1=field1Response,field2=field2Response
+                String[] keyParts = key.split("\\.");
+                if (keyParts.length != 2) {
+                    // Fallback к старому формату
+                    processOldFormat(key, props.getProperty(key));
+                    continue;
+                }
 
-                String responseClassName = target[0].trim();
-                List<String> fields = Arrays.asList(target[1].split(","));
+                String requestClass = keyParts[0].trim();
+                String responseClass = keyParts[1].trim();
+                List<String> fields = Arrays.asList(props.getProperty(key).split(","));
 
-                rules.put(key.trim(), new ComparisonRule(responseClassName, fields));
+                ComparisonRule rule = new ComparisonRule(responseClass, fields);
+                rules.computeIfAbsent(requestClass, k -> new ArrayList<>()).add(rule);
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to load DTO comparison config", e);
         }
     }
 
-    public ComparisonRule getRuleFor(Class<?> requestClass) {
-        return rules.get(requestClass.getSimpleName());
+    private void processOldFormat(String key, String value) {
+        String[] target = value.split(":");
+        if (target.length != 2) return;
+
+        String responseClassName = target[0].trim();
+        List<String> fields = Arrays.asList(target[1].split(","));
+
+        ComparisonRule rule = new ComparisonRule(responseClassName, fields);
+        rules.computeIfAbsent(key.trim(), k -> new ArrayList<>()).add(rule);
+    }
+
+    public List<ComparisonRule> getRulesFor(Class<?> requestClass) {
+        return rules.getOrDefault(requestClass.getSimpleName(), Collections.emptyList());
     }
 
     public static class ComparisonRule {
@@ -60,5 +79,4 @@ public class ModelComparisonConfigLoader {
             return fieldMappings;
         }
     }
-
 }

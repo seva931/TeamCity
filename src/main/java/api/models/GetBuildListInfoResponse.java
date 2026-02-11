@@ -15,5 +15,5 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetBuildListInfoResponse extends BaseModel{
     private long count;
-    private List<CreateBuildConfigurationResponse> buildType;
+    private List<CreateBuildTypeResponse> buildType;
 }
