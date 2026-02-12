@@ -1,7 +1,9 @@
 package api.requests.steps;
 
 import api.models.BuildQueueResponse;
+import api.models.CreateBuildTypeResponse;
 import api.models.CreateUserResponse;
+import api.models.QueueBuildRequest;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
@@ -10,12 +12,8 @@ import io.restassured.http.ContentType;
 
 public class BuildQueueSteps {
 
-    public static BuildQueueResponse queueBuild(String buildTypeId, CreateUserResponse user) {
-        String body = """
-                {
-                  "buildType": { "id": "%s" }
-                }
-                """.formatted(buildTypeId);
+    public static BuildQueueResponse queueBuild(CreateBuildTypeResponse build, CreateUserResponse user) {
+        QueueBuildRequest body = QueueBuildRequest.of(build.getId());
 
         return new CrudRequester(
                 RequestSpecs.authAsUser(user, ContentType.JSON),
