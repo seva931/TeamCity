@@ -16,6 +16,14 @@ public class AgentSteps {
         ).get();
     }
 
+    public static AgentsResponse getAgents() {
+        return new ValidatedCrudRequester<AgentsResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get();
+    }
+
     public static Agent getAgent(CreateUserResponse user) {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.authAsUser(user),
@@ -24,10 +32,10 @@ public class AgentSteps {
         ).get().getAgent().getFirst();
     }
 
-    public static AgentResponse getAgentById(String username, String password, long agentId) {
+    public static AgentResponse getAgentById(CreateUserResponse user, long agentId) {
 
         return new ValidatedCrudRequester<AgentResponse>(
-                RequestSpecs.authAsUser(username, password),
+                RequestSpecs.authAsUser(user.getUsername(), user.getTestData().getPassword()),
                 Endpoint.AGENTS_ID,
                 ResponseSpecs.requestReturnsOk()
         ).get(agentId);

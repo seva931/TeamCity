@@ -1,9 +1,6 @@
 package api;
 
-import api.models.AgentResponse;
-import api.models.AgentsResponse;
-import api.models.CreateUserResponse;
-import api.models.ErrorsResponse;
+import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -13,8 +10,11 @@ import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
 import common.data.RoleId;
 import io.restassured.http.ContentType;
+import jupiter.annotation.Agents;
 import jupiter.annotation.User;
+import jupiter.annotation.WithAgent;
 import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.AgentExtension;
 import jupiter.extension.UserExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
@@ -22,17 +22,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @ExtendWith({
         UsersQueueExtension.class,
-        UserExtension.class
+        UserExtension.class,
+        AgentExtension.class,
 })
 public class AgentsTest extends BaseTest {
 
     private static final long NON_EXISTENT_AGENT_ID = 999_999L;
 
     @WithUsersQueue
+    @WithAgent
     @Test
     void shouldProvideListOfAvailableAgents(CreateUserResponse user) {
         AgentsResponse response = new ValidatedCrudRequester<AgentsResponse>(
@@ -54,10 +58,10 @@ public class AgentsTest extends BaseTest {
 
     @WithUsersQueue
     @ParameterizedTest
+    @WithAgent(count = 2)
     @CsvSource({"false,false", "true,true"})
-    void shouldDisableOrEnableAgentByLocator(String bodyMessage, String responseText, CreateUserResponse user) {
-        AgentsResponse agents = AgentSteps.getAgents(user);
-        long agentId = agents.getAgent().getFirst().getId();
+    void shouldDisableOrEnableAgentByLocator(String bodyMessage, String responseText, CreateUserResponse user, @Agents List<Agent> agents) {
+        long agentId = agents.getFirst().getId();
 
         String response = new CrudRequester(
 
@@ -74,7 +78,7 @@ public class AgentsTest extends BaseTest {
                 .as("текст в запросе и текст в ответе совпадают")
                 .isEqualTo(responseText);
 
-        AgentResponse agentById = AgentSteps.getAgentById(user.getUsername(), user.getTestData().getPassword(), agentId);
+        AgentResponse agentById = AgentSteps.getAgentById(user, agentId);
         softly.assertThat(agentById.isEnabled())
                 .as("Поле enabled")
                 .isEqualTo(Boolean.parseBoolean(responseText));

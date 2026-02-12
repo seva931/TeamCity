@@ -31,7 +31,7 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
             return;
         }
 
-        for (int i = 0; i < POOL_SIZE - 1; i++) {
+        for (int i = 0; i < POOL_SIZE; i++) {
             CreateUserResponse user = AdminSteps.createUserWithRole(RoleId.SYSTEM_ADMIN);
             USER_POOL_QUEUE.add(user);
             USER_POOL_LIST.add(user);
@@ -60,8 +60,6 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
             }
             context.getStore(NAMESPACE).put(context.getUniqueId(), USER_POOL_QUEUE.poll());
         }
-
-
     }
 
     @Override
