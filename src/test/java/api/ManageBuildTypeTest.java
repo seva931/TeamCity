@@ -1,6 +1,7 @@
 package api;
 
 import api.models.*;
+import api.models.comparison.ModelAssertions;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -17,89 +18,82 @@ import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
-    public class ManageBuildConfigurationTest extends BaseTest {
+    public class ManageBuildTypeTest extends BaseTest {
 
     @DisplayName("Позитивный тест: создание билд конфигурации")
     @WithUsersQueue
     @WithProject
     @Test
-    public void userCreateBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userCreateBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId, buildName, project.getId());
+        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, project.getId());
 
-        CreateBuildConfigurationResponse createBuildConfigurationResponse = new ValidatedCrudRequester<CreateBuildConfigurationResponse>(
+        CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .post(createBuildConfigurationRequest);
+                .post(createBuildTypeRequest);
 
-        softly.assertThat(createBuildConfigurationResponse.getId())
-                .as("Поле id")
-                .isEqualTo(buildId);
+        ModelAssertions.assertThatModels(createBuildTypeRequest, createBuildTypeResponse).match();
 
-        softly.assertThat(createBuildConfigurationResponse.getName())
-                .as("Поле name")
-                .isEqualTo(buildName);
+        CreateBuildTypeResponse createdBuild = BuildManageSteps.getAllBuildTypes().stream()
+                .filter(build -> build.getId().equals(createBuildTypeResponse.getId())).findFirst().get();
 
-        softly.assertThat(createBuildConfigurationResponse.getProjectId())
-                .as("Поле ProjectId")
-                .isEqualTo(project.getId());
+        ModelAssertions.assertThatModels(createBuildTypeRequest, createdBuild).match();
     }
 
     @DisplayName("Негативный тест: создание билд конфигурации с именем уже созданной конфигурации")
     @WithUsersQueue
     @WithProject
     @Test
-    public void userCanNotCreateBuildConfigurationWithSameNameTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userCanNotCreateBuildTypeWithSameNameTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        BuildManageSteps.createBuildType(project.getId(), buildId, buildName);
 
-        CreateBuildConfigurationRequest createBuildConfigurationRequest = new CreateBuildConfigurationRequest(buildId + "1", buildName, project.getId());
+        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId + "1", buildName, project.getId());
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.badRequestWithErrorText(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getFormatedText(buildName, project.getName())))
-                .post(createBuildConfigurationRequest);
+                .post(createBuildTypeRequest);
+
+        boolean isFind = BuildManageSteps.getAllBuildTypes().stream()
+                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
+
+        assertFalse(isFind);
     }
 
     @DisplayName("Позитивный тест: получение информации о созданной билд конфигурации")
     @WithUsersQueue
     @WithProject
     @Test
-    public void userGetInfoBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userGetInfoBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
 
-        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = new ValidatedCrudRequester<GetInfoBuildConfigurationResponse>(
+        GetInfoBuildTypeResponse getInfoBuildTypeResponse = new ValidatedCrudRequester<GetInfoBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.requestReturnsOk())
                 .get(buildId);
 
-        softly.assertThat(getInfoBuildConfigurationResponse.getId())
-                .as("Поле id")
-                .isEqualTo(buildId);
-
-        softly.assertThat(getInfoBuildConfigurationResponse.getName())
-                .as("Поле name")
-                .isEqualTo(buildName);
-
-        softly.assertThat(getInfoBuildConfigurationResponse.getProjectId())
-                .as("Поле ProjectId")
-                .isEqualTo(project.getId());
+        ModelAssertions.assertThatModels(createBuildTypeRequest, getInfoBuildTypeResponse).match();
     }
 
     @DisplayName("Негативный тест: получение информации о не существующей билд конфигурации")
     @WithUsersQueue
     @Test
-    public void userGetInfoAboutNotExistBuildConfigurationTest(CreateUserResponse user) {
+    public void userGetInfoAboutNotExistBuildTypeTest(CreateUserResponse user) {
         String buildId = TestDataGenerator.generateBuildId();
 
         new CrudRequester(
@@ -113,41 +107,42 @@ import org.junit.jupiter.api.extension.ExtendWith;
     @WithUsersQueue
     @WithProject
     @Test
-    public void userGetInfoBuildConfigurationsListTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userGetInfoBuildTypeListTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
 
-        GetBuldListInfoResponse getBuldListInfoResponse = new CrudRequester(
+        GetBuildListInfoResponse getBuildListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
                 ResponseSpecs.requestReturnsOk())
-                .get().extract().as(GetBuldListInfoResponse.class);
+                .get().extract().as(GetBuildListInfoResponse.class);
 
-        softly.assertThat(getBuldListInfoResponse.getCount())
+        softly.assertThat(getBuildListInfoResponse.getCount())
                 .as("Поле count")
                 .isNotNull();
-        softly.assertThat(getBuldListInfoResponse.getBuildType())
-                .as("Список билд конфигураций существующих")
-                .isNotEmpty();
+
+        boolean isFind = BuildManageSteps.getAllBuildTypes().stream()
+                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
+
+        assertTrue(isFind);
     }
 
     @DisplayName("Позитивный тест: удаление билд конфигурации")
     @WithUsersQueue
     @WithProject
     @Test
-    public void userDeleteBuildConfigurationTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userDeleteBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
 
-        //проверка, что конфигурация создалась
-        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
-        softly.assertThat(getInfoBuildConfigurationResponse.getId())
-                .as("Поле id")
-                .isEqualTo(buildId);
+        boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
+                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
+
+        assertTrue(isFindCreatedBuildType);
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
@@ -155,18 +150,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
                 ResponseSpecs.noContent())
                 .delete(buildId);
 
-        //проверка, что теперь getInfo возвращает ошибку
-        new CrudRequester(
-                RequestSpecs.authAsUser(user),
-                Endpoint.BUILD_TYPES_ID,
-                ResponseSpecs.notFoundWithErrorText(ApiAtributesOfResponse.NO_BUILD_TYPE_ERROR.getFormatedText(buildId)))
-                .get(buildId);
+        boolean isFindDeletedBuildType = BuildManageSteps.getAllBuildTypes().stream()
+                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
+
+        assertFalse(isFindDeletedBuildType);
     }
 
     @DisplayName("Негативный тест: удаление несуществующей билд конфигурации")
     @WithUsersQueue
     @Test
-    public void userDeleteNotExistBuildConfigurationTest(CreateUserResponse user) {
+    public void userDeleteNotExistBuildTypeTest(CreateUserResponse user) {
         String buildId = TestDataGenerator.generateBuildId();
 
         new CrudRequester(
@@ -180,17 +173,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
     @WithUsersQueue
     @WithProject
     @Test
-    public void userDeleteBuildConfigurationWithoutRulesTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userDeleteBuildTypeWithoutRulesTest(CreateUserResponse user, CreateProjectRequest project) {
         String buildName = TestDataGenerator.generateBuildName();
         String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
 
-        BuildManageSteps.createBuildConfiguration(project.getId(), buildId, buildName);
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
 
-        //проверка, что конфигурация создалась
-        GetInfoBuildConfigurationResponse getInfoBuildConfigurationResponse = BuildManageSteps.getInfoBuildConfiguration(buildId, user);
-        softly.assertThat(getInfoBuildConfigurationResponse.getId())
-                .as("Поле id")
-                .isEqualTo(buildId);
+        boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
+                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
+
+        assertTrue(isFindCreatedBuildType);
 
         CreateUserRequest usualUser = AdminSteps.createUserByAdmin(TestDataGenerator.generateUsername(), TestDataGenerator.generatePassword());
 
@@ -199,5 +191,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.forbiddenWithErrorText(ApiAtributesOfResponse.YOU_DONT_HAVE_ENOUGH_PERMISSIONS_ERROR.getFormatedText(project.getId())))
                 .delete(buildId);
+
+        boolean isFindDeletedBuildType = BuildManageSteps.getAllBuildTypes().stream()
+                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
+
+        assertTrue(isFindDeletedBuildType);
     }
 }

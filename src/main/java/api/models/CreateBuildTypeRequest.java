@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateBuildConfigurationRequest extends BaseModel {
+public class CreateBuildTypeRequest extends BaseModel {
     private String id;
     private String name;
     private String projectId;
 
-    public static CreateBuildConfigurationRequest createBuildConfig(String projectId) {
-        return CreateBuildConfigurationRequest.builder()
+    public static CreateBuildTypeRequest createBuildConfig(String projectId) {
+        return CreateBuildTypeRequest.builder()
                 .id(TestDataGenerator.generateBuildId())
                 .name(TestDataGenerator.generateBuildName())
                 .projectId(projectId)
