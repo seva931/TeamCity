@@ -1,7 +1,7 @@
 package api.sample;
 
 import api.BaseTest;
-import api.models.CreateBuildConfigurationResponse;
+import api.models.CreateBuildTypeResponse;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
 import common.data.RoleId;
@@ -30,7 +30,7 @@ public class SampleTest extends BaseTest {
     public void buildSampleTest(
             CreateUserResponse admin,
             CreateProjectRequest project,
-            @Build CreateBuildConfigurationResponse build,
+            @Build CreateBuildTypeResponse build,
             @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user
     ) {
         System.out.println("Building Sample Test");
