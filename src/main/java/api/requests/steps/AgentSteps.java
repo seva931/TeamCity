@@ -1,10 +1,15 @@
 package api.requests.steps;
 
-import api.models.*;
+import api.models.Agent;
+import api.models.AgentResponse;
+import api.models.AgentsResponse;
+import api.models.CreateUserResponse;
 import api.requests.skeleton.Endpoint;
+import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import io.restassured.http.ContentType;
 
 public class AgentSteps {
 
@@ -24,12 +29,46 @@ public class AgentSteps {
         ).get();
     }
 
+    public static AgentsResponse getAllAgents() {
+        return new ValidatedCrudRequester<AgentsResponse>(
+                RequestSpecs.withAdminBasicAuth()
+                        .addQueryParam("locator", "authorized:any,enabled:any")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get();
+    }
+
     public static Agent getAgent(CreateUserResponse user) {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS,
                 ResponseSpecs.requestReturnsOk()
         ).get().getAgent().getFirst();
+    }
+
+    public static String enableDisableAgent(long agentId, String bodyMessage) {
+        return new CrudRequester(
+                RequestSpecs.withAdminBasicAuth()
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
+                Endpoint.AGENTS_ID_ENABLED,
+                ResponseSpecs.requestReturnsOk()
+        ).put(agentId, bodyMessage).extract().asString();
+    }
+
+    public static String authorizeUnauthorizeAgent(long agentId, String bodyMessage) {
+        return new CrudRequester(
+                RequestSpecs.withAdminBasicAuth()
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
+                Endpoint.AGENTS_ID_AUTHORIZED,
+                ResponseSpecs.requestReturnsOk()
+        ).put(agentId, bodyMessage).extract().asString();
     }
 
     public static AgentResponse getAgentById(CreateUserResponse user, long agentId) {

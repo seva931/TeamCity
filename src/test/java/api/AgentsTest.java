@@ -10,10 +10,8 @@ import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
 import common.data.RoleId;
 import io.restassured.http.ContentType;
-import jupiter.annotation.Agents;
+import jupiter.annotation.*;
 import jupiter.annotation.User;
-import jupiter.annotation.WithAgent;
-import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.AgentExtension;
 import jupiter.extension.UserExtension;
 import jupiter.extension.UsersQueueExtension;
@@ -29,7 +27,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @ExtendWith({
         UsersQueueExtension.class,
         UserExtension.class,
-        AgentExtension.class,
+        AgentExtension.class
 })
 public class AgentsTest extends BaseTest {
 
@@ -58,13 +56,15 @@ public class AgentsTest extends BaseTest {
 
     @WithUsersQueue
     @ParameterizedTest
-    @WithAgent(count = 2)
     @CsvSource({"false,false", "true,true"})
-    void shouldDisableOrEnableAgentByLocator(String bodyMessage, String responseText, CreateUserResponse user, @Agents List<Agent> agents) {
+    void shouldDisableOrEnableAgentById(
+            String bodyMessage,
+            String responseText,
+            CreateUserResponse user,
+            @Agents(agents = {@AgentParam}) List<Agent> agents) {
         long agentId = agents.getFirst().getId();
 
         String response = new CrudRequester(
-
                 RequestSpecs.withBasicAuth(user)
                         .setContentType(ContentType.TEXT)
                         .setAccept(ContentType.TEXT)
@@ -85,10 +85,42 @@ public class AgentsTest extends BaseTest {
     }
 
     @WithUsersQueue
+    @ParameterizedTest
+    @CsvSource({"false,false", "true,true"})
+    void shouldAuthorizeOrUnauthorizeAgentById(
+            String bodyMessage,
+            String responseText,
+            CreateUserResponse user,
+            @Agents(agents = {@AgentParam}) List<Agent> agents) {
+        long agentId = agents.getFirst().getId();
+
+        String response = new CrudRequester(
+                RequestSpecs.withBasicAuth(user)
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
+                Endpoint.AGENTS_ID_AUTHORIZED,
+                ResponseSpecs.requestReturnsOk()
+        ).put(agentId, bodyMessage)
+                .extract().asString();
+
+        softly.assertThat(response)
+                .as("текст в запросе и текст в ответе совпадают")
+                .isEqualTo(responseText);
+
+        AgentResponse agentById = AgentSteps.getAgentById(user, agentId);
+
+        softly.assertThat(agentById.isAuthorized())
+                .as("Поле enabled")
+                .isEqualTo(Boolean.parseBoolean(responseText));
+    }
+
+    @WithUsersQueue
     @Test
-    void shouldProvideInfoAboutAgentById(CreateUserResponse user) {
-        AgentsResponse agents = AgentSteps.getAgents(user);
-        long agentId = agents.getAgent().getFirst().getId();
+    void shouldProvideInfoAboutAgentById(
+            CreateUserResponse user,
+            @Agents(agents = {@AgentParam}) List<Agent> agents) {
+        long agentId = agents.getFirst().getId();
 
         AgentResponse response = new ValidatedCrudRequester<AgentResponse>(
                 RequestSpecs.authAsUser(user),
@@ -100,12 +132,19 @@ public class AgentsTest extends BaseTest {
                 .as("Поля id и name")
                 .usingRecursiveComparison()
                 .comparingOnlyFields("id", "name")
-                .isEqualTo(agents.getAgent().getFirst());
+                .isEqualTo(agents.getFirst());
     }
 
     @WithUsersQueue
     @Test
-    void shouldReturnListOfUnauthorizedAgents(CreateUserResponse user) {
+    void shouldReturnListOfUnauthorizedAgents(
+            CreateUserResponse user,
+            @Agents(agents = {
+                    @AgentParam(isAuthorized = "false"),
+                    @AgentParam
+            }) List<Agent> agents) {
+        Agent unauthAgent = agents.getFirst();
+        Agent authAgent = agents.get(1);
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -117,6 +156,103 @@ public class AgentsTest extends BaseTest {
                 Endpoint.AGENTS,
                 ResponseSpecs.requestReturnsOk()
         ).get().extract().as(AgentsResponse.class);
+
+        softly.assertThat(response.getAgent())
+                .as("Содержит unauthorized агента")
+                .contains(unauthAgent);
+        softly.assertThat(response.getAgent())
+                .as("Не содержит authorized агента")
+                .doesNotContain(authAgent);
+    }
+
+    @WithUsersQueue
+    @Test
+    void shouldReturnListOfAuthorizedAgents(
+            CreateUserResponse user,
+            @Agents(agents = {
+                    @AgentParam(isAuthorized = "false"),
+                    @AgentParam
+            }) List<Agent> agents) {
+        Agent unauthAgent = agents.getFirst();
+        Agent authAgent = agents.get(1);
+
+        AgentsResponse response = new CrudRequester(
+                RequestSpecs
+                        .withBasicAuth(user)
+                        .addQueryParam("locator", "authorized:true")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get().extract().as(AgentsResponse.class);
+
+        softly.assertThat(response.getAgent())
+                .as("Содержит unauthorized агента")
+                .contains(authAgent);
+        softly.assertThat(response.getAgent())
+                .as("Не содержит authorized агента")
+                .doesNotContain(unauthAgent);
+    }
+
+    @WithUsersQueue
+    @Test
+    void shouldReturnListOfEnabledAgents(
+            CreateUserResponse user,
+            @Agents(agents = {
+                    @AgentParam(isEnabled = "false"),
+                    @AgentParam
+            }) List<Agent> agents) {
+        Agent disabledAgent = agents.getFirst();
+        Agent enabledAgent = agents.get(1);
+
+        AgentsResponse response = new CrudRequester(
+                RequestSpecs
+                        .withBasicAuth(user)
+                        .addQueryParam("locator", "enabled:true")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get().extract().as(AgentsResponse.class);
+
+        softly.assertThat(response.getAgent())
+                .as("Содержит enabled агента")
+                .contains(enabledAgent);
+        softly.assertThat(response.getAgent())
+                .as("Не содержит disabled агента")
+                .doesNotContain(disabledAgent);
+    }
+
+    @WithUsersQueue
+    @Test
+    void shouldReturnListOfDisabledAgents(
+            CreateUserResponse user,
+            @Agents(agents = {
+                    @AgentParam(isEnabled = "false"),
+                    @AgentParam
+            }) List<Agent> agents) {
+        Agent disabledAgent = agents.getFirst();
+        Agent enabledAgent = agents.get(1);
+
+        AgentsResponse response = new CrudRequester(
+                RequestSpecs
+                        .withBasicAuth(user)
+                        .addQueryParam("locator", "enabled:false")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get().extract().as(AgentsResponse.class);
+
+        softly.assertThat(response.getAgent())
+                .as("Содержит disabled агента")
+                .contains(disabledAgent);
+        softly.assertThat(response.getAgent())
+                .as("Не содержит enabled агента")
+                .doesNotContain(enabledAgent);
     }
 
     @WithUsersQueue
