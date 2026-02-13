@@ -6,6 +6,7 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.generators.RandomModelGenerator;
 
 import java.util.List;
 
@@ -15,6 +16,18 @@ public class BuildManageSteps {
 
     public static CreateBuildTypeResult createBuildType(String projectId, String buildId, String buildName) {
         CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, projectId);
+
+        CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.BUILD_TYPES,
+                ResponseSpecs.requestReturnsOk())
+                .post(createBuildTypeRequest);
+
+        return new CreateBuildTypeResult(createBuildTypeRequest, createBuildTypeResponse);
+    }
+
+    public static CreateBuildTypeResult createBuildType(String projectId) {
+        CreateBuildTypeRequest createBuildTypeRequest = RandomModelGenerator.builder(CreateBuildTypeRequest.class).withProjectId(projectId).build();
 
         CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.adminSpec(),
