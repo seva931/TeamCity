@@ -119,6 +119,10 @@ public class RandomModelGenerator {
             return with("projectId", projectId);
         }
 
+        public ModelBuilder<T> withName(String name) {
+            return with("name", name);
+        }
+
         public T build() {
             return RandomModelGenerator.generate(clazz, overrides);
         }
