@@ -6,15 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class AddNewRootResponse extends BaseModel{
-    private String id;
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateVcsRootRequest extends BaseModel {
     private String name;
     private String vcsName;
-    private String href;
-    private VcsProject project;
+    private ProjectModel project;
     private VcsProperties properties;
-    private VcsRootInstances vcsRootInstances;
 }

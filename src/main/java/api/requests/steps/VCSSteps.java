@@ -29,6 +29,7 @@ public class VCSSteps {
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.CREATE_NEW_ROOT, ResponseSpecs.ok())
                 .post(request).extract().as(AddNewRootResponse.class);
     }
+
     public static void createNewRoot(String name) {
         AddNewRootRequest request = new AddNewRootRequest();
         request.setName(name);
