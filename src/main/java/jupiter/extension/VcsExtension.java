@@ -72,7 +72,20 @@ public class VcsExtension implements ParameterResolver, AfterEachCallback, Befor
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
+        AddNewRootResponse addNewRootResponse = context.getStore(NAMESPACE).get(context.getUniqueId(), AddNewRootResponse.class);
+        CreateUserResponse createUserResponse = context.getStore(
+                UsersQueueExtension.NAMESPACE).get(context.getUniqueId(),
+                CreateUserResponse.class
+        );
+        if (addNewRootResponse != null && createUserResponse != null) {
+            String vcsLocator = addNewRootResponse.getId();
 
+            new CrudRequester(
+                    RequestSpecs.authAsUser(createUserResponse),
+                    Endpoint.VCS_ROOTS_ID,
+                    ResponseSpecs.deletesQuietly()
+            ).delete(vcsLocator);
+        }
     }
 
     @Override
