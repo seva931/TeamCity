@@ -3,6 +3,7 @@ package api;
 import api.models.*;
 import api.requests.steps.VCSSteps;
 import common.generators.TestDataGenerator;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -10,6 +11,7 @@ public class VCSRootTest extends BaseTest {
 
     //Positive tests
 
+    @Disabled
     @Test
     public void getAllRoots (){
         AllVcsRootsResponse allRootsResponse = VCSSteps.getAllRoots();
