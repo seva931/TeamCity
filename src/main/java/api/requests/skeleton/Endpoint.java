@@ -25,7 +25,11 @@ public enum Endpoint {
     AGENTS_ID_AUTHORIZED("/agents/id:%s/authorized", BaseModel.class, BaseModel.class),
     PROJECT_NAME("/projects/id:%s/parameters/name", BaseModel.class, BaseModel.class),
     USERS_ID_PERMISSIONS("/users/id:%s/permissions", BaseModel.class, PermissionsResponse.class),
-    USERS_ID_ROLES("/users/id:%s/roles", BaseModel.class, Role.class);
+    USERS_ID_ROLES("/users/id:%s/roles", BaseModel.class, Role.class),
+    BUILD_QUEUE("/buildQueue", BaseModel.class, BuildQueueResponse.class),
+    BUILD_QUEUE_ID("/buildQueue/id:%s", BaseModel.class, BaseModel.class);
+
+
 
 
     private final String url;

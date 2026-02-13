@@ -10,6 +10,7 @@ import api.requests.steps.BuildManageSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
+import common.generators.RandomModelGenerator;
 import common.generators.TestDataGenerator;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
@@ -29,10 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithProject
     @Test
     public void userCreateBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
-        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-
-        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, project.getId());
+        CreateBuildTypeRequest createBuildTypeRequest = RandomModelGenerator.builder(CreateBuildTypeRequest.class).withProjectId(project.getId()).build();
 
         CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
@@ -53,20 +51,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithProject
     @Test
     public void userCanNotCreateBuildTypeWithSameNameTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
-        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-        BuildManageSteps.createBuildType(project.getId(), buildId, buildName);
+        CreateBuildTypeRequest createFirstBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
-        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId + "1", buildName, project.getId());
-
+        CreateBuildTypeRequest createSecondBuildTypeRequest = RandomModelGenerator.builder(CreateBuildTypeRequest.class).withName(createFirstBuildTypeRequest.getName()).withProjectId(project.getId()).build();
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES,
-                ResponseSpecs.badRequestWithErrorText(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getFormatedText(buildName, project.getName())))
-                .post(createBuildTypeRequest);
+                ResponseSpecs.badRequestWithErrorText(ApiAtributesOfResponse.BUILD_CONFIGURATION_WITH_SUCH_NAME_ALREADY_EXISTS_ERROR.getFormatedText(createFirstBuildTypeRequest.getName(), project.getName())))
+                .post(createSecondBuildTypeRequest);
 
         boolean isFind = BuildManageSteps.getAllBuildTypes().stream()
-                .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
+                .anyMatch(build -> build.getId().equals(createSecondBuildTypeRequest.getId()));
 
         assertFalse(isFind);
     }
@@ -76,16 +71,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithProject
     @Test
     public void userGetInfoBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
-        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-
-        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         GetInfoBuildTypeResponse getInfoBuildTypeResponse = new ValidatedCrudRequester<GetInfoBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.requestReturnsOk())
-                .get(buildId);
+                .get(createBuildTypeRequest.getId());
 
         ModelAssertions.assertThatModels(createBuildTypeRequest, getInfoBuildTypeResponse).match();
     }
@@ -108,10 +100,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithProject
     @Test
     public void userGetInfoBuildTypeListTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
-        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-
-        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         GetBuildListInfoResponse getBuildListInfoResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
@@ -134,10 +123,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithProject
     @Test
     public void userDeleteBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
-        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-
-        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
@@ -148,7 +134,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.noContent())
-                .delete(buildId);
+                .delete(createBuildTypeRequest.getId());
 
         boolean isFindDeletedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
@@ -174,10 +160,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithProject
     @Test
     public void userDeleteBuildTypeWithoutRulesTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
-        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-
-        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId(), buildId, buildName).request();
+        CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
@@ -190,7 +173,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 RequestSpecs.authAsUser(usualUser.getUsername(), usualUser.getPassword()),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.forbiddenWithErrorText(ApiAtributesOfResponse.YOU_DONT_HAVE_ENOUGH_PERMISSIONS_ERROR.getFormatedText(project.getId())))
-                .delete(buildId);
+                .delete(createBuildTypeRequest.getId());
 
         boolean isFindDeletedBuildType = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getId().equals(createBuildTypeRequest.getId()));
