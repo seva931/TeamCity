@@ -1,5 +1,6 @@
 package api.models;
 
+import common.generators.GeneratingRule;
 import common.generators.TestDataGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class CreateBuildTypeRequest extends BaseModel {
+    @GeneratingRule(regex = "^[A-Za-z]{8,12}$")
     private String id;
+    @GeneratingRule(regex = "^[A-Za-z]{8,12}$")
     private String name;
     private String projectId;
 
