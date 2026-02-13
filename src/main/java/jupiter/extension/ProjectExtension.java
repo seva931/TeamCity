@@ -38,7 +38,7 @@ public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
                     .get(context.getUniqueId(), CreateUserResponse.class);
 
             if (user == null) {
-                throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue");
+                throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue или подключите UserQueueExtension в @ExtendsWith");
             }
 
             String parentProjectId = anno.parentProjectId().equals("default") ? ProjectData.PARENT_PROJECT.value : anno.parentProjectId();
