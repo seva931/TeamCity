@@ -34,17 +34,17 @@ public class SampleTest extends BaseTest {
             @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user,
             AddNewRootResponse vcs
     ) {
-//        System.out.println("Building Sample Test");
-//        System.out.println(build);
-//
-//        System.out.println("Project Sample Test");
-//        System.out.println(project);
-//
-//        System.out.println("User Sample Test");
-//        System.out.println(user);
-//
-//        System.out.println("Admin Sample Test");
-//        System.out.println(admin);
+        System.out.println("Building Sample Test");
+        System.out.println(build);
+
+        System.out.println("Project Sample Test");
+        System.out.println(project);
+
+        System.out.println("User Sample Test");
+        System.out.println(user);
+
+        System.out.println("Admin Sample Test");
+        System.out.println(admin);
 
         System.out.println("VCS Sample Test");
         System.out.println(vcs);

@@ -5,6 +5,7 @@ import api.models.CreateUserResponse;
 import api.requests.steps.AdminSteps;
 import common.data.RoleId;
 import jupiter.annotation.User;
+import jupiter.annotation.WithBuild;
 import jupiter.annotation.WithUsersQueue;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -42,6 +43,15 @@ public class UsersQueueExtension implements BeforeAllCallback, BeforeEachCallbac
     public void beforeEach(ExtensionContext context) throws Exception {
         WithUsersQueue anno = AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), WithUsersQueue.class)
                 .orElse(null);
+
+        if(anno == null) {
+            WithBuild build = AnnotationSupport.findAnnotation(
+                    context.getRequiredTestMethod(), WithBuild.class
+            ).orElse(null);
+            if(build != null) {
+                anno = build.users();
+            }
+        }
 
         if (anno != null) {
             if (USER_POOL_QUEUE.isEmpty()) {

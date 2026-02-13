@@ -1,5 +1,6 @@
 package jupiter.extension;
 
+import api.models.AddNewRootResponse;
 import api.models.CreateBuildTypeResponse;
 import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
@@ -13,12 +14,18 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE =
             ExtensionContext.Namespace.create(BuildExtension.class);
 
-
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
 
-        CreateUserResponse user = extensionContext.getStore(UsersQueueExtension.NAMESPACE).get(extensionContext.getUniqueId(), CreateUserResponse.class);
-        CreateProjectRequest project = extensionContext.getStore(ProjectExtension.NAMESPACE).get(extensionContext.getUniqueId(), CreateProjectRequest.class);
+        CreateUserResponse user = extensionContext.getStore(
+                UsersQueueExtension.NAMESPACE).get(extensionContext.getUniqueId(),
+                CreateUserResponse.class);
+        CreateProjectRequest project = extensionContext.getStore(
+                ProjectExtension.NAMESPACE).get(extensionContext.getUniqueId(),
+                CreateProjectRequest.class);
+        AddNewRootResponse addNewRootResponse = extensionContext.getStore(
+                VcsExtension.NAMESPACE).get(extensionContext.getUniqueId(),
+                AddNewRootResponse.class);
 
         if (user == null || project == null) {
             throw new ExtensionConfigurationException("User and Project annotation are mandatory");
@@ -39,6 +46,10 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
                     .build();
         } else {
             buildConfiguration = BuildManageSteps.createBuildType(projectId, buildId, buildName, user);
+        }
+
+        if(addNewRootResponse != null) {
+            //todo дописать добавление vcs к билду
         }
 
         extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), buildConfiguration);
