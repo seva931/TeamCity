@@ -10,6 +10,7 @@ import api.requests.steps.BuildManageSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
+import common.generators.RandomModelGenerator;
 import common.generators.TestDataGenerator;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
@@ -29,10 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithProject
     @Test
     public void userCreateBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
-        String buildName = TestDataGenerator.generateBuildName();
-        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
-
-        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, project.getId());
+        CreateBuildTypeRequest createBuildTypeRequest = RandomModelGenerator.builder(CreateBuildTypeRequest.class).withProjectId(project.getId()).build();
+//        String buildName = TestDataGenerator.generateBuildName();
+//        String buildId = TestDataGenerator.generateBuildId(project.getId(), buildName);
+//
+//        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, project.getId());
 
         CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
                 RequestSpecs.authAsUser(user),
