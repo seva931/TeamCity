@@ -5,8 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WithUsersQueue {
-    boolean addToCleanup() default true;
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface AgentParam {
+    String isEnabled() default "true";
+
+    String isAuthorized() default "true";
 }

@@ -1,7 +1,6 @@
 package api.specs;
 
 import api.configs.Config;
-import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -25,27 +24,20 @@ public class RequestSpecs {
                 .setBaseUri(Config.getProperty("BaseUrl") + Config.getProperty("api"));
     }
 
-    public static RequestSpecBuilder builder() {
-        return defaultRequestBuilder();
-    }
-
-    public static RequestSpecification authAsUser(String username, String password, RequestSpecBuilder builder) {
-        return builder
-                .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((username + ":" + password)
-                                .getBytes()))
-                .build();
-    }
-
-    public static RequestSpecification authAsUser(String username, String password, ContentType type) {
+    public static RequestSpecBuilder withBasicAuth(CreateUserResponse user) {
         return defaultRequestBuilder()
-                .setContentType(type)
-                .setAccept(type)
                 .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((username + ":" + password)
-                                .getBytes()))
-                .build();
+                        Base64.getEncoder().encodeToString((user.getUsername() + ":" + user.getTestData().getPassword())
+                                .getBytes()));
     }
+
+    public static RequestSpecBuilder withAdminBasicAuth() {
+        return defaultRequestBuilder()
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((Config.getProperty("admin.login") + ":" + Config.getProperty("admin.password"))
+                                .getBytes()));
+    }
+
     public static RequestSpecification authAsUser(CreateUserResponse userResponse, ContentType type) {
         return defaultRequestBuilder()
                 .setContentType(type)
@@ -57,34 +49,20 @@ public class RequestSpecs {
     }
 
     public static RequestSpecification authAsUser(String username, String password) {
-        return authAsUser(username, password, ContentType.JSON);
-    }
-
-    public static RequestSpecification authAsUser(CreateUserRequest user) {
-        return authAsUser(user.getUsername(), user.getPassword(), ContentType.JSON);
+        return defaultRequestBuilder()
+                .setContentType(ContentType.JSON)
+                .setAccept(ContentType.JSON)
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((username + ":" + password)
+                                .getBytes()))
+                .build();
     }
 
     public static RequestSpecification authAsUser(CreateUserResponse user) {
-        return authAsUser(user.getUsername(), user.getTestData().getPassword(), ContentType.JSON);
+        return authAsUser(user.getUsername(), user.getTestData().getPassword());
     }
 
     public static RequestSpecification adminSpec() {
         return authAsUser(Config.getProperty("admin.login"), Config.getProperty("admin.password"));
-    }
-
-    public static RequestSpecification authAsUserWithBuilder(CreateUserRequest user, RequestSpecBuilder requestSpecBuilder) {
-        return requestSpecBuilder
-                .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((user.getUsername() + ":" + user.getPassword())
-                                .getBytes()))
-                .build();
-    }
-
-    public static RequestSpecification authAsUserWithBuilder(CreateUserResponse user, RequestSpecBuilder requestSpecBuilder) {
-        return requestSpecBuilder
-                .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((user.getUsername() + ":" + user.getTestData().getPassword())
-                                .getBytes()))
-                .build();
     }
 }

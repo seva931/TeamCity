@@ -1,12 +1,12 @@
-package jupiter.annotation;
+package common.generators;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WithUsersQueue {
-    boolean addToCleanup() default true;
+@Target(ElementType.FIELD)
+public @interface GeneratingRule {
+    String regex();
 }
