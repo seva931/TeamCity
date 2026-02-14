@@ -16,7 +16,7 @@ public enum Endpoint {
     BUILD_TYPES("/buildTypes", CreateBuildTypeRequest.class, CreateBuildTypeResponse.class),
     BUILD_TYPES_ID("/buildTypes/id:%s", BaseModel.class, GetInfoBuildTypeResponse.class),
     VCS_ROOTS("/vcs-roots", BaseModel.class, AllVcsRootsResponse.class),
-    CREATE_NEW_ROOT("/vcs-roots", AddNewRootRequest.class, AddNewRootResponse.class),
+    VCS_ROOTS_ID("/vcs-roots/id:%s", AddNewRootRequest.class, AddNewRootResponse.class),
     AGENTS("/agents", BaseModel.class, AgentsResponse.class),
     AGENTS_ID("/agents/id:%s", BaseModel.class, AgentResponse.class),
     AGENTS_ID_ENABLED("/agents/id:%s/enabled", BaseModel.class, BaseModel.class),
