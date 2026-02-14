@@ -7,8 +7,10 @@ import api.models.ProjectResponse;
 import api.requests.steps.ProjectManagementSteps;
 import common.data.ProjectData;
 import common.generators.TestDataGenerator;
+import jupiter.annotation.WithBuild;
 import jupiter.annotation.WithProject;
 import org.junit.jupiter.api.extension.*;
+import org.junit.platform.commons.support.AnnotationSupport;
 
 public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
 
@@ -17,23 +19,35 @@ public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        WithProject annotation = context.getRequiredTestMethod().getAnnotation(WithProject.class);
+        WithProject anno = AnnotationSupport.findAnnotation(
+                context.getRequiredTestMethod(),
+                WithProject.class
+        ).orElse(null);
 
-        if (annotation != null) {
+        if (anno == null) {
+            WithBuild build = AnnotationSupport.findAnnotation(
+                    context.getRequiredTestMethod(), WithBuild.class
+            ).orElse(null);
+            if (build != null) {
+                anno = build.project();
+            }
+        }
+
+        if (anno != null) {
             CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE)
                     .get(context.getUniqueId(), CreateUserResponse.class);
 
             if (user == null) {
-                throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue");
+                throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue или подключите UserQueueExtension в @ExtendsWith");
             }
 
-            String parentProjectId = annotation.parentProjectId().equals("default") ? ProjectData.PARENT_PROJECT.value : annotation.parentProjectId();
-            String projectId = annotation.projectId().equals("default") ? TestDataGenerator.generateProjectID() : annotation.projectId();
-            String projectName = annotation.projectName().equals("default") ? TestDataGenerator.generateProjectName() : annotation.projectName();
+            String parentProjectId = anno.parentProjectId().equals("default") ? ProjectData.PARENT_PROJECT.value : anno.parentProjectId();
+            String projectId = anno.projectId().equals("default") ? TestDataGenerator.generateProjectID() : anno.projectId();
+            String projectName = anno.projectName().equals("default") ? TestDataGenerator.generateProjectName() : anno.projectName();
 
             CreateProjectRequest project;
 
-            if(annotation.useExisting()) {
+            if (anno.useExisting()) {
                 ProjectResponse projectById = ProjectManagementSteps.getProjectById(projectId, user);
                 project = CreateProjectRequest.builder()
                         .parentProject(new ParentProject(projectById.getParentProject().getId()))
@@ -57,7 +71,7 @@ public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
 
             context.getStore(NAMESPACE).put(context.getUniqueId(), project);
 
-            if(annotation.addToCleanup() && !annotation.useExisting()) {
+            if (anno.addToCleanup() && !anno.useExisting()) {
                 context.getStore(NAMESPACE).put("project_cleanup", (ExtensionContext.Store.CloseableResource) () -> {
                     ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
                 });
