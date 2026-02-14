@@ -37,7 +37,8 @@ public class TestDataGenerator {
     }
 
     public static String generateVCSName(){
-        return RandomStringUtils.randomAlphabetic(5) + " " +
-                RandomStringUtils.randomAlphabetic(4);
+        return RandomStringUtils.randomAlphabetic(5);
     }
+
+
 }
