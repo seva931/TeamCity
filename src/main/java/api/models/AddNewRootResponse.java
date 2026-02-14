@@ -1,5 +1,7 @@
 package api.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -22,5 +24,4 @@ public class AddNewRootResponse extends BaseModel{
     private VcsProject project;
     private VcsProperties properties;
     private VcsRootInstances vcsRootInstances;
-
 }

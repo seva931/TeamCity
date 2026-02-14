@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class ProjectModel extends BaseModel {
+public class AddBuildStepResponse extends BaseModel {
     private String id;
     private String name;
+    private String type;
+    private BuildStepProperties properties;
 }

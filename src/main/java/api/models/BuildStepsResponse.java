@@ -8,11 +8,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VcsProperties {
-    private List<VcsProperty> property;
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class BuildStepsResponse extends BaseModel {
+    private long count;
+    private List<BuildStep> step;
 }

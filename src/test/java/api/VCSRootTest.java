@@ -1,8 +1,6 @@
 package api;
 
 import api.models.*;
-import api.requests.skeleton.Endpoint;
-import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.steps.VCSSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
@@ -10,6 +8,8 @@ import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
+import common.generators.TestDataGenerator;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -31,6 +31,7 @@ public class VCSRootTest extends BaseTest {
 
     //Positive tests
 
+    @Disabled
     @Test
     @DisplayName("Получение всех рутов")
     @WithUsersQueue

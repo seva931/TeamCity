@@ -10,8 +10,10 @@ import api.requests.steps.BuildManageSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
+import common.data.RoleId;
 import common.generators.RandomModelGenerator;
 import common.generators.TestDataGenerator;
+import jupiter.annotation.User;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.ProjectExtension;
@@ -159,7 +161,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     @WithUsersQueue
     @WithProject
     @Test
-    public void userDeleteBuildTypeWithoutRulesTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userDeleteBuildTypeWithoutRulesTest(@User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user, CreateProjectRequest project) {
         CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
@@ -167,10 +169,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
         assertTrue(isFindCreatedBuildType);
 
-        CreateUserRequest usualUser = AdminSteps.createUserByAdmin(TestDataGenerator.generateUsername(), TestDataGenerator.generatePassword());
-
         new CrudRequester(
-                RequestSpecs.authAsUser(usualUser.getUsername(), usualUser.getPassword()),
+                RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.forbiddenWithErrorText(ApiAtributesOfResponse.YOU_DONT_HAVE_ENOUGH_PERMISSIONS_ERROR.getFormatedText(project.getId())))
                 .delete(createBuildTypeRequest.getId());

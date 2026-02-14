@@ -1,6 +1,5 @@
 package api.requests.steps;
 
-import api.configs.Config;
 import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;

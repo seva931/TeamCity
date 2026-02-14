@@ -28,6 +28,17 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
                 .spec(responseSpecification);
     }
 
+    public ValidatableResponse post(String id, BaseModel model) {
+        var body = model == null ? "" : model;
+        return given()
+                .spec(requestSpecification)
+                .body(body)
+                .post(endpoint.getFormatedUrl(id))
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
     @Override
     public ValidatableResponse get() {
         return given()
@@ -84,6 +95,15 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
         return given()
                 .spec(requestSpecification)
                 .delete(endpoint.getFormatedUrl(id))
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
+    public ValidatableResponse delete(Object...args) {
+        return given()
+                .spec(requestSpecification)
+                .delete(endpoint.getFormatedUrl(args))
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
