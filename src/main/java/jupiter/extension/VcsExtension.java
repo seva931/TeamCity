@@ -71,7 +71,7 @@ public class VcsExtension implements ParameterResolver, AfterEachCallback, Befor
 
             AddNewRootResponse addNewRootResponse = new CrudRequester(
                     RequestSpecs.authAsUser(createUserResponse),
-                    Endpoint.CREATE_NEW_ROOT,
+                    Endpoint.VCS_ROOTS,
                     ResponseSpecs.ok()
             ).post(request)
                     .extract().as(AddNewRootResponse.class);
