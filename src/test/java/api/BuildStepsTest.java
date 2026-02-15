@@ -7,6 +7,9 @@ import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.requests.steps.BuildStepsSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.BuildStepPropertyData;
+import common.data.BuildStepTypeData;
+import common.generators.RandomModelGenerator;
 import jupiter.annotation.Build;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
@@ -16,6 +19,8 @@ import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @ExtendWith({
@@ -23,37 +28,48 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
         BuildExtension.class,
         ProjectExtension.class
 })
-@ExtendWith({UsersQueueExtension.class})
 public class BuildStepsTest extends BaseTest {
 
     @WithProject
     @WithUsersQueue
     @Test
     void shouldReturnZeroBuildStepsInNewlyCreatedBuild(@Build CreateBuildTypeResponse build, CreateUserResponse user) {
+        String buildId = build.getId();
+
         BuildStepsResponse response = new ValidatedCrudRequester<BuildStepsResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID_STEPS,
                 ResponseSpecs.ok()
-        ).get(build.getId());
+        ).get(buildId);
 
         assertThat(response.getCount())
                 .as("Поле count")
                 .isEqualTo(0);
     }
 
-    @WithProject
     @WithUsersQueue
     @Test
     void shouldCreateStepForExistingBuild(@Build CreateBuildTypeResponse build, CreateUserResponse user) {
 
         BuildStepsResponse allStepsBefore = BuildStepsSteps.getAllSteps(user, build);
 
-        AddBuildStepRequest request = AddBuildStepRequest.sample();
+        String buildId = build.getId();
+        AddBuildStepRequest request = RandomModelGenerator.generate(AddBuildStepRequest.class);
+        request.setType(BuildStepTypeData.SIMPLE_RUNNER.getType());
+        BuildStepProperties properties = BuildStepProperties.builder().property(
+                List.of(
+                        BuildStepProperty.builder()
+                                .name(BuildStepPropertyData.SCRIPT_CONTENT.getName())
+                                .value("echo Hello")
+                                .build())
+        ).build();
+        request.setProperties(properties);
+
         AddBuildStepResponse response = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID_STEPS,
                 ResponseSpecs.ok()
-        ).post(build.getId(), request)
+        ).post(buildId, request)
                 .extract().as(AddBuildStepResponse.class);
 
         BuildStepsResponse allStepsAfter = BuildStepsSteps.getAllSteps(user, build);
@@ -76,13 +92,15 @@ public class BuildStepsTest extends BaseTest {
     @WithUsersQueue
     @Test
     void shouldDeleteExistingStepById(@Build CreateBuildTypeResponse build, CreateUserResponse user) {
+
         String stepId = BuildStepsSteps.createStep(user, build).getId();
+        String buildId = build.getId();
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID_STEPS_ID,
                 ResponseSpecs.noContent()
-        ).delete(build.getId(), stepId);
+        ).delete(buildId, stepId);
 
         BuildStepsResponse allSteps = BuildStepsSteps.getAllSteps(user, build);
 
