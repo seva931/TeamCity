@@ -1,83 +1,59 @@
 package api;
 
-import api.models.*;
+import api.models.CreateProjectRequest;
+import api.models.CreateUserResponse;
+import api.models.ErrorResponse;
+import api.models.ParentProject;
+import api.models.ProjectListResponse;
+import api.models.ProjectResponse;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.steps.ProjectManagementSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
-import common.generators.TestDataGenerator;
+import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
+import jupiter.extension.ProjectExtension;
 import jupiter.extension.UsersQueueExtension;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static common.generators.TestDataGenerator.generateProjectID;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@ExtendWith({UsersQueueExtension.class})
+@ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
 public class ProjectManagementTest extends BaseTest {
 
     private static final String NOT_EXISTS_ID = "PRJ_NOT_EXISTS_404";
 
-    private final List<String> projectsToCleanup = new ArrayList<>();
-
-    @AfterEach
-    void cleanup() {
-        for (String projectId : projectsToCleanup) {
-            new CrudRequester(
-                    RequestSpecs.adminSpec(),
-                    Endpoint.PROJECT_ID,
-                    ResponseSpecs.deletesQuietly()
-            ).delete(projectId);
-        }
-        projectsToCleanup.clear();
-    }
-
     @DisplayName("Позитивный тест: создание проекта")
     @WithUsersQueue
+    @WithProject
     @Test
-    public void userCreateProjectTest(CreateUserResponse user) {
-        String projectId = generateProjectID();
-        String projectName = TestDataGenerator.generateProjectName();
-
-        ProjectResponse created = ProjectManagementSteps.createProject(projectId, projectName, ParentProject.root(), user);
-        projectsToCleanup.add(projectId);
-
-        softly.assertThat(created.getId()).as("Поле id").isEqualTo(projectId);
-        softly.assertThat(created.getName()).as("Поле name").isEqualTo(projectName);
-
+    public void userCreateProjectTest(CreateUserResponse user, CreateProjectRequest project) {
         ProjectListResponse list = ProjectManagementSteps.getAllProjects(user);
+
         boolean existsInList = list.getProject() != null && list.getProject().stream()
-                .anyMatch(p -> projectId.equals(p.getId()));
+                .anyMatch(p -> project.getId().equals(p.getId()));
 
         softly.assertThat(existsInList)
                 .as("Проект присутствует в списке проектов по id")
                 .isTrue();
 
-        ProjectResponse byId = ProjectManagementSteps.getProjectById(projectId, user);
-        softly.assertThat(byId.getId()).as("GET by id: поле id").isEqualTo(projectId);
+        ProjectResponse byId = ProjectManagementSteps.getProjectById(project.getId(), user);
+        softly.assertThat(byId.getId()).as("GET by id: поле id").isEqualTo(project.getId());
+        softly.assertThat(byId.getName()).as("GET by id: поле name").isEqualTo(project.getName());
     }
 
     @DisplayName("Негативный тест: создание проекта с тем же id")
     @WithUsersQueue
+    @WithProject
     @Test
-    public void userCanNotCreateProjectWithSameIdTest(CreateUserResponse user) {
-        String projectId = generateProjectID();
-        String firstName = TestDataGenerator.generateProjectName();
-        String secondName = (firstName + "_second").toLowerCase();
-
-        ProjectManagementSteps.createProject(projectId, firstName, ParentProject.root(), user);
-        projectsToCleanup.add(projectId);
+    public void userCanNotCreateProjectWithSameIdTest(CreateUserResponse user, CreateProjectRequest project) {
+        String secondName = (project.getName() + "_second").toLowerCase();
 
         CreateProjectRequest duplicateRequest = CreateProjectRequest.builder()
-                .id(projectId)
+                .id(project.getId())
                 .name(secondName)
                 .parentProject(ParentProject.root())
                 .build();
@@ -88,26 +64,21 @@ public class ProjectManagementTest extends BaseTest {
                 ResponseSpecs.badRequest()
         ).post(duplicateRequest);
 
-        ProjectResponse byId = ProjectManagementSteps.getProjectById(projectId, user);
-        softly.assertThat(byId.getName()).as("Имя проекта не изменилось").isEqualTo(firstName);
+        ProjectResponse byId = ProjectManagementSteps.getProjectById(project.getId(), user);
+        softly.assertThat(byId.getName()).as("Имя проекта не изменилось").isEqualTo(project.getName());
     }
 
     @DisplayName("Позитивный тест: получение списка проектов")
     @WithUsersQueue
+    @WithProject
     @Test
-    public void userGetProjectsListTest(CreateUserResponse user) {
-        String projectId = generateProjectID();
-        String projectName = TestDataGenerator.generateProjectName();
-
-        ProjectManagementSteps.createProject(projectId, projectName, ParentProject.root(), user);
-        projectsToCleanup.add(projectId);
-
+    public void userGetProjectsListTest(CreateUserResponse user, CreateProjectRequest project) {
         ProjectListResponse list = ProjectManagementSteps.getAllProjects(user);
 
         softly.assertThat(list.getCount()).as("Поле count").isNotNull().isGreaterThan(0);
         softly.assertThat(list.getProject()).as("Поле project").isNotNull().isNotEmpty();
 
-        boolean exists = list.getProject().stream().anyMatch(p -> projectId.equals(p.getId()));
+        boolean exists = list.getProject().stream().anyMatch(p -> project.getId().equals(p.getId()));
 
         softly.assertThat(exists)
                 .as("Список содержит созданный проект по id")
@@ -116,18 +87,13 @@ public class ProjectManagementTest extends BaseTest {
 
     @DisplayName("Позитивный тест: получение информации о проекте по id")
     @WithUsersQueue
+    @WithProject
     @Test
-    public void userGetProjectByIdTest(CreateUserResponse user) {
-        String projectId = generateProjectID();
-        String projectName = TestDataGenerator.generateProjectName();
+    public void userGetProjectByIdTest(CreateUserResponse user, CreateProjectRequest project) {
+        ProjectResponse byId = ProjectManagementSteps.getProjectById(project.getId(), user);
 
-        ProjectManagementSteps.createProject(projectId, projectName, ParentProject.root(), user);
-        projectsToCleanup.add(projectId);
-
-        ProjectResponse byId = ProjectManagementSteps.getProjectById(projectId, user);
-
-        softly.assertThat(byId.getId()).as("Поле id").isEqualTo(projectId);
-        softly.assertThat(byId.getName()).as("Поле name").isEqualTo(projectName);
+        softly.assertThat(byId.getId()).as("Поле id").isEqualTo(project.getId());
+        softly.assertThat(byId.getName()).as("Поле name").isEqualTo(project.getName());
     }
 
     @DisplayName("Негативный тест: получение информации о проекте по несуществующему id")
@@ -148,49 +114,37 @@ public class ProjectManagementTest extends BaseTest {
 
     @DisplayName("Позитивный тест: обновление имени проекта")
     @WithUsersQueue
+    @WithProject
     @Test
-    public void userUpdateProjectNameTest(CreateUserResponse user) {
-        String projectId = generateProjectID();
-        String initialName = TestDataGenerator.generateProjectName();
+    public void userUpdateProjectNameTest(CreateUserResponse user, CreateProjectRequest project) {
+        String updatedName = (project.getName() + "_updated").toLowerCase();
 
-        ProjectManagementSteps.createProject(projectId, initialName, ParentProject.root(), user);
-        projectsToCleanup.add(projectId);
-
-        String updatedName = (initialName + "_updated").toLowerCase();
-
-        String responseBody = ProjectManagementSteps.updateProjectName(projectId, updatedName, user);
+        String responseBody = ProjectManagementSteps.updateProjectName(project.getId(), updatedName, user);
         softly.assertThat(responseBody)
                 .as("PUT /parameters/name: тело ответа")
                 .isEqualTo(updatedName);
 
-        softly.assertThat(ProjectManagementSteps.getProjectNameParam(projectId, user))
+        softly.assertThat(ProjectManagementSteps.getProjectNameParam(project.getId(), user))
                 .as("GET /parameters/name возвращает обновлённое значение")
                 .isEqualTo(updatedName);
     }
 
     @DisplayName("Позитивный тест: удаление проекта")
     @WithUsersQueue
+    @WithProject
     @Test
-    public void userDeleteProjectTest(CreateUserResponse user) {
-        String projectId = generateProjectID();
-        String projectName = TestDataGenerator.generateProjectName();
-
-        ProjectManagementSteps.createProject(projectId, projectName, ParentProject.root(), user);
-        projectsToCleanup.add(projectId);
-
+    public void userDeleteProjectTest(CreateUserResponse user, CreateProjectRequest project) {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
                 ResponseSpecs.noContent()
-        ).delete(projectId);
+        ).delete(project.getId());
 
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
                 ResponseSpecs.notFound()
-        ).get(projectId);
-
-        projectsToCleanup.remove(projectId);
+        ).get(project.getId());
     }
 
     @DisplayName("Негативный тест: удаление несуществующего проекта")
