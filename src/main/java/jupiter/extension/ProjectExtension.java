@@ -7,7 +7,6 @@ import api.models.ProjectResponse;
 import api.requests.steps.ProjectManagementSteps;
 import common.data.ProjectData;
 import common.generators.TestDataGenerator;
-import jupiter.annotation.WithBuild;
 import jupiter.annotation.WithProject;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -23,15 +22,6 @@ public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
                 context.getRequiredTestMethod(),
                 WithProject.class
         ).orElse(null);
-
-        if (anno == null) {
-            WithBuild build = AnnotationSupport.findAnnotation(
-                    context.getRequiredTestMethod(), WithBuild.class
-            ).orElse(null);
-            if (build != null) {
-                anno = build.project();
-            }
-        }
 
         if (anno != null) {
             CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE)

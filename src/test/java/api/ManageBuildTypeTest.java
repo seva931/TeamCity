@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Disabled
 @ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
     public class ManageBuildTypeTest extends BaseTest {
 

@@ -16,23 +16,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
         ProjectExtension.class,
         BuildExtension.class,
         UserExtension.class,
-        VcsExtension.class
 })
 public class SampleTest extends BaseTest {
 
     @WithUsersQueue
     @WithProject
-    @WithVcs(
-            url = "https://github.com/metaf-x/java-app.git",
-            branch = "refs/heads/main"
-    )
     @Test
     public void buildSampleTest(
             CreateUserResponse admin,
             CreateProjectRequest project,
             @Build CreateBuildTypeResponse build,
-            @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user,
-            AddNewRootResponse vcs
+            @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user
     ) {
         System.out.println("Building Sample Test");
         System.out.println(build);
@@ -45,8 +39,5 @@ public class SampleTest extends BaseTest {
 
         System.out.println("Admin Sample Test");
         System.out.println(admin);
-
-        System.out.println("VCS Sample Test");
-        System.out.println(vcs);
     }
 }

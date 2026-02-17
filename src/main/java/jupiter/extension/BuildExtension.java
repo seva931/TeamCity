@@ -23,9 +23,6 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
         CreateProjectRequest project = extensionContext.getStore(
                 ProjectExtension.NAMESPACE).get(extensionContext.getUniqueId(),
                 CreateProjectRequest.class);
-        AddNewRootResponse addNewRootResponse = extensionContext.getStore(
-                VcsExtension.NAMESPACE).get(extensionContext.getUniqueId(),
-                AddNewRootResponse.class);
 
         if (user == null || project == null) {
             throw new ExtensionConfigurationException("User and Project annotation are mandatory");
@@ -46,10 +43,6 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
                     .build();
         } else {
             buildConfiguration = BuildManageSteps.createBuildType(projectId, buildId, buildName, user);
-        }
-
-        if(addNewRootResponse != null) {
-            //todo дописать добавление vcs к билду
         }
 
         extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), buildConfiguration);

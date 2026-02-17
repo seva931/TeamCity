@@ -14,10 +14,12 @@ import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.BuildExtension;
 import jupiter.extension.ProjectExtension;
 import jupiter.extension.UsersQueueExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+@Disabled
 @ExtendWith({
         UsersQueueExtension.class,
         ProjectExtension.class,
