@@ -67,6 +67,7 @@ test-output/
 allure-results/
 allure-report/
 surefire-reports/
+build/
 
 # Environment and secrets
 *.env
