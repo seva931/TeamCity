@@ -15,14 +15,21 @@ public enum Endpoint {
     PROJECT_ID("/projects/id:%s", BaseModel.class, ProjectResponse.class),
     BUILD_TYPES("/buildTypes", CreateBuildTypeRequest.class, CreateBuildTypeResponse.class),
     BUILD_TYPES_ID("/buildTypes/id:%s", BaseModel.class, GetInfoBuildTypeResponse.class),
-    VCS_ROOTS("/vcs-roots",BaseModel.class, AllVcsRootsResponse.class),
-    CREATE_NEW_ROOT("/vcs-roots",AddNewRootRequest.class, AddNewRootResponse.class),
+    BUILD_TYPES_ID_STEPS("/buildTypes/id:%s/steps", AddBuildStepRequest.class, BuildStepsResponse.class),
+    BUILD_TYPES_ID_STEPS_ID("/buildTypes/id:%s/steps/%s", BaseModel.class, BaseModel.class),
+    VCS_ROOTS("/vcs-roots", BaseModel.class, AllVcsRootsResponse.class),
+    VCS_ROOTS_ID("/vcs-roots/id:%s", AddNewRootRequest.class, AddNewRootResponse.class),
     AGENTS("/agents", BaseModel.class, AgentsResponse.class),
     AGENTS_ID("/agents/id:%s", BaseModel.class, AgentResponse.class),
     AGENTS_ID_ENABLED("/agents/id:%s/enabled", BaseModel.class, BaseModel.class),
+    AGENTS_ID_AUTHORIZED("/agents/id:%s/authorized", BaseModel.class, BaseModel.class),
     PROJECT_NAME("/projects/id:%s/parameters/name", BaseModel.class, BaseModel.class),
     USERS_ID_PERMISSIONS("/users/id:%s/permissions", BaseModel.class, PermissionsResponse.class),
-    USERS_ID_ROLES("/users/id:%s/roles", BaseModel.class, Role.class);
+    USERS_ID_ROLES("/users/id:%s/roles", BaseModel.class, Role.class),
+    BUILD_QUEUE("/buildQueue", BaseModel.class, BuildQueueResponse.class),
+    BUILD_QUEUE_ID("/buildQueue/id:%s", BaseModel.class, BaseModel.class);
+
+
 
 
     private final String url;

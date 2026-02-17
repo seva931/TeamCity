@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VcsProperties {
-    private List<VcsProperty> property;
+public class BuildStepProperties {
+    private List<BuildStepProperty> property;
+    private long count;
 }

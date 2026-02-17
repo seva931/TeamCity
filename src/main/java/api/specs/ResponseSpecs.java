@@ -42,6 +42,11 @@ public class ResponseSpecs {
                 .expectStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
                 .build();
     }
+    public static ResponseSpecification successDelete() {
+        return new ResponseSpecBuilder()
+                .expectStatusCode(HttpStatus.SC_NO_CONTENT)
+                .build();
+    }
 
 
     public static ResponseSpecification notFoundWithErrorText(String errorText) {

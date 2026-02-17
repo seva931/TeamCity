@@ -5,11 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class ProjectModel extends BaseModel {
-    private String id;
-    private String name;
+public class DeleteRootRequest extends BaseModel{
+    private String vcsRootLocator;
 }

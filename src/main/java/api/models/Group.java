@@ -3,6 +3,7 @@ package api.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.util.List;
+import java.util.Properties;
 
 @Data
 public class Group extends BaseModel {

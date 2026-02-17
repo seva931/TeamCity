@@ -31,6 +31,13 @@ public class RequestSpecs {
                                 .getBytes()));
     }
 
+    public static RequestSpecBuilder withAdminBasicAuth() {
+        return defaultRequestBuilder()
+                .addHeader("Authorization", "Basic " +
+                        Base64.getEncoder().encodeToString((Config.getProperty("admin.login") + ":" + Config.getProperty("admin.password"))
+                                .getBytes()));
+    }
+
     public static RequestSpecification authAsUser(CreateUserResponse userResponse, ContentType type) {
         return defaultRequestBuilder()
                 .setContentType(type)

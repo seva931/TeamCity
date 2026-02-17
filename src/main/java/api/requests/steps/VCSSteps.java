@@ -1,63 +1,82 @@
 package api.requests.steps;
 
+import api.configs.Config;
 import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import common.generators.TestDataGenerator;
 
 import java.util.List;
 
 public class VCSSteps {
-    public static AllVcsRootsResponse getAllRoots (){
-       return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.VCS_ROOTS, ResponseSpecs.ok()).get().extract().as(AllVcsRootsResponse.class);
+    public static AllVcsRootsResponse getAllRoots() {
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.VCS_ROOTS, ResponseSpecs.ok()).get().extract().as(AllVcsRootsResponse.class);
+    }
+    public static AllVcsRootsResponse getAllRoots(CreateUserResponse user) {
+        return new CrudRequester(RequestSpecs.authAsUser(user), Endpoint.VCS_ROOTS, ResponseSpecs.ok()).get().extract().as(AllVcsRootsResponse.class);
     }
 
     public static AddNewRootResponse createNewRoot() {
-        AddNewRootRequest request = new AddNewRootRequest();
-        request.setName(TestDataGenerator.generateVCSName());
-        request.setVcsName("jetbrains.git");
-        request.setProject(new VcsProject() {{ setId("_Root"); }});
-        request.setProperties(new VcsProperties() {{
-            setProperty(List.of(
-                    new VcsProperty() {{ setName("url"); setValue("https://github.com/org/repo.git"); }},
-                    new VcsProperty() {{ setName("branch"); setValue("refs/heads/main"); }}
-            ));
-        }});
-
-        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.CREATE_NEW_ROOT, ResponseSpecs.ok())
+        AddNewRootRequest request = AddNewRootRequest.createRoot();
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.VCS_ROOTS, ResponseSpecs.ok())
                 .post(request).extract().as(AddNewRootResponse.class);
     }
-    public static void createNewRoot(String name) {
-        AddNewRootRequest request = new AddNewRootRequest();
+
+    public static AddNewRootResponse createNewRoot(CreateUserResponse user) {
+        AddNewRootRequest request = AddNewRootRequest.createRoot();
+        return new CrudRequester(RequestSpecs.authAsUser(user), Endpoint.VCS_ROOTS, ResponseSpecs.ok())
+                .post(request).extract().as(AddNewRootResponse.class);
+    }
+
+    public static AddNewRootResponse createNewRoot(String name) {
+        AddNewRootRequest request = AddNewRootRequest.createRoot();
         request.setName(name);
-        request.setVcsName("jetbrains.git");
-        request.setProject(new VcsProject() {{ setId("_Root"); }});
+        request.setVcsName(Config.getProperty("vcsRootName"));
+        request.setProject(new VcsProject() {{
+            setId(Config.getProperty("vcsId"));
+        }});
         request.setProperties(new VcsProperties() {{
             setProperty(List.of(
-                    new VcsProperty() {{ setName("url"); setValue("https://github.com/org/repo.git"); }},
-                    new VcsProperty() {{ setName("branch"); setValue("refs/heads/main"); }}
+                    new VcsProperty() {{
+                        setName(Config.getProperty("vcsPropertyName"));
+                        setValue(Config.getProperty("vcsPropertyValue"));
+                    }}
+
             ));
         }});
 
-        new CrudRequester(RequestSpecs.adminSpec(), Endpoint.CREATE_NEW_ROOT, ResponseSpecs.ok())
-                .post(request);
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.VCS_ROOTS, ResponseSpecs.ok())
+                .post(request).extract().as(AddNewRootResponse.class);
     }
+
     public static ErrorResponse createNewRootWithError(String name) {
         AddNewRootRequest request = new AddNewRootRequest();
         request.setName(name);
-        request.setVcsName("jetbrains.git");
-        request.setProject(new VcsProject() {{ setId("_Root"); }});
+        request.setVcsName(Config.getProperty("vcsRootName"));
+        request.setProject(new VcsProject() {{
+            setId(Config.getProperty("vcsId"));
+        }});
         request.setProperties(new VcsProperties() {{
             setProperty(List.of(
-                    new VcsProperty() {{ setName("url"); setValue("https://github.com/org/repo.git"); }},
-                    new VcsProperty() {{ setName("branch"); setValue("refs/heads/main"); }}
+                    new VcsProperty() {{
+                        setName(Config.getProperty("vcsPropertyName"));
+                        setValue(Config.getProperty("vcsPropertyValue"));
+                    }}
+
             ));
         }});
 
-        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.CREATE_NEW_ROOT, ResponseSpecs.InternalServerError())
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.VCS_ROOTS, ResponseSpecs.InternalServerError())
                 .post(request).extract().as(ErrorResponse.class);
+    }
+
+    public static VcsRoot getRootByName(String name) {
+        AllVcsRootsResponse allRoots = getAllRoots();
+        return allRoots.getVcsRoot().stream()
+                .filter(root -> root.getName().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("VCS root not found: " + name));
     }
 
 }
