@@ -6,6 +6,9 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.BuildStepPropertyData;
+import common.data.BuildStepTypeData;
+import common.generators.RandomModelGenerator;
 
 import java.util.List;
 
@@ -13,25 +16,32 @@ public class BuildStepsSteps {
 
     public static BuildStepsResponse getAllSteps(CreateUserResponse user, CreateBuildTypeResponse build) {
 
+        String buildId = build.getId();
+
         return new ValidatedCrudRequester<BuildStepsResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID_STEPS,
                 ResponseSpecs.ok()
-        ).get(build.getId());
+        ).get(buildId);
     }
 
     public static AddBuildStepResponse createStep(
             CreateUserResponse user,
             CreateBuildTypeResponse build,
             String stepType,
-            List<BuildStepProperty> properties) {
+            List<BuildStepProperty> props) {
 
-        AddBuildStepRequest request = AddBuildStepRequest.sample(stepType, properties);
+        String buildId = build.getId();
+        AddBuildStepRequest request = RandomModelGenerator.generate(AddBuildStepRequest.class);
+        request.setType(stepType);
+        BuildStepProperties properties = BuildStepProperties.builder().property(props).build();
+        request.setProperties(properties);
+
         return new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID_STEPS,
                 ResponseSpecs.ok()
-        ).post(build.getId(), request)
+        ).post(buildId, request)
                 .extract().as(AddBuildStepResponse.class);
     }
 
@@ -39,13 +49,20 @@ public class BuildStepsSteps {
             CreateUserResponse user,
             CreateBuildTypeResponse build) {
 
-        AddBuildStepRequest request = AddBuildStepRequest.sample();
+        AddBuildStepRequest request = RandomModelGenerator.generate(AddBuildStepRequest.class);
+        String buildId = build.getId();
+        request.setType(BuildStepTypeData.SIMPLE_RUNNER.getType());
+        BuildStepProperties properties = BuildStepProperties.builder().property(
+                List.of(
+                        BuildStepProperty.builder().name(BuildStepPropertyData.SCRIPT_CONTENT.getName()).value("echo Hello").build())
+        ).build();
+        request.setProperties(properties);
 
         return new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID_STEPS,
                 ResponseSpecs.ok()
-        ).post(build.getId(), request)
+        ).post(buildId, request)
                 .extract().as(AddBuildStepResponse.class);
     }
 
