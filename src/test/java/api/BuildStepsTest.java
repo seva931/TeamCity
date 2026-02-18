@@ -9,36 +9,27 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.BuildStepPropertyData;
 import common.data.BuildStepTypeData;
-import common.data.RoleId;
 import common.generators.RandomModelGenerator;
 import jupiter.annotation.Build;
+import jupiter.annotation.Project;
 import jupiter.annotation.User;
-import jupiter.annotation.WithProject;
-import jupiter.annotation.WithUsersQueue;
-import jupiter.extension.BuildExtension;
-import jupiter.extension.ProjectExtension;
-import jupiter.extension.UserExtension;
-import jupiter.extension.UsersQueueExtension;
+import jupiter.annotation.meta.ApiTest;
+import jupiter.annotation.meta.WithBuild;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@ExtendWith({
-        UsersQueueExtension.class,
-        BuildExtension.class,
-        ProjectExtension.class,
-        UserExtension.class
-})
+@ApiTest
+@WithBuild
 public class BuildStepsTest extends BaseTest {
 
-    @WithProject
     @Test
     void shouldReturnZeroBuildStepsInNewlyCreatedBuild(
-            @Build CreateBuildTypeResponse build,
-            @User CreateUserResponse user) {
+            @User CreateUserResponse user,
+            @Project ProjectResponse project,
+            @Build CreateBuildTypeResponse build) {
 
         String buildId = build.getId();
 
@@ -53,9 +44,12 @@ public class BuildStepsTest extends BaseTest {
                 .isEqualTo(0);
     }
 
-    @WithUsersQueue
     @Test
-    void shouldCreateStepForExistingBuild(@Build CreateBuildTypeResponse build, CreateUserResponse user) {
+    void shouldCreateStepForExistingBuild(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project,
+            @Build CreateBuildTypeResponse build
+    ) {
 
         BuildStepsResponse allStepsBefore = BuildStepsSteps.getAllSteps(user, build);
 
@@ -94,10 +88,11 @@ public class BuildStepsTest extends BaseTest {
                 .isEqualTo(request);
     }
 
-    @WithProject
-    @WithUsersQueue
     @Test
-    void shouldDeleteExistingStepById(@Build CreateBuildTypeResponse build, CreateUserResponse user) {
+    void shouldDeleteExistingStepById(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project,
+            @Build CreateBuildTypeResponse build) {
 
         String stepId = BuildStepsSteps.createStep(user, build).getId();
         String buildId = build.getId();

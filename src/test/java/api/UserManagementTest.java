@@ -2,30 +2,33 @@ package api;
 
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
+import api.models.Role;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.RoleId;
+import common.generators.RandomModelGenerator;
 import jupiter.annotation.User;
-import jupiter.annotation.WithUsersQueue;
-import jupiter.extension.UserExtension;
-import jupiter.extension.UsersQueueExtension;
-import org.junit.jupiter.api.Disabled;
+import jupiter.annotation.meta.ApiTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@ExtendWith({
-        UsersQueueExtension.class,
-        UserExtension.class
-})
+@ApiTest
 public class UserManagementTest extends BaseTest {
-    @Disabled
     @Test
     void shouldCreateUserWithSystemAdminRole() {
-        CreateUserRequest request = CreateUserRequest.systemAdmin();
+        CreateUserRequest request = RandomModelGenerator.generate(CreateUserRequest.class);
+
+        CreateUserRequest.Roles roles = CreateUserRequest.Roles.builder()
+                .role(List.of(Role.builder().roleId(RoleId.SYSTEM_ADMIN.toString()).scope("g").build())).build();
+
+        request.setRoles(roles);
 
         CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpecs.adminSpec(),
@@ -33,17 +36,18 @@ public class UserManagementTest extends BaseTest {
                 ResponseSpecs.requestReturnsOk())
                 .post(request);
 
-        softly.assertThat(request.getUsername())
+        softly.assertThat(response.getUsername())
                 .as("Поле username")
-                .isEqualTo(response.getUsername());
-        softly.assertThat(request.getRoles().getRole())
-                .as("поле role")
-                .isEqualTo(response.getRoles().getRole());
+                .isEqualTo(request.getUsername());
+        softly.assertThat(response.getRoles().getRole())
+                .extracting(Role::getRoleId, Role::getScope)
+                .containsExactly(tuple("SYSTEM_ADMIN", "g"));
+
+        //TODO: добавить проверки, получать список пользователей и проверять, что созданный пользователь там есть
     }
 
-    @WithUsersQueue
     @Test
-    void shouldReturnInfoAboutExistingUser(CreateUserResponse user) {
+    void shouldReturnInfoAboutExistingUser(@User CreateUserResponse user) {
         CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpecs.adminSpec(),
                 Endpoint.USERS_USERNAME,
@@ -54,7 +58,7 @@ public class UserManagementTest extends BaseTest {
     }
 
     @Test
-    void shouldDeleteExistingUser(@User(addToCleanup = false) CreateUserResponse user) {
+    void shouldDeleteExistingUser(@User CreateUserResponse user) {
         new CrudRequester(
                 RequestSpecs.adminSpec(),
                 Endpoint.USERS_ID,
