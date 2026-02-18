@@ -1,11 +1,10 @@
 package jupiter.extension;
 
-import api.models.AddNewRootResponse;
+import api.models.CreateBuildTypeRequest;
 import api.models.CreateBuildTypeResponse;
-import api.models.CreateProjectRequest;
-import api.models.CreateUserResponse;
-import api.requests.steps.BuildManageSteps;
-import common.generators.TestDataGenerator;
+import api.models.ProjectResponse;
+import api.requests.steps.AdminSteps;
+import common.generators.RandomModelGenerator;
 import jupiter.annotation.Build;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -17,37 +16,37 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
 
-        CreateUserResponse user = extensionContext.getStore(
-                UsersQueueExtension.NAMESPACE).get(extensionContext.getUniqueId(),
-                CreateUserResponse.class);
-        CreateProjectRequest project = extensionContext.getStore(
+        Build anno = AnnotationSupport.findAnnotation(parameterContext.getParameter(), Build.class).orElseThrow(
+                () -> new ParameterResolutionException("Необходима аннотация @Build"));
+
+        ProjectResponse project = extensionContext.getStore(
                 ProjectExtension.NAMESPACE).get(extensionContext.getUniqueId(),
-                CreateProjectRequest.class);
+                ProjectResponse.class);
 
-        if (user == null || project == null) {
-            throw new ExtensionConfigurationException("User and Project annotation are mandatory");
+        //setup request
+        CreateBuildTypeRequest request = RandomModelGenerator.generate(CreateBuildTypeRequest.class);
+
+        if (!Build.UNDEFINED.equals(anno.buildId())) {
+            request.setId(anno.buildId());
         }
 
-        Build anno = AnnotationSupport.findAnnotation(parameterContext.getParameter(), Build.class).get();
+        if (!Build.UNDEFINED.equals(anno.buildName())) {
+            request.setName(anno.buildName());
+        }
 
-        String projectId = anno.projectId().equals("default") ? project.getId() : anno.projectId();
-        String buildName = anno.buildName().equals("default") ? TestDataGenerator.generateBuildName() : anno.buildName();
-        String buildId = anno.buildId().equals("default") ? TestDataGenerator.generateBuildId() : anno.buildId();
-
-        CreateBuildTypeResponse buildConfiguration;
-        if (anno.useExisting()) {
-            buildConfiguration = CreateBuildTypeResponse.builder()
-                    .id(buildId)
-                    .name(buildName)
-                    .projectId(projectId)
-                    .build();
+        if (Build.UNDEFINED.equals(anno.projectId())) {
+            if (project == null) {
+                throw new ExtensionConfigurationException("Аннотация @Project должна стоять перед аннотацией @Build или в параметрах @Build должен быть указан проект");
+            }
+            request.setProjectId(project.getId());
         } else {
-            buildConfiguration = BuildManageSteps.createBuildType(projectId, buildId, buildName, user);
+            request.setProjectId(anno.projectId());
         }
 
-        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), buildConfiguration);
-        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId() + ":cleanup",
-                anno.addToCleanup() && !anno.useExisting());
+        //send request
+        CreateBuildTypeResponse response = AdminSteps.createBuildType(request);
+
+        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), response);
 
         return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), CreateBuildTypeResponse.class);
     }
@@ -55,10 +54,8 @@ public class BuildExtension implements AfterEachCallback, ParameterResolver {
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         CreateBuildTypeResponse build = context.getStore(NAMESPACE).get(context.getUniqueId(), CreateBuildTypeResponse.class);
-        CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class);
-        Boolean cleanup = context.getStore(NAMESPACE).get(context.getUniqueId() + ":cleanup", Boolean.class);
-        if (Boolean.TRUE.equals(cleanup) && build != null) {
-            BuildManageSteps.deleteBuildTypeQuietly(build.getId(), user);
+        if (build != null) {
+            AdminSteps.deleteBuildTypeQuietly(build.getId());
         }
     }
 

@@ -1,7 +1,7 @@
 package jupiter.annotation.meta;
 
-import jupiter.extension.UiAuthExtension;
 import jupiter.extension.UserExtension;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.annotation.ElementType;
@@ -11,9 +11,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith({
-        UserExtension.class,
-        UiAuthExtension.class
-})
-public @interface WebTest {
-}
+@Tag("api")
+@ExtendWith(UserExtension.class)
+public @interface ApiTest {}

@@ -5,12 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface Build {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Project {
     String UNDEFINED = "UNDEFINED";
+    String PARENT_PROJECT_ID = "_Root";
 
+    String parentProjectId() default PARENT_PROJECT_ID;
+    String projectName() default UNDEFINED;
     String projectId() default UNDEFINED;
-    String buildName() default UNDEFINED;
-    String buildId() default UNDEFINED;
 }

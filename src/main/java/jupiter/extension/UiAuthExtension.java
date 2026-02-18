@@ -3,26 +3,63 @@ package jupiter.extension;
 import api.models.CreateUserResponse;
 import api.requests.steps.UserSteps;
 import com.codeborne.selenide.WebDriverRunner;
-import jupiter.annotation.WithUsersQueue;
+import jupiter.annotation.User;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.InvocationInterceptor;
+import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
+import org.openqa.selenium.Cookie;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.List;
+import java.util.Optional;
 
 import static com.codeborne.selenide.Selenide.clearBrowserCookies;
 import static com.codeborne.selenide.Selenide.open;
 
-import org.junit.platform.commons.support.AnnotationSupport;
-import org.openqa.selenium.*;
+public class UiAuthExtension implements BeforeEachCallback, InvocationInterceptor {
 
-public class UiAuthExtension implements BeforeEachCallback {
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
-        CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE).get(context.getUniqueId(), CreateUserResponse.class);
+    public void beforeEach(ExtensionContext context) {
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            clearBrowserCookies();
+        }
+    }
 
-        AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), WithUsersQueue.class)
-                .ifPresent(
-                    anno ->
-                            loginViaApi(user)
-                );
+    @Override
+    public void interceptTestMethod(
+            Invocation<Void> invocation,
+            ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext
+    ) throws Throwable {
+        findUser(invocationContext).ifPresent(this::loginViaApi);
+        invocation.proceed();
+    }
+
+    @Override
+    public void interceptTestTemplateMethod(
+            Invocation<Void> invocation,
+            ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext
+    ) throws Throwable {
+        findUser(invocationContext).ifPresent(this::loginViaApi);
+        invocation.proceed();
+    }
+
+    private Optional<CreateUserResponse> findUser(ReflectiveInvocationContext<Method> invocationContext) {
+        List<Object> args = invocationContext.getArguments();
+        Parameter[] parameters = invocationContext.getExecutable().getParameters();
+
+        for (int i = 0; i < parameters.length; i++) {
+            if (!parameters[i].isAnnotationPresent(User.class)) {
+                continue;
+            }
+            if (args.get(i) instanceof CreateUserResponse user) {
+                return Optional.of(user);
+            }
+        }
+        return Optional.empty();
     }
 
     private void loginViaApi(CreateUserResponse user) {
@@ -32,7 +69,9 @@ public class UiAuthExtension implements BeforeEachCallback {
         }
 
         clearBrowserCookies();
-        open("/"); // чтобы браузер уже был на нужном домене
-        WebDriverRunner.getWebDriver().manage().addCookie(new Cookie("TCSESSIONID", tcSessionId));
+        open("/");
+        WebDriverRunner.getWebDriver()
+                .manage()
+                .addCookie(new Cookie("TCSESSIONID", tcSessionId));
     }
 }

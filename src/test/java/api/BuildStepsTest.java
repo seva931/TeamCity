@@ -9,12 +9,15 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.BuildStepPropertyData;
 import common.data.BuildStepTypeData;
+import common.data.RoleId;
 import common.generators.RandomModelGenerator;
 import jupiter.annotation.Build;
+import jupiter.annotation.User;
 import jupiter.annotation.WithProject;
 import jupiter.annotation.WithUsersQueue;
 import jupiter.extension.BuildExtension;
 import jupiter.extension.ProjectExtension;
+import jupiter.extension.UserExtension;
 import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,14 +29,17 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @ExtendWith({
         UsersQueueExtension.class,
         BuildExtension.class,
-        ProjectExtension.class
+        ProjectExtension.class,
+        UserExtension.class
 })
 public class BuildStepsTest extends BaseTest {
 
     @WithProject
-    @WithUsersQueue
     @Test
-    void shouldReturnZeroBuildStepsInNewlyCreatedBuild(@Build CreateBuildTypeResponse build, CreateUserResponse user) {
+    void shouldReturnZeroBuildStepsInNewlyCreatedBuild(
+            @Build CreateBuildTypeResponse build,
+            @User CreateUserResponse user) {
+
         String buildId = build.getId();
 
         BuildStepsResponse response = new ValidatedCrudRequester<BuildStepsResponse>(
