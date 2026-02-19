@@ -1,34 +1,34 @@
-package api.sample;
+package ui;
 
-import api.BaseTest;
 import api.models.CreateBuildTypeResponse;
 import api.models.CreateUserResponse;
 import api.models.ProjectResponse;
+import api.requests.steps.BuildQueueSteps;
 import jupiter.annotation.Build;
 import jupiter.annotation.Project;
 import jupiter.annotation.User;
-import jupiter.annotation.meta.ApiTest;
+import jupiter.annotation.meta.WebTest;
 import jupiter.annotation.meta.WithBuild;
 import org.junit.jupiter.api.Test;
 
-@ApiTest
+@WebTest
 @WithBuild
-public class SampleTest extends BaseTest {
+public class QueueTest {
 
     @Test
-    public void buildSampleTest(
+    void displaysMessageWhenNoBuildAddedToQueue(
+            @User CreateUserResponse user
+    ) {
+
+    }
+
+    @Test
+    void addedBuildDisplayedInQueue(
             @User CreateUserResponse user,
             @Project ProjectResponse project,
             @Build CreateBuildTypeResponse build
-    ){
+    ) {
+        BuildQueueSteps.queueEndlessBuild(build, user);
 
-        System.out.println("Project Sample Test");
-        System.out.println(project);
-
-        System.out.println("User Sample Test");
-        System.out.println(user);
-
-        System.out.println("Build Sample Test");
-        System.out.println(build);
     }
 }
