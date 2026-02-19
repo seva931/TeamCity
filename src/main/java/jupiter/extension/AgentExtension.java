@@ -1,20 +1,17 @@
 package jupiter.extension;
 
 import api.models.Agent;
+import api.models.AgentsResponse;
 import api.requests.steps.AgentSteps;
-import jupiter.annotation.AgentParam;
-import jupiter.annotation.Agents;
 import jupiter.annotation.WithAgent;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
-import org.opentest4j.TestAbortedException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class AgentExtension implements ExecutionCondition, ParameterResolver {
-
+public class AgentExtension implements ExecutionCondition, ParameterResolver, BeforeEachCallback, AfterEachCallback {
+    private static final ReentrantLock AGENT_LOCK = new ReentrantLock(true);
     ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(AgentExtension.class);
 
     @Override
@@ -23,63 +20,67 @@ public class AgentExtension implements ExecutionCondition, ParameterResolver {
             return ConditionEvaluationResult.enabled("Not a test method context");
         }
 
-        WithAgent withAgent = AnnotationSupport
+        WithAgent anno = AnnotationSupport
                 .findAnnotation(context.getRequiredTestMethod(), WithAgent.class)
                 .orElse(null);
 
-        long countFromAgents = Arrays.stream(context.getRequiredTestMethod().getParameters())
-                .filter(p -> p.isAnnotationPresent(Agents.class))
-                .map(p -> p.getAnnotation(Agents.class))
-                .mapToLong(a -> a.agents().length)
-                .sum();
-
-        // 1) приоритет: если есть @Agents — берём его количество
-        int required = (countFromAgents > 0)
-                ? (int) countFromAgents
-                : (withAgent != null ? withAgent.count() : 0);
-
-        if (required == 0) {
-            return ConditionEvaluationResult.enabled("No agents required");
+        if (anno == null) {
+            return ConditionEvaluationResult.enabled("@WithAgent not present");
         }
 
-        // 2) если агентов меньше — просто пропускаем тест
         int available = AgentSteps.getAllAgents().getCount();
-        return available < required
-                ? ConditionEvaluationResult.disabled("Недостаточно агентов: нужно " + required + ", доступно " + available)
+        return available < anno.count()
+                ? ConditionEvaluationResult.disabled("Недостаточно агентов: нужно " + anno.count() + ", доступно " + available)
                 : ConditionEvaluationResult.enabled("Требуемые агенты доступны");
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
 
-        Agents agentsAnno = AnnotationSupport.findAnnotation(parameterContext.getParameter(), Agents.class).get();
+        WithAgent anno = AnnotationSupport
+                .findAnnotation(extensionContext.getRequiredTestMethod(), WithAgent.class)
+                .orElseThrow(() -> new ParameterResolutionException("@WithAgent is required"));
 
-        int cfgCount = agentsAnno.agents().length;
-        if (cfgCount == 0) {
-            throw new ExtensionConfigurationException("добавьте @AgentParam в аннотацию");
+        int agentsCount = anno.count();
+        AgentsResponse response = AgentSteps.getAllAgents();
+
+        if (response.getCount() < agentsCount) {
+            throw new ExtensionConfigurationException("Недостаточно агентов");
         }
 
-        List<Agent> allAgents = AgentSteps.getAllAgents().getAgent();
-        if (cfgCount > allAgents.size()) {
-            throw new TestAbortedException("Не хватает агентов для запуска теста");
-        }
-        List<Agent> requiredAgents = new ArrayList<>(allAgents.subList(0, cfgCount));
+        List<Agent> agents = response.getAgent();
+        Agent[] agent = new Agent[agentsCount];
 
-        for (int i = 0; i < cfgCount; i++) {
-            AgentParam cfg = agentsAnno.agents()[i];
-            long agentId = requiredAgents.get(i).getId();
-            AgentSteps.enableDisableAgent(agentId, cfg.isEnabled());
-            AgentSteps.authorizeUnauthorizeAgent(agentId, cfg.isAuthorized());
+        for (int i = 0; i < agentsCount; i++) {
+            agent[i] = agents.get(i);
         }
 
-        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), requiredAgents);
+        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), agent);
 
-        return requiredAgents;
+        return agent;
     }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.isAnnotated(Agents.class)
-                && parameterContext.getParameter().getType().equals(List.class);
+        return AnnotationSupport.findAnnotation(extensionContext.getRequiredTestMethod(), WithAgent.class).isPresent()
+                && parameterContext.getParameter().getType().equals(Agent[].class);
     }
+
+    @Override
+    public void beforeEach(ExtensionContext context) throws Exception {
+        if(AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), WithAgent.class).isEmpty()) {
+            return;
+        }
+        AGENT_LOCK.lock();
+        context.getStore(NAMESPACE).put(context.getUniqueId() + ":locked", true);
+    }
+
+    @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+        Boolean isLocked = context.getStore(NAMESPACE).get(context.getUniqueId() + ":locked", Boolean.class);
+        if(Boolean.TRUE.equals(isLocked)) {
+            AGENT_LOCK.unlock();
+        }
+    }
+
 }

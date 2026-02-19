@@ -49,7 +49,7 @@ public class AgentSteps {
         ).get().getAgent().getFirst();
     }
 
-    public static String enableDisableAgent(long agentId, String bodyMessage) {
+    public static String disableAgent(long agentId) {
         return new CrudRequester(
                 RequestSpecs.withAdminBasicAuth()
                         .setContentType(ContentType.TEXT)
@@ -57,10 +57,21 @@ public class AgentSteps {
                         .build(),
                 Endpoint.AGENTS_ID_ENABLED,
                 ResponseSpecs.requestReturnsOk()
-        ).put(agentId, bodyMessage).extract().asString();
+        ).put(agentId, "false").extract().asString();
     }
 
-    public static String authorizeUnauthorizeAgent(long agentId, String bodyMessage) {
+    public static String enableAgent(long agentId) {
+        return new CrudRequester(
+                RequestSpecs.withAdminBasicAuth()
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
+                Endpoint.AGENTS_ID_ENABLED,
+                ResponseSpecs.requestReturnsOk()
+        ).put(agentId, "true").extract().asString();
+    }
+
+    public static String authorizeAgent(long agentId) {
         return new CrudRequester(
                 RequestSpecs.withAdminBasicAuth()
                         .setContentType(ContentType.TEXT)
@@ -68,7 +79,18 @@ public class AgentSteps {
                         .build(),
                 Endpoint.AGENTS_ID_AUTHORIZED,
                 ResponseSpecs.requestReturnsOk()
-        ).put(agentId, bodyMessage).extract().asString();
+        ).put(agentId, "true").extract().asString();
+    }
+
+    public static String unauthorizeAgent(long agentId) {
+        return new CrudRequester(
+                RequestSpecs.withAdminBasicAuth()
+                        .setContentType(ContentType.TEXT)
+                        .setAccept(ContentType.TEXT)
+                        .build(),
+                Endpoint.AGENTS_ID_AUTHORIZED,
+                ResponseSpecs.requestReturnsOk()
+        ).put(agentId, "false").extract().asString();
     }
 
     public static AgentResponse getAgentById(CreateUserResponse user, long agentId) {
