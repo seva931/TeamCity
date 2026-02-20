@@ -2,8 +2,11 @@ package ui.pages;
 
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
+import org.openqa.selenium.Alert;
 
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.switchTo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateBuildTypePage extends BasePage <CreateBuildTypePage>{
 
@@ -24,4 +27,16 @@ public class CreateBuildTypePage extends BasePage <CreateBuildTypePage>{
         saveChangesButton.click();
         return this;
     }
+
+    public CreateBuildTypePage checkAlert(){
+
+        return this;
+    }
+
+    public CreateBuildTypePage checkDisableButtonCreate(){
+
+        return this;
+    }
+
+
 }

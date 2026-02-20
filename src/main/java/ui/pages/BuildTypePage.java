@@ -16,4 +16,5 @@ public class BuildTypePage extends BasePage<BuildTypePage>{
     public ProjectPage open(String projectId, String buildName) {
         return Selenide.open(url(projectId, buildName), ProjectPage.class);
     }
+
 }
