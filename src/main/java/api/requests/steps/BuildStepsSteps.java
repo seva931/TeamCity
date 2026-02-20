@@ -111,6 +111,10 @@ public class BuildStepsSteps {
                         BuildStepProperty.builder()
                                 .name(BuildStepPropertyData.SCRIPT_CONTENT.getName())
                                 .value("while true; do sleep 60; done")
+                                .build(),
+                        BuildStepProperty.builder()
+                                .name(BuildStepPropertyData.USE_CUSTOM_SCRIPT.getName())
+                                .value("true")
                                 .build())
         ).build();
         request.setProperties(properties);

@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class QueueBuildRequest extends BaseModel {
+public class BuildQueueRequest extends BaseModel {
     private BuildTypeRef buildType;
 
-    public static QueueBuildRequest of(String buildTypeId) {
-        return new QueueBuildRequest(new BuildTypeRef(buildTypeId));
+    public static BuildQueueRequest of(String buildTypeId) {
+        return new BuildQueueRequest(new BuildTypeRef(buildTypeId));
     }
 }

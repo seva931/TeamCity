@@ -54,8 +54,8 @@ public class BuildStepsTest extends BaseTest {
         BuildStepsResponse allStepsBefore = BuildStepsSteps.getAllSteps(user, build);
 
         String buildId = build.getId();
-        AddBuildStepRequest request = RandomModelGenerator.generate(AddBuildStepRequest.class);
-        request.setType(BuildStepTypeData.SIMPLE_RUNNER.getType());
+
+        //build step properties
         BuildStepProperties properties = BuildStepProperties.builder().property(
                 List.of(
                         BuildStepProperty.builder()
@@ -63,6 +63,9 @@ public class BuildStepsTest extends BaseTest {
                                 .value("echo Hello")
                                 .build())
         ).build();
+
+        AddBuildStepRequest request = RandomModelGenerator.generate(AddBuildStepRequest.class);
+        request.setType(BuildStepTypeData.SIMPLE_RUNNER.getType());
         request.setProperties(properties);
 
         AddBuildStepResponse response = new CrudRequester(
