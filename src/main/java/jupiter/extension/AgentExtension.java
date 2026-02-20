@@ -77,6 +77,16 @@ public class AgentExtension implements ExecutionCondition, ParameterResolver, Be
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
+        Agent[] agents = context.getStore(NAMESPACE).get(context.getUniqueId(), Agent[].class);
+
+        if(agents != null) {
+            for(Agent a : agents) {
+                long agentId = a.getId();
+
+                AgentSteps.enableAgent(agentId);
+                AgentSteps.authorizeAgent(agentId);
+            }
+        }
         Boolean isLocked = context.getStore(NAMESPACE).get(context.getUniqueId() + ":locked", Boolean.class);
         if(Boolean.TRUE.equals(isLocked)) {
             AGENT_LOCK.unlock();

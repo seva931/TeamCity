@@ -32,7 +32,7 @@ public class AgentSteps {
     public static AgentsResponse getAllAgents() {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.withAdminBasicAuth()
-                        .addQueryParam("locator", "authorized:any,enabled:any")
+                        .addQueryParam("locator", "authorized:true,enabled:true,connected:true")
                         .setAccept(ContentType.JSON)
                         .setContentType(ContentType.JSON)
                         .build(),

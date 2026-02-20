@@ -17,7 +17,6 @@ import jupiter.annotation.meta.ApiTest;
 import jupiter.extension.AgentExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -77,9 +76,6 @@ public class AgentsTest extends BaseTest {
         softly.assertThat(agentById.isEnabled())
                 .as("Поле enabled")
                 .isEqualTo(Boolean.parseBoolean(responseText));
-
-        //teardown - return all agent to enabled state
-        AgentSteps.enableAgent(agentId);
     }
 
     @WithAgent
@@ -112,9 +108,6 @@ public class AgentsTest extends BaseTest {
         softly.assertThat(agentById.isAuthorized())
                 .as("Поле enabled")
                 .isEqualTo(Boolean.parseBoolean(responseText));
-
-        //teardown - return all agent to authorized state
-        AgentSteps.authorizeAgent(agentId);
     }
 
     @WithAgent
@@ -164,10 +157,6 @@ public class AgentsTest extends BaseTest {
         softly.assertThat(response.getAgent())
                 .as("Не содержит authorized агента")
                 .doesNotContain(authAgent);
-
-        //teardown - return all agent to authorized state
-        AgentSteps.authorizeAgent(unauthAgent.getId());
-        AgentSteps.authorizeAgent(authAgent.getId());
     }
 
     @WithAgent(count = 2)
@@ -197,10 +186,6 @@ public class AgentsTest extends BaseTest {
         softly.assertThat(response.getAgent())
                 .as("Не содержит authorized агента")
                 .doesNotContain(unauthAgent);
-
-        //teardown - return all agent to authorized state
-        AgentSteps.authorizeAgent(unauthAgent.getId());
-        AgentSteps.authorizeAgent(authAgent.getId());
     }
 
     @WithAgent(count = 2)
@@ -230,10 +215,6 @@ public class AgentsTest extends BaseTest {
         softly.assertThat(response.getAgent())
                 .as("Не содержит disabled агента")
                 .doesNotContain(disabledAgent);
-
-        //teardown - return all agent to enabled state
-        AgentSteps.enableAgent(disabledAgent.getId());
-        AgentSteps.enableAgent(enabledAgent.getId());
     }
 
     @WithAgent(count = 2)
@@ -263,10 +244,6 @@ public class AgentsTest extends BaseTest {
         softly.assertThat(response.getAgent())
                 .as("Не содержит enabled агента")
                 .doesNotContain(enabledAgent);
-
-        //teardown - return all agent to enabled state
-        AgentSteps.enableAgent(disabledAgent.getId());
-        AgentSteps.enableAgent(enabledAgent.getId());
     }
 
     @Test
