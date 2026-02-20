@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface Build {
-    String projectId() default "default";
-    String buildName() default "default";
-    String buildId() default "default";
-    boolean useExisting() default false;
-    boolean addToCleanup() default true;
+    String UNDEFINED = "UNDEFINED";
+
+    String projectId() default UNDEFINED;
+    String buildName() default UNDEFINED;
+    String buildId() default UNDEFINED;
 }

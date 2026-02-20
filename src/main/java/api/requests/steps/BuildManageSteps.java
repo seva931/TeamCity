@@ -38,20 +38,6 @@ public class BuildManageSteps {
         return new CreateBuildTypeResult(createBuildTypeRequest, createBuildTypeResponse);
     }
 
-    public static CreateBuildTypeResponse createBuildType(
-            String projectId,
-            String buildId,
-            String buildName,
-            CreateUserResponse user) {
-        CreateBuildTypeRequest createBuildTypeRequest = new CreateBuildTypeRequest(buildId, buildName, projectId);
-
-        return new ValidatedCrudRequester<CreateBuildTypeResponse>(
-                RequestSpecs.authAsUser(user),
-                Endpoint.BUILD_TYPES,
-                ResponseSpecs.requestReturnsOk())
-                .post(createBuildTypeRequest);
-    }
-
     public static CreateBuildTypeResponse createBuildType(String projectId, CreateUserResponse user) {
 
         return new ValidatedCrudRequester<CreateBuildTypeResponse>(
@@ -66,14 +52,6 @@ public class BuildManageSteps {
                 RequestSpecs.authAsUser(user),
                 Endpoint.BUILD_TYPES_ID,
                 ResponseSpecs.noContent())
-                .delete(buildId);
-    }
-
-    public static void deleteBuildTypeQuietly(String buildId, CreateUserResponse user) {
-        new CrudRequester(
-                RequestSpecs.authAsUser(user),
-                Endpoint.BUILD_TYPES_ID,
-                ResponseSpecs.deletesQuietly())
                 .delete(buildId);
     }
 

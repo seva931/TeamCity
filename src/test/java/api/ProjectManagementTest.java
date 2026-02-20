@@ -1,36 +1,33 @@
 package api;
 
-import api.models.CreateProjectRequest;
-import api.models.CreateUserResponse;
-import api.models.ErrorResponse;
-import api.models.ParentProject;
-import api.models.ProjectListResponse;
-import api.models.ProjectResponse;
+import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.steps.ProjectManagementSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
-import jupiter.annotation.WithProject;
-import jupiter.annotation.WithUsersQueue;
-import jupiter.extension.ProjectExtension;
-import jupiter.extension.UsersQueueExtension;
+import jupiter.annotation.Project;
+import jupiter.annotation.User;
+import jupiter.annotation.meta.ApiTest;
+import jupiter.annotation.meta.WithBuild;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
+@ApiTest
+@WithBuild
 public class ProjectManagementTest extends BaseTest {
 
     private static final String NOT_EXISTS_ID = "PRJ_NOT_EXISTS_404";
 
     @DisplayName("Позитивный тест: создание проекта")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userCreateProjectTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userCreateProjectTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         ProjectListResponse list = ProjectManagementSteps.getAllProjects(user);
 
         boolean existsInList = list.getProject() != null && list.getProject().stream()
@@ -46,10 +43,11 @@ public class ProjectManagementTest extends BaseTest {
     }
 
     @DisplayName("Негативный тест: создание проекта с тем же id")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userCanNotCreateProjectWithSameIdTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userCanNotCreateProjectWithSameIdTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         String secondName = (project.getName() + "_second").toLowerCase();
 
         CreateProjectRequest duplicateRequest = CreateProjectRequest.builder()
@@ -69,10 +67,11 @@ public class ProjectManagementTest extends BaseTest {
     }
 
     @DisplayName("Позитивный тест: получение списка проектов")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userGetProjectsListTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userGetProjectsListTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         ProjectListResponse list = ProjectManagementSteps.getAllProjects(user);
 
         softly.assertThat(list.getCount()).as("Поле count").isNotNull().isGreaterThan(0);
@@ -86,10 +85,11 @@ public class ProjectManagementTest extends BaseTest {
     }
 
     @DisplayName("Позитивный тест: получение информации о проекте по id")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userGetProjectByIdTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userGetProjectByIdTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         ProjectResponse byId = ProjectManagementSteps.getProjectById(project.getId(), user);
 
         softly.assertThat(byId.getId()).as("Поле id").isEqualTo(project.getId());
@@ -97,9 +97,8 @@ public class ProjectManagementTest extends BaseTest {
     }
 
     @DisplayName("Негативный тест: получение информации о проекте по несуществующему id")
-    @WithUsersQueue
     @Test
-    public void userGetProjectByNotExistIdTest(CreateUserResponse user) {
+    public void userGetProjectByNotExistIdTest(@User CreateUserResponse user) {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
@@ -113,10 +112,11 @@ public class ProjectManagementTest extends BaseTest {
     }
 
     @DisplayName("Позитивный тест: обновление имени проекта")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userUpdateProjectNameTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userUpdateProjectNameTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         String updatedName = (project.getName() + "_updated").toLowerCase();
 
         String responseBody = ProjectManagementSteps.updateProjectName(project.getId(), updatedName, user);
@@ -130,10 +130,11 @@ public class ProjectManagementTest extends BaseTest {
     }
 
     @DisplayName("Позитивный тест: удаление проекта")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userDeleteProjectTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userDeleteProjectTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
@@ -148,9 +149,8 @@ public class ProjectManagementTest extends BaseTest {
     }
 
     @DisplayName("Негативный тест: удаление несуществующего проекта")
-    @WithUsersQueue
     @Test
-    public void userDeleteNotExistProjectTest(CreateUserResponse user) {
+    public void userDeleteNotExistProjectTest(@User CreateUserResponse user) {
         ErrorResponse errorResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,

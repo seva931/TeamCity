@@ -10,9 +10,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface User {
+    String UNDEFINED = "UNDEFINED UNDEFINED";
+
     RoleId role() default RoleId.SYSTEM_ADMIN;
-    String username() default "default";
-    String password() default "default";
-    boolean useExisting() default false;
-    boolean addToCleanup() default true;
+    String username() default UNDEFINED;
+    String password() default UNDEFINED;
 }

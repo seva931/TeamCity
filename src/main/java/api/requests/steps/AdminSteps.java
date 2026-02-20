@@ -24,6 +24,18 @@ public class AdminSteps {
         return createUserRequest;
     }
 
+    public static CreateUserResponse createUser(CreateUserRequest request) {
+        CreateUserResponse response = new ValidatedCrudRequester<CreateUserResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.USERS,
+                ResponseSpecs.requestReturnsOk()
+        ).post(request);
+
+        response.setTestData(CreateUserResponse.TestData.builder().password(request.getPassword()).build());
+
+        return response;
+    }
+
     public static CreateUserResponse createUserWithRole(String username, String password, RoleId role) {
         CreateUserRequest request = CreateUserRequest.builder()
                 .username(username)
@@ -111,5 +123,45 @@ public class AdminSteps {
                 Endpoint.USERS_USERNAME,
                 ResponseSpecs.requestReturnsOk())
                 .get(username);
+    }
+
+    public static long getDefaultAgentId() {
+        return new ValidatedCrudRequester<AgentsResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get().getAgent().getFirst().getId();
+    }
+
+    public static void deleteBuildTypeQuietly(String buildId) {
+        new CrudRequester(
+                RequestSpecs.adminSpec(),
+                Endpoint.BUILD_TYPES_ID,
+                ResponseSpecs.deletesQuietly())
+                .delete(buildId);
+    }
+
+    public static CreateBuildTypeResponse createBuildType(CreateBuildTypeRequest request) {
+
+        return new ValidatedCrudRequester<CreateBuildTypeResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.BUILD_TYPES,
+                ResponseSpecs.requestReturnsOk())
+                .post(request);
+    }
+
+    public static void deleteProjectByIdQuietly(String projectId) {
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.PROJECT_ID,
+                ResponseSpecs.deletesQuietly())
+                .delete(projectId);
+    }
+
+    public static ProjectResponse createProject(CreateProjectRequest request) {
+        return new ValidatedCrudRequester<ProjectResponse>(
+                RequestSpecs.adminSpec(),
+                Endpoint.PROJECTS,
+                ResponseSpecs.requestReturnsOk())
+                .post(request);
     }
 }

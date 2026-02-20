@@ -4,41 +4,33 @@ import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
+import api.requests.steps.AdminSteps;
 import api.requests.steps.AgentSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
 import common.data.RoleId;
 import io.restassured.http.ContentType;
-import jupiter.annotation.*;
 import jupiter.annotation.User;
+import jupiter.annotation.WithAgent;
+import jupiter.annotation.meta.ApiTest;
 import jupiter.extension.AgentExtension;
-import jupiter.extension.UserExtension;
-import jupiter.extension.UsersQueueExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.List;
-
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@Isolated
-@ExtendWith({
-        UsersQueueExtension.class,
-        UserExtension.class,
-        AgentExtension.class
-})
+@ApiTest
+@ExtendWith(AgentExtension.class)
 public class AgentsTest extends BaseTest {
 
     private static final long NON_EXISTENT_AGENT_ID = 999_999L;
 
-    @WithUsersQueue
     @WithAgent
     @Test
-    void shouldProvideListOfAvailableAgents(CreateUserResponse user) {
+    void shouldProvideListOfAvailableAgents(@User CreateUserResponse user) {
         AgentsResponse response = new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS,
@@ -56,15 +48,15 @@ public class AgentsTest extends BaseTest {
                 .hasSize(response.getCount());
     }
 
-    @WithUsersQueue
+    @WithAgent
     @ParameterizedTest
     @CsvSource({"false,false", "true,true"})
     void shouldDisableOrEnableAgentById(
             String bodyMessage,
             String responseText,
-            CreateUserResponse user,
-            @Agents(agents = {@AgentParam}) List<Agent> agents) {
-        long agentId = agents.getFirst().getId();
+            @User CreateUserResponse user,
+            Agent[] agents) {
+        long agentId = agents[0].getId();
 
         String response = new CrudRequester(
                 RequestSpecs.withBasicAuth(user)
@@ -86,15 +78,16 @@ public class AgentsTest extends BaseTest {
                 .isEqualTo(Boolean.parseBoolean(responseText));
     }
 
-    @WithUsersQueue
+    @WithAgent
     @ParameterizedTest
     @CsvSource({"false,false", "true,true"})
     void shouldAuthorizeOrUnauthorizeAgentById(
             String bodyMessage,
             String responseText,
-            CreateUserResponse user,
-            @Agents(agents = {@AgentParam}) List<Agent> agents) {
-        long agentId = agents.getFirst().getId();
+            @User CreateUserResponse user,
+            Agent[] agents) {
+
+        long agentId = agents[0].getId();
 
         String response = new CrudRequester(
                 RequestSpecs.withBasicAuth(user)
@@ -117,12 +110,12 @@ public class AgentsTest extends BaseTest {
                 .isEqualTo(Boolean.parseBoolean(responseText));
     }
 
-    @WithUsersQueue
+    @WithAgent
     @Test
     void shouldProvideInfoAboutAgentById(
-            CreateUserResponse user,
-            @Agents(agents = {@AgentParam}) List<Agent> agents) {
-        long agentId = agents.getFirst().getId();
+            @User CreateUserResponse user,
+            Agent[] agents) {
+        long agentId = agents[0].getId();
 
         AgentResponse response = new ValidatedCrudRequester<AgentResponse>(
                 RequestSpecs.authAsUser(user),
@@ -134,19 +127,18 @@ public class AgentsTest extends BaseTest {
                 .as("Поля id и name")
                 .usingRecursiveComparison()
                 .comparingOnlyFields("id", "name")
-                .isEqualTo(agents.getFirst());
+                .isEqualTo(agents[0]);
     }
 
-    @WithUsersQueue
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfUnauthorizedAgents(
-            CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isAuthorized = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent unauthAgent = agents.getFirst();
-        Agent authAgent = agents.get(1);
+            @User CreateUserResponse user,
+            Agent[] agents) {
+        Agent unauthAgent = agents[0];
+        AgentSteps.unauthorizeAgent(unauthAgent.getId());
+        Agent authAgent = agents[1];
+        AgentSteps.authorizeAgent(authAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -167,16 +159,15 @@ public class AgentsTest extends BaseTest {
                 .doesNotContain(authAgent);
     }
 
-    @WithUsersQueue
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfAuthorizedAgents(
-            CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isAuthorized = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent unauthAgent = agents.getFirst();
-        Agent authAgent = agents.get(1);
+            @User CreateUserResponse user,
+            Agent[] agents) {
+        Agent unauthAgent = agents[0];
+        AgentSteps.unauthorizeAgent(unauthAgent.getId());
+        Agent authAgent = agents[1];
+        AgentSteps.authorizeAgent(authAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -197,16 +188,15 @@ public class AgentsTest extends BaseTest {
                 .doesNotContain(unauthAgent);
     }
 
-    @WithUsersQueue
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfEnabledAgents(
-            CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isEnabled = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent disabledAgent = agents.getFirst();
-        Agent enabledAgent = agents.get(1);
+            @User CreateUserResponse user,
+            Agent[] agents) {
+        Agent disabledAgent = agents[0];
+        AgentSteps.disableAgent(disabledAgent.getId());
+        Agent enabledAgent = agents[1];
+        AgentSteps.enableAgent(enabledAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -227,16 +217,15 @@ public class AgentsTest extends BaseTest {
                 .doesNotContain(disabledAgent);
     }
 
-    @WithUsersQueue
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfDisabledAgents(
-            CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isEnabled = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent disabledAgent = agents.getFirst();
-        Agent enabledAgent = agents.get(1);
+            @User CreateUserResponse user,
+            Agent[] agents) {
+        Agent disabledAgent = agents[0];
+        AgentSteps.disableAgent(disabledAgent.getId());
+        Agent enabledAgent = agents[1];
+        AgentSteps.enableAgent(enabledAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -257,9 +246,8 @@ public class AgentsTest extends BaseTest {
                 .doesNotContain(enabledAgent);
     }
 
-    @WithUsersQueue
     @Test
-    void shouldReturnNotFoundForNonexistentAgent(CreateUserResponse user) {
+    void shouldReturnNotFoundForNonexistentAgent(@User CreateUserResponse user) {
         ErrorsResponse response = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS_ID,
@@ -270,14 +258,16 @@ public class AgentsTest extends BaseTest {
         assertThat(response.getErrors())
                 .hasSize(1)
                 .filteredOn(e ->
-                        e.getMessage().equals(ApiAtributesOfResponse.NO_AGENT_CAN_BE_FOUND_BY_ID.getFormatedText(NON_EXISTENT_AGENT_ID)))
+                        e.getMessage().equals(ApiAtributesOfResponse
+                                .NO_AGENT_CAN_BE_FOUND_BY_ID
+                                .getFormatedText(NON_EXISTENT_AGENT_ID)))
                 .hasSize(1);
     }
 
-    @WithUsersQueue
     @Test
-    void shouldNotBeAbleToEnableAgentWithoutPermissions(@User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user, CreateUserResponse admin) {
-        long agentId = AgentSteps.getAgent(admin).getId();
+    void shouldNotBeAbleToEnableAgentWithoutPermissions(
+            @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user) {
+        long agentId = AdminSteps.getDefaultAgentId();
 
         ErrorsResponse response = new CrudRequester(
                 RequestSpecs
@@ -292,7 +282,9 @@ public class AgentsTest extends BaseTest {
         assertThat(response.getErrors())
                 .hasSize(1)
                 .filteredOn(e ->
-                        e.getMessage().equals(ApiAtributesOfResponse.YOU_DO_NOT_HAVE_ENABLE_DISABLE_AGENTS_ASSOCIATED_WITH_PROJECT_PERMISSION_FOR_POOL_DEFAULT.getMessage()))
+                        e.getMessage().equals(ApiAtributesOfResponse
+                                .YOU_DO_NOT_HAVE_ENABLE_DISABLE_AGENTS_ASSOCIATED_WITH_PROJECT_PERMISSION_FOR_POOL_DEFAULT
+                                .getMessage()))
                 .hasSize(1);
     }
 }

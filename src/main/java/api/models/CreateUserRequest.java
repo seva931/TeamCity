@@ -35,33 +35,14 @@ public class CreateUserRequest extends BaseModel {
         private List<Role> role;
     }
 
-    public static CreateUserRequest systemAdmin(String username, String password) {
-        return CreateUserRequest.builder()
-                .username(username)
-                .password(password)
-                .roles(Roles.builder()
-                        .role(List.of(
-                                Role.builder()
-                                        .roleId("SYSTEM_ADMIN")
-                                        .scope("g")
-                                        .build()
-                        ))
-                        .build())
-                .build();
-    }
-
     public static CreateUserRequest systemAdmin() {
         return CreateUserRequest.builder()
                 .username(TestDataGenerator.generateUsername())
                 .password(TestDataGenerator.generatePassword())
                 .roles(Roles.builder()
                         .role(List.of(
-                                Role.builder()
-                                        .roleId("SYSTEM_ADMIN")
-                                        .scope("g")
-                                        .build()
-                        ))
-                        .build())
+                                Role.builder().roleId("SYSTEM_ADMIN").scope("g").build())
+                        ).build())
                 .build();
     }
 

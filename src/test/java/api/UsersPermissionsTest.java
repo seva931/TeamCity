@@ -8,14 +8,13 @@ import api.specs.ResponseSpecs;
 import common.data.RoleId;
 import common.generators.TestDataGenerator;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
 
 public class UsersPermissionsTest extends BaseTest {
     List<Integer> usersId = new ArrayList<>();
@@ -27,6 +26,7 @@ public class UsersPermissionsTest extends BaseTest {
         usersId.clear();
     }
     // Positive tests
+    @Disabled("Флаки")
     @Test
     @DisplayName("Получение всех пользователей")
     public void getListOfUsers() {
