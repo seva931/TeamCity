@@ -34,6 +34,14 @@ public class ProjectManagementSteps {
                 .post(request);
     }
 
+    public static ProjectResponse createProject(CreateProjectRequest request, CreateUserResponse user) {
+        return new ValidatedCrudRequester<ProjectResponse>(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECTS,
+                ResponseSpecs.requestReturnsOk())
+                .post(request);
+    }
+
     public static ProjectResponse getProjectById(String projectId, CreateUserResponse user) {
         return new ValidatedCrudRequester<ProjectResponse>(
                 RequestSpecs.authAsUser(user),

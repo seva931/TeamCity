@@ -1,41 +1,27 @@
 package api.sample;
 
 import api.BaseTest;
-import api.models.AddNewRootResponse;
 import api.models.CreateBuildTypeResponse;
-import api.models.CreateProjectRequest;
 import api.models.CreateUserResponse;
+import api.models.ProjectResponse;
 import common.data.RoleId;
-import jupiter.annotation.*;
-import jupiter.extension.*;
+import jupiter.annotation.Build;
+import jupiter.annotation.Project;
+import jupiter.annotation.User;
+import jupiter.annotation.meta.ApiTest;
+import jupiter.annotation.meta.WithBuild;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({
-        UsersQueueExtension.class,
-        ProjectExtension.class,
-        BuildExtension.class,
-        UserExtension.class,
-        VcsExtension.class
-})
+@ApiTest
+@WithBuild
 public class SampleTest extends BaseTest {
 
-    @WithUsersQueue
-    @WithProject
-    @WithVcs(
-            url = "https://github.com/metaf-x/java-app.git",
-            branch = "refs/heads/main"
-    )
     @Test
     public void buildSampleTest(
-            CreateUserResponse admin,
-            CreateProjectRequest project,
-            @Build CreateBuildTypeResponse build,
             @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user,
-            AddNewRootResponse vcs
+            @Project ProjectResponse project,
+            @Build CreateBuildTypeResponse build
     ) {
-        System.out.println("Building Sample Test");
-        System.out.println(build);
 
         System.out.println("Project Sample Test");
         System.out.println(project);
@@ -43,10 +29,7 @@ public class SampleTest extends BaseTest {
         System.out.println("User Sample Test");
         System.out.println(user);
 
-        System.out.println("Admin Sample Test");
-        System.out.println(admin);
-
-        System.out.println("VCS Sample Test");
-        System.out.println(vcs);
+        System.out.println("Build Sample Test");
+        System.out.println(build);
     }
 }

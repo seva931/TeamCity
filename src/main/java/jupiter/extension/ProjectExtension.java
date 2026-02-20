@@ -1,91 +1,58 @@
 package jupiter.extension;
 
 import api.models.CreateProjectRequest;
-import api.models.CreateUserResponse;
 import api.models.ParentProject;
 import api.models.ProjectResponse;
-import api.requests.steps.ProjectManagementSteps;
-import common.data.ProjectData;
-import common.generators.TestDataGenerator;
-import jupiter.annotation.WithBuild;
-import jupiter.annotation.WithProject;
+import api.requests.steps.AdminSteps;
+import common.generators.RandomModelGenerator;
+import jupiter.annotation.Project;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-public class ProjectExtension implements BeforeEachCallback, ParameterResolver {
+public class ProjectExtension implements AfterEachCallback, ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE =
             ExtensionContext.Namespace.create(ProjectExtension.class);
 
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
-        WithProject anno = AnnotationSupport.findAnnotation(
-                context.getRequiredTestMethod(),
-                WithProject.class
-        ).orElse(null);
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
 
-        if (anno == null) {
-            WithBuild build = AnnotationSupport.findAnnotation(
-                    context.getRequiredTestMethod(), WithBuild.class
-            ).orElse(null);
-            if (build != null) {
-                anno = build.project();
-            }
+        Project anno = AnnotationSupport.findAnnotation(parameterContext.getParameter(), Project.class).orElseThrow(
+                () -> new ParameterResolutionException("@Project annotation is required"));
+
+        //setup request
+        CreateProjectRequest request = RandomModelGenerator.generate(CreateProjectRequest.class);
+
+        if (!Project.UNDEFINED.equals(anno.projectName())) {
+            request.setName(anno.projectName());
         }
 
-        if (anno != null) {
-            CreateUserResponse user = context.getStore(UsersQueueExtension.NAMESPACE)
-                    .get(context.getUniqueId(), CreateUserResponse.class);
+        if (!Project.UNDEFINED.equals(anno.projectId())) {
+            request.setId(anno.projectId());
+        }
 
-            if (user == null) {
-                throw new ExtensionConfigurationException("Добавьте аннотацию @WithUsersQueue или подключите UserQueueExtension в @ExtendsWith");
-            }
+        if (!Project.PARENT_PROJECT_ID.equals(anno.projectId())) {
+            request.setParentProject(ParentProject.builder().id(anno.parentProjectId()).build());
+        }
 
-            String parentProjectId = anno.parentProjectId().equals("default") ? ProjectData.PARENT_PROJECT.value : anno.parentProjectId();
-            String projectId = anno.projectId().equals("default") ? TestDataGenerator.generateProjectID() : anno.projectId();
-            String projectName = anno.projectName().equals("default") ? TestDataGenerator.generateProjectName() : anno.projectName();
+        //send request
+        ProjectResponse project = AdminSteps.createProject(request);
 
-            CreateProjectRequest project;
+        extensionContext.getStore(NAMESPACE).put(extensionContext.getUniqueId(), project);
+        return project;
+    }
 
-            if (anno.useExisting()) {
-                ProjectResponse projectById = ProjectManagementSteps.getProjectById(projectId, user);
-                project = CreateProjectRequest.builder()
-                        .parentProject(new ParentProject(projectById.getParentProject().getId()))
-                        .id(projectById.getId())
-                        .name(projectById.getName())
-                        .build();
-            } else {
-                ProjectResponse projectById = ProjectManagementSteps.createProject(
-                        projectId,
-                        projectName,
-                        new ParentProject(parentProjectId),
-                        user
-                );
-
-                project = CreateProjectRequest.builder()
-                        .parentProject(new ParentProject(projectById.getParentProject().getId()))
-                        .id(projectById.getId())
-                        .name(projectById.getName())
-                        .build();
-            }
-
-            context.getStore(NAMESPACE).put(context.getUniqueId(), project);
-
-            if (anno.addToCleanup() && !anno.useExisting()) {
-                context.getStore(NAMESPACE).put("project_cleanup", (ExtensionContext.Store.CloseableResource) () -> {
-                    ProjectManagementSteps.deleteProjectByIdQuietly(project.getId(), user);
-                });
-            }
+    @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+        ProjectResponse project = context.getStore(NAMESPACE).get(context.getUniqueId(), ProjectResponse.class);
+        if (project != null) {
+            AdminSteps.deleteProjectByIdQuietly(project.getId());
         }
     }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.getParameter().getType().equals(CreateProjectRequest.class);
-    }
-
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), CreateProjectRequest.class);
+        return parameterContext.getParameter().getType().equals(ProjectResponse.class)
+                && parameterContext.isAnnotated(Project.class);
     }
 }

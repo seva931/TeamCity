@@ -7,6 +7,11 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Agents {
-    AgentParam[] agents() default {};
+public @interface Project {
+    String UNDEFINED = "UNDEFINED";
+    String PARENT_PROJECT_ID = "_Root";
+
+    String parentProjectId() default PARENT_PROJECT_ID;
+    String projectName() default UNDEFINED;
+    String projectId() default UNDEFINED;
 }

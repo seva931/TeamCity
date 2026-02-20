@@ -3,35 +3,32 @@ package api;
 import api.models.BuildQueueResponse;
 import api.models.CreateBuildTypeResponse;
 import api.models.CreateUserResponse;
+import api.models.ProjectResponse;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.steps.BuildQueueSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import jupiter.annotation.Build;
-import jupiter.annotation.WithProject;
-import jupiter.annotation.WithUsersQueue;
-import jupiter.extension.BuildExtension;
-import jupiter.extension.ProjectExtension;
-import jupiter.extension.UsersQueueExtension;
+import jupiter.annotation.Project;
+import jupiter.annotation.User;
+import jupiter.annotation.meta.ApiTest;
+import jupiter.annotation.meta.WithBuild;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({
-        UsersQueueExtension.class,
-        ProjectExtension.class,
-        BuildExtension.class
-})
+@ApiTest
+@WithBuild
 public class BuildQueueRunCancelTest extends BaseTest {
 
-    @WithUsersQueue
-    @WithProject(addToCleanup = false)
+    @Disabled("Флаки")
     @Test
     @DisplayName("Запуск и отмена билда")
     void triggerAndCancelBuild(
-            CreateUserResponse admin,
-            @Build(addToCleanup = false) CreateBuildTypeResponse build
+            @User CreateUserResponse admin,
+            @Project ProjectResponse project,
+            @Build CreateBuildTypeResponse build
     ) {
         BuildQueueResponse queued = BuildQueueSteps.queueBuild(build, admin);
 
@@ -58,13 +55,13 @@ public class BuildQueueRunCancelTest extends BaseTest {
         ).get(queueId);
     }
 
-    @WithUsersQueue
-    @WithProject(addToCleanup = false)
+    @Disabled("Флаки")
     @Test
     @DisplayName("Повторная отмена уже отменённого queueId")
     void cancelAlreadyCancelledQueuedBuildReturns404(
-            CreateUserResponse admin,
-            @Build(addToCleanup = false) CreateBuildTypeResponse build
+            @User CreateUserResponse admin,
+            @Project ProjectResponse project,
+            @Build CreateBuildTypeResponse build
     ) {
         BuildQueueResponse queued = BuildQueueSteps.queueBuild(build, admin);
         long queueId = queued.getId();

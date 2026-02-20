@@ -12,25 +12,26 @@ import common.data.ApiAtributesOfResponse;
 import common.data.RoleId;
 import common.generators.RandomModelGenerator;
 import common.generators.TestDataGenerator;
+import jupiter.annotation.Project;
 import jupiter.annotation.User;
-import jupiter.annotation.WithProject;
-import jupiter.annotation.WithUsersQueue;
-import jupiter.extension.ProjectExtension;
-import jupiter.extension.UsersQueueExtension;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
+import jupiter.annotation.meta.ApiTest;
+import jupiter.annotation.meta.WithProject;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith({UsersQueueExtension.class, ProjectExtension.class})
-    public class ManageBuildTypeTest extends BaseTest {
+@ApiTest
+@WithProject
+public class ManageBuildTypeTest extends BaseTest {
 
     @DisplayName("Позитивный тест: создание билд конфигурации")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userCreateBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userCreateBuildTypeTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         CreateBuildTypeRequest createBuildTypeRequest = RandomModelGenerator.builder(CreateBuildTypeRequest.class).withProjectId(project.getId()).build();
 
         CreateBuildTypeResponse createBuildTypeResponse = new ValidatedCrudRequester<CreateBuildTypeResponse>(
@@ -48,10 +49,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @DisplayName("Негативный тест: создание билд конфигурации с именем уже созданной конфигурации")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userCanNotCreateBuildTypeWithSameNameTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userCanNotCreateBuildTypeWithSameNameTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         CreateBuildTypeRequest createFirstBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         CreateBuildTypeRequest createSecondBuildTypeRequest = RandomModelGenerator.builder(CreateBuildTypeRequest.class).withName(createFirstBuildTypeRequest.getName()).withProjectId(project.getId()).build();
@@ -68,10 +70,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @DisplayName("Позитивный тест: получение информации о созданной билд конфигурации")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userGetInfoBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userGetInfoBuildTypeTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         GetInfoBuildTypeResponse getInfoBuildTypeResponse = new ValidatedCrudRequester<GetInfoBuildTypeResponse>(
@@ -84,9 +87,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @DisplayName("Негативный тест: получение информации о не существующей билд конфигурации")
-    @WithUsersQueue
     @Test
-    public void userGetInfoAboutNotExistBuildTypeTest(CreateUserResponse user) {
+    public void userGetInfoAboutNotExistBuildTypeTest(@User CreateUserResponse user) {
         String buildId = TestDataGenerator.generateBuildId();
 
         new CrudRequester(
@@ -97,10 +99,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @DisplayName("Позитивный тест: получение информации о списке созданных билд конфигураций")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userGetInfoBuildTypeListTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userGetInfoBuildTypeListTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         GetBuildListInfoResponse getBuildListInfoResponse = new CrudRequester(
@@ -120,10 +123,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @DisplayName("Позитивный тест: удаление билд конфигурации")
-    @WithUsersQueue
-    @WithProject
+
     @Test
-    public void userDeleteBuildTypeTest(CreateUserResponse user, CreateProjectRequest project) {
+    public void userDeleteBuildTypeTest(
+            @User CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
@@ -144,9 +149,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @DisplayName("Негативный тест: удаление несуществующей билд конфигурации")
-    @WithUsersQueue
     @Test
-    public void userDeleteNotExistBuildTypeTest(CreateUserResponse user) {
+    public void userDeleteNotExistBuildTypeTest(@User CreateUserResponse user) {
         String buildId = TestDataGenerator.generateBuildId();
 
         new CrudRequester(
@@ -157,10 +161,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @DisplayName("Негативный тест: удаление билд конфигурации без прав админа")
-    @WithUsersQueue
-    @WithProject
     @Test
-    public void userDeleteBuildTypeWithoutRulesTest(@User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user, CreateProjectRequest project) {
+    public void userDeleteBuildTypeWithoutRulesTest(
+            @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user,
+            @Project ProjectResponse project
+    ) {
         CreateBuildTypeRequest createBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
 
         boolean isFindCreatedBuildType = BuildManageSteps.getAllBuildTypes().stream()
