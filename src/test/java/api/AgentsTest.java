@@ -11,23 +11,17 @@ import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
 import common.data.RoleId;
 import io.restassured.http.ContentType;
-import jupiter.annotation.AgentParam;
-import jupiter.annotation.Agents;
 import jupiter.annotation.User;
 import jupiter.annotation.WithAgent;
 import jupiter.annotation.meta.ApiTest;
 import jupiter.extension.AgentExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.List;
-
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@Isolated
 @ApiTest
 @ExtendWith(AgentExtension.class)
 public class AgentsTest extends BaseTest {
@@ -54,14 +48,15 @@ public class AgentsTest extends BaseTest {
                 .hasSize(response.getCount());
     }
 
+    @WithAgent
     @ParameterizedTest
     @CsvSource({"false,false", "true,true"})
     void shouldDisableOrEnableAgentById(
             String bodyMessage,
             String responseText,
             @User CreateUserResponse user,
-            @Agents(agents = {@AgentParam}) List<Agent> agents) {
-        long agentId = agents.getFirst().getId();
+            Agent[] agents) {
+        long agentId = agents[0].getId();
 
         String response = new CrudRequester(
                 RequestSpecs.withBasicAuth(user)
@@ -83,14 +78,16 @@ public class AgentsTest extends BaseTest {
                 .isEqualTo(Boolean.parseBoolean(responseText));
     }
 
+    @WithAgent
     @ParameterizedTest
     @CsvSource({"false,false", "true,true"})
     void shouldAuthorizeOrUnauthorizeAgentById(
             String bodyMessage,
             String responseText,
             @User CreateUserResponse user,
-            @Agents(agents = {@AgentParam}) List<Agent> agents) {
-        long agentId = agents.getFirst().getId();
+            Agent[] agents) {
+
+        long agentId = agents[0].getId();
 
         String response = new CrudRequester(
                 RequestSpecs.withBasicAuth(user)
@@ -113,11 +110,12 @@ public class AgentsTest extends BaseTest {
                 .isEqualTo(Boolean.parseBoolean(responseText));
     }
 
+    @WithAgent
     @Test
     void shouldProvideInfoAboutAgentById(
             @User CreateUserResponse user,
-            @Agents(agents = {@AgentParam}) List<Agent> agents) {
-        long agentId = agents.getFirst().getId();
+            Agent[] agents) {
+        long agentId = agents[0].getId();
 
         AgentResponse response = new ValidatedCrudRequester<AgentResponse>(
                 RequestSpecs.authAsUser(user),
@@ -129,18 +127,18 @@ public class AgentsTest extends BaseTest {
                 .as("Поля id и name")
                 .usingRecursiveComparison()
                 .comparingOnlyFields("id", "name")
-                .isEqualTo(agents.getFirst());
+                .isEqualTo(agents[0]);
     }
 
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfUnauthorizedAgents(
             @User CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isAuthorized = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent unauthAgent = agents.getFirst();
-        Agent authAgent = agents.get(1);
+            Agent[] agents) {
+        Agent unauthAgent = agents[0];
+        AgentSteps.unauthorizeAgent(unauthAgent.getId());
+        Agent authAgent = agents[1];
+        AgentSteps.authorizeAgent(authAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -161,15 +159,15 @@ public class AgentsTest extends BaseTest {
                 .doesNotContain(authAgent);
     }
 
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfAuthorizedAgents(
             @User CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isAuthorized = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent unauthAgent = agents.getFirst();
-        Agent authAgent = agents.get(1);
+            Agent[] agents) {
+        Agent unauthAgent = agents[0];
+        AgentSteps.unauthorizeAgent(unauthAgent.getId());
+        Agent authAgent = agents[1];
+        AgentSteps.authorizeAgent(authAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -190,15 +188,15 @@ public class AgentsTest extends BaseTest {
                 .doesNotContain(unauthAgent);
     }
 
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfEnabledAgents(
             @User CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isEnabled = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent disabledAgent = agents.getFirst();
-        Agent enabledAgent = agents.get(1);
+            Agent[] agents) {
+        Agent disabledAgent = agents[0];
+        AgentSteps.disableAgent(disabledAgent.getId());
+        Agent enabledAgent = agents[1];
+        AgentSteps.enableAgent(enabledAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
@@ -219,15 +217,15 @@ public class AgentsTest extends BaseTest {
                 .doesNotContain(disabledAgent);
     }
 
+    @WithAgent(count = 2)
     @Test
     void shouldReturnListOfDisabledAgents(
             @User CreateUserResponse user,
-            @Agents(agents = {
-                    @AgentParam(isEnabled = "false"),
-                    @AgentParam
-            }) List<Agent> agents) {
-        Agent disabledAgent = agents.getFirst();
-        Agent enabledAgent = agents.get(1);
+            Agent[] agents) {
+        Agent disabledAgent = agents[0];
+        AgentSteps.disableAgent(disabledAgent.getId());
+        Agent enabledAgent = agents[1];
+        AgentSteps.enableAgent(enabledAgent.getId());
 
         AgentsResponse response = new CrudRequester(
                 RequestSpecs
