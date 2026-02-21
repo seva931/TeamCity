@@ -6,7 +6,7 @@ import org.openqa.selenium.By;
 
 import static com.codeborne.selenide.Selenide.$;
 
-public class ProjectPage extends BasePage<ProjectPage>{
+public class ProjectsPage extends BasePage<ProjectsPage>{
 
     private SelenideElement createBuildTypeButton = $(By.xpath("(//*[@data-test='ring-dropdown']//*/button[@title='add'])[last()]"));
     private SelenideElement newBuildConfigurationButton = $(By.xpath("//*/span[contains(text(),'New build configuration')]/../.."));
@@ -19,11 +19,11 @@ public class ProjectPage extends BasePage<ProjectPage>{
         return String.format("/project/%s?mode=builds", projectId);
     }
 
-    public ProjectPage open(String projectId) {
-        return Selenide.open(url(projectId), ProjectPage.class);
+    public ProjectsPage open(String projectId) {
+        return Selenide.open(url(projectId), ProjectsPage.class);
     }
 
-    public ProjectPage goToCreateBuildType(){
+    public ProjectsPage goToCreateBuildType(){
         createBuildTypeButton.click();
         newBuildConfigurationButton.click();
         return this;

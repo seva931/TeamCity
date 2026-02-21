@@ -13,7 +13,7 @@ import jupiter.annotation.meta.WebTest;
 import org.junit.jupiter.api.Test;
 import ui.pages.BuildTypePage;
 import ui.pages.CreateBuildTypePage;
-import ui.pages.ProjectPage;
+import ui.pages.ProjectsPage;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +27,7 @@ public class ManageBuildTypeTest extends BaseUITest{
                                            @Project ProjectResponse project) {
 
         String buildName = TestDataGenerator.generateBuildName();
-        new ProjectPage().open(project.getId()).goToCreateBuildType().getPage(CreateBuildTypePage.class).createBuildTypePage(buildName);
+        new ProjectsPage().open(project.getId()).goToCreateBuildType().getPage(CreateBuildTypePage.class).createBuildTypePage(buildName);
         new BuildTypePage().open(project.getId(), buildName).checkCreatedBuildType(buildName);
         boolean isFind = BuildManageSteps.getAllBuildTypes().stream()
                 .anyMatch(build -> build.getName().equals(buildName));
@@ -40,8 +40,8 @@ public class ManageBuildTypeTest extends BaseUITest{
     public void userCanNotCreateBuildTypeWithSameNameTest(@User CreateUserResponse user,
                                                           @Project ProjectResponse project) {
         CreateBuildTypeRequest createFirstBuildTypeRequest = BuildManageSteps.createBuildType(project.getId()).request();
-        new ProjectPage().open(project.getId()).goToCreateBuildType().getPage(CreateBuildTypePage.class).createBuildTypePage(createFirstBuildTypeRequest.getName()).checkAlert(createFirstBuildTypeRequest.getName(), project.getName());
-        new ProjectPage().open(project.getId());
+        new ProjectsPage().open(project.getId()).goToCreateBuildType().getPage(CreateBuildTypePage.class).createBuildTypePage(createFirstBuildTypeRequest.getName()).checkAlert(createFirstBuildTypeRequest.getName(), project.getName());
+        new ProjectsPage().open(project.getId());
         long count = BuildManageSteps.getAllBuildTypes().stream()
                 .filter(build -> build.getName().equals(createFirstBuildTypeRequest.getName())).count();
 
@@ -52,6 +52,6 @@ public class ManageBuildTypeTest extends BaseUITest{
     @Test
     public void userCanNotCreateBuildTypeWithEmptyNameTest(@User CreateUserResponse user,
                                            @Project ProjectResponse project) {
-        new ProjectPage().open(project.getId()).goToCreateBuildType().getPage(CreateBuildTypePage.class).checkDisableButtonCreate();
+        new ProjectsPage().open(project.getId()).goToCreateBuildType().getPage(CreateBuildTypePage.class).checkDisableButtonCreate();
     }
 }
