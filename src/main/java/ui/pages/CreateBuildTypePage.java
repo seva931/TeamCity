@@ -1,17 +1,17 @@
 package ui.pages;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
-import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
 
 import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.switchTo;
-import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class CreateBuildTypePage extends BasePage <CreateBuildTypePage>{
-
-    private SelenideElement newBuildConfigurationNameInput = $(Selectors.byAttribute("data-test", "ring-input"));
-    private SelenideElement saveChangesButton = $(Selectors.byText("Create"));
+    private SelenideElement newBuildConfigurationNameInput = $(By.xpath("//*[contains(text(),'Name')]/..//*/input"));
+    private SelenideElement saveChangesButton = $(By.xpath("//*/button[contains(text(),'Create')]"));
+    private SelenideElement saveChangesDisabledButton = $(By.xpath("//*/button[@disabled='' and contains(text(),'Create')]"));
 
     @Override
     public String url() {
@@ -28,15 +28,16 @@ public class CreateBuildTypePage extends BasePage <CreateBuildTypePage>{
         return this;
     }
 
-    public CreateBuildTypePage checkAlert(){
-
+    public CreateBuildTypePage checkAlert(String buildName, String projectName){
+        String errorMessage = String.format("Build configuration with name \"%s\" already exists in project: \"%s\"", buildName, projectName);
+        SelenideElement noticeErrorPopup = $(Selectors.byText(errorMessage));
+        //SelenideElement noticeErrorPopup = $(By.xpath("//*[contains(text(),'" + errorMessage + "')]"));
+        noticeErrorPopup.shouldBe(Condition.visible);
         return this;
     }
 
     public CreateBuildTypePage checkDisableButtonCreate(){
-
+        saveChangesDisabledButton.shouldBe(Condition.visible);
         return this;
     }
-
-
 }

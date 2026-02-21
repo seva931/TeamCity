@@ -1,15 +1,15 @@
 package ui.pages;
 
-import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import org.openqa.selenium.By;
 
 import static com.codeborne.selenide.Selenide.$;
 
 public class ProjectPage extends BasePage<ProjectPage>{
 
-    private SelenideElement createBuildTypeButton = $(Selectors.byAttribute("data-test", "ring-icon"));
-    private SelenideElement newBuildConfigurationButton = $(Selectors.byAttribute("data-test", "ring-list-item-label"));
+    private SelenideElement createBuildTypeButton = $(By.xpath("(//*[@data-test='ring-dropdown']//*/button[@title='add'])[last()]"));
+    private SelenideElement newBuildConfigurationButton = $(By.xpath("//*/span[contains(text(),'New build configuration')]/../.."));
 
     @Override
     public String url() {
