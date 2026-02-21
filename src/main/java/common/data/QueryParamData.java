@@ -5,8 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum BuildStepPropertyData {
-    SCRIPT_CONTENT("script.content"),
-    USE_CUSTOM_SCRIPT("use.custom.script");
+public enum QueryParamData {
+    LOCATOR("locator");
     private final String name;
 }

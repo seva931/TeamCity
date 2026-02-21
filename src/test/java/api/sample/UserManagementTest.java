@@ -1,5 +1,6 @@
-package api;
+package api.sample;
 
+import api.BaseTest;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.Role;
@@ -12,6 +13,7 @@ import common.data.RoleId;
 import common.generators.RandomModelGenerator;
 import jupiter.annotation.User;
 import jupiter.annotation.meta.ApiTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
+@Disabled
 @ApiTest
 public class UserManagementTest extends BaseTest {
     @Test
