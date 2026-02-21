@@ -5,7 +5,7 @@ import com.codeborne.selenide.ElementsCollection;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$$;
 
-public class AgentsOverviewPage extends BasePage<AgentsOverviewPage>{
+public class AgentsOverviewPage extends BasePage<AgentsOverviewPage> {
     @Override
     public String url() {
         return "/agents/overview";
