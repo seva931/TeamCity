@@ -4,7 +4,6 @@ import api.BaseTest;
 import api.models.CreateBuildTypeResponse;
 import api.models.CreateUserResponse;
 import api.models.ProjectResponse;
-import common.data.RoleId;
 import jupiter.annotation.Build;
 import jupiter.annotation.Project;
 import jupiter.annotation.User;
@@ -18,10 +17,10 @@ public class SampleTest extends BaseTest {
 
     @Test
     public void buildSampleTest(
-            @User(role = RoleId.PROJECT_VIEWER) CreateUserResponse user,
+            @User CreateUserResponse user,
             @Project ProjectResponse project,
             @Build CreateBuildTypeResponse build
-    ) {
+    ){
 
         System.out.println("Project Sample Test");
         System.out.println(project);

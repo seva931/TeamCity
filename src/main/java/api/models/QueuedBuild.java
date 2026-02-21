@@ -1,18 +1,18 @@
 package api.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class BuildQueueResponse extends BaseModel {
-    private Long id;
+@AllArgsConstructor
+@Builder
+public class QueuedBuild {
+    private long id;
     private String buildTypeId;
     private String state;
+    private String href;
+    private String webUrl;
 }
