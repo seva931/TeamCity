@@ -3,17 +3,18 @@ package api;
 import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
-import api.requests.steps.ProjectManagementSteps;
+import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.ApiAtributesOfResponse;
+import common.generators.RandomModelGenerator;
+import io.restassured.http.ContentType;
 import jupiter.annotation.Project;
 import jupiter.annotation.User;
 import jupiter.annotation.meta.ApiTest;
 import jupiter.annotation.meta.WithBuild;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @ApiTest
@@ -28,7 +29,12 @@ public class ProjectManagementTest extends BaseTest {
             @User CreateUserResponse user,
             @Project ProjectResponse project
     ) {
-        ProjectListResponse list = ProjectManagementSteps.getAllProjects(user);
+        ProjectListResponse list = new CrudRequester(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECTS,
+                ResponseSpecs.ok()
+        ).get()
+                .extract().as(ProjectListResponse.class);
 
         boolean existsInList = list.getProject() != null && list.getProject().stream()
                 .anyMatch(p -> project.getId().equals(p.getId()));
@@ -37,7 +43,12 @@ public class ProjectManagementTest extends BaseTest {
                 .as("Проект присутствует в списке проектов по id")
                 .isTrue();
 
-        ProjectResponse byId = ProjectManagementSteps.getProjectById(project.getId(), user);
+        ProjectResponse byId = new ValidatedCrudRequester<ProjectResponse>(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECT_ID,
+                ResponseSpecs.requestReturnsOk()
+        ).get(project.getId());
+
         softly.assertThat(byId.getId()).as("GET by id: поле id").isEqualTo(project.getId());
         softly.assertThat(byId.getName()).as("GET by id: поле name").isEqualTo(project.getName());
     }
@@ -50,19 +61,30 @@ public class ProjectManagementTest extends BaseTest {
     ) {
         String secondName = (project.getName() + "_second").toLowerCase();
 
-        CreateProjectRequest duplicateRequest = CreateProjectRequest.builder()
-                .id(project.getId())
-                .name(secondName)
-                .parentProject(ParentProject.root())
+        CreateProjectRequest duplicateRequest = RandomModelGenerator.builder(CreateProjectRequest.class)
+                .with("id", project.getId())
+                .withName(secondName)
+                .with("parentProject", ParentProject.root())
                 .build();
 
-        new CrudRequester(
+        ErrorResponse errorResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECTS,
                 ResponseSpecs.badRequest()
-        ).post(duplicateRequest);
+        ).post(duplicateRequest)
+                .extract().as(ErrorResponse.class);
 
-        ProjectResponse byId = ProjectManagementSteps.getProjectById(project.getId(), user);
+        assertThat(errorResponse.getErrors())
+                .as("errors в ответе")
+                .isNotNull()
+                .isNotEmpty();
+
+        ProjectResponse byId = new ValidatedCrudRequester<ProjectResponse>(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECT_ID,
+                ResponseSpecs.requestReturnsOk()
+        ).get(project.getId());
+
         softly.assertThat(byId.getName()).as("Имя проекта не изменилось").isEqualTo(project.getName());
     }
 
@@ -72,7 +94,12 @@ public class ProjectManagementTest extends BaseTest {
             @User CreateUserResponse user,
             @Project ProjectResponse project
     ) {
-        ProjectListResponse list = ProjectManagementSteps.getAllProjects(user);
+        ProjectListResponse list = new CrudRequester(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECTS,
+                ResponseSpecs.ok()
+        ).get()
+                .extract().as(ProjectListResponse.class);
 
         softly.assertThat(list.getCount()).as("Поле count").isNotNull().isGreaterThan(0);
         softly.assertThat(list.getProject()).as("Поле project").isNotNull().isNotEmpty();
@@ -90,7 +117,11 @@ public class ProjectManagementTest extends BaseTest {
             @User CreateUserResponse user,
             @Project ProjectResponse project
     ) {
-        ProjectResponse byId = ProjectManagementSteps.getProjectById(project.getId(), user);
+        ProjectResponse byId = new ValidatedCrudRequester<ProjectResponse>(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECT_ID,
+                ResponseSpecs.requestReturnsOk()
+        ).get(project.getId());
 
         softly.assertThat(byId.getId()).as("Поле id").isEqualTo(project.getId());
         softly.assertThat(byId.getName()).as("Поле name").isEqualTo(project.getName());
@@ -99,19 +130,30 @@ public class ProjectManagementTest extends BaseTest {
     @DisplayName("Негативный тест: получение информации о проекте по несуществующему id")
     @Test
     public void userGetProjectByNotExistIdTest(@User CreateUserResponse user) {
-        new CrudRequester(
+        ErrorResponse errorResponse = new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.PROJECT_ID,
-                ResponseSpecs.notFoundWithErrorText(
+                ResponseSpecs.notFound()
+        ).get(NOT_EXISTS_ID)
+                .extract().as(ErrorResponse.class);
+
+        assertThat(errorResponse)
+                .as("Тело ответа ошибки не null")
+                .isNotNull();
+
+        assertThat(errorResponse.getErrors())
+                .as("Список errors")
+                .isNotNull()
+                .hasSize(1)
+                .filteredOn(e -> e.getMessage().equals(
                         ApiAtributesOfResponse.NO_PROJECT_FOUND_BY_ID_ERROR.getFormatedText(
                                 NOT_EXISTS_ID,
                                 NOT_EXISTS_ID
-                        )
-                )
-        ).get(NOT_EXISTS_ID);
+                        )))
+                .hasSize(1);
     }
 
-    @DisplayName("Позитивный тест: обновление имени проекта")
+    @DisplayName("Позитивный тест: обновление параметра name проекта")
     @Test
     public void userUpdateProjectNameTest(
             @User CreateUserResponse user,
@@ -119,12 +161,27 @@ public class ProjectManagementTest extends BaseTest {
     ) {
         String updatedName = (project.getName() + "_updated").toLowerCase();
 
-        String responseBody = ProjectManagementSteps.updateProjectName(project.getId(), updatedName, user);
+        String responseBody = new CrudRequester(
+                RequestSpecs.authAsUser(user, ContentType.TEXT),
+                Endpoint.PROJECT_NAME,
+                ResponseSpecs.requestReturnsOk()
+        ).put(project.getId(), updatedName)
+                .extract()
+                .asString();
+
         softly.assertThat(responseBody)
                 .as("PUT /parameters/name: тело ответа")
                 .isEqualTo(updatedName);
 
-        softly.assertThat(ProjectManagementSteps.getProjectNameParam(project.getId(), user))
+        String nameParam = new CrudRequester(
+                RequestSpecs.authAsUser(user, ContentType.TEXT),
+                Endpoint.PROJECT_NAME,
+                ResponseSpecs.requestReturnsOk()
+        ).get(project.getId())
+                .extract()
+                .asString();
+
+        softly.assertThat(nameParam)
                 .as("GET /parameters/name возвращает обновлённое значение")
                 .isEqualTo(updatedName);
     }
@@ -146,6 +203,20 @@ public class ProjectManagementTest extends BaseTest {
                 Endpoint.PROJECT_ID,
                 ResponseSpecs.notFound()
         ).get(project.getId());
+
+        ProjectListResponse list = new CrudRequester(
+                RequestSpecs.authAsUser(user),
+                Endpoint.PROJECTS,
+                ResponseSpecs.ok()
+        ).get()
+                .extract().as(ProjectListResponse.class);
+
+        boolean existsInList = list.getProject() != null && list.getProject().stream()
+                .anyMatch(p -> project.getId().equals(p.getId()));
+
+        softly.assertThat(existsInList)
+                .as("Удалённый проект отсутствует в списке проектов по id")
+                .isFalse();
     }
 
     @DisplayName("Негативный тест: удаление несуществующего проекта")
@@ -158,7 +229,13 @@ public class ProjectManagementTest extends BaseTest {
         ).delete(NOT_EXISTS_ID)
                 .extract().as(ErrorResponse.class);
 
+        assertThat(errorResponse)
+                .as("Тело ответа ошибки не null")
+                .isNotNull();
+
         assertThat(errorResponse.getErrors())
+                .as("Список errors")
+                .isNotNull()
                 .hasSize(1)
                 .filteredOn(e -> e.getMessage().equals(
                         ApiAtributesOfResponse.NO_PROJECT_FOUND_BY_ID_ERROR.getFormatedText(
