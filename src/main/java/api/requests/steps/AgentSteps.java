@@ -12,6 +12,8 @@ import api.specs.ResponseSpecs;
 import common.data.QueryParamData;
 import io.restassured.http.ContentType;
 
+import java.util.List;
+
 public class AgentSteps {
 
     public static AgentsResponse getAgents(CreateUserResponse user) {
