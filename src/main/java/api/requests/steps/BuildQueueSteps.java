@@ -1,9 +1,6 @@
 package api.requests.steps;
 
-import api.models.BuildQueueResponse;
-import api.models.CreateBuildTypeResponse;
-import api.models.CreateUserResponse;
-import api.models.QueueBuildRequest;
+import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.specs.RequestSpecs;
@@ -13,7 +10,7 @@ import io.restassured.http.ContentType;
 public class BuildQueueSteps {
 
     public static BuildQueueResponse queueBuild(CreateBuildTypeResponse build, CreateUserResponse user) {
-        QueueBuildRequest body = QueueBuildRequest.of(build.getId());
+        BuildQueueRequest body = BuildQueueRequest.of(build.getId());
 
         return new CrudRequester(
                 RequestSpecs.authAsUser(user, ContentType.JSON),
@@ -30,5 +27,19 @@ public class BuildQueueSteps {
                 Endpoint.BUILD_QUEUE_ID,
                 ResponseSpecs.noContent()
         ).delete(queueId);
+    }
+
+    public static BuildQueueListResponse getAllQueuedBuilds(CreateUserResponse user) {
+        return new CrudRequester(
+                RequestSpecs.authAsUser(user, ContentType.JSON),
+                Endpoint.BUILD_QUEUE,
+                ResponseSpecs.requestReturnsOk()
+        ).get().extract().as(BuildQueueListResponse.class);
+    }
+
+    public static BuildQueueResponse queueEndlessBuild(CreateBuildTypeResponse build, CreateUserResponse user) {
+
+        BuildStepsSteps.addEndlessStep(user, build);
+        return BuildQueueSteps.queueBuild(build, user);
     }
 }
