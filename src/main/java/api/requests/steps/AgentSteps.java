@@ -9,7 +9,10 @@ import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.data.QueryParamData;
 import io.restassured.http.ContentType;
+
+import java.util.List;
 
 public class AgentSteps {
 
@@ -32,7 +35,31 @@ public class AgentSteps {
     public static AgentsResponse getAllAgents() {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.withAdminBasicAuth()
-                        .addQueryParam("locator", "authorized:true,enabled:true,connected:true")
+                        .addQueryParam(QueryParamData.LOCATOR.getName(), "authorized:true,enabled:true,connected:true")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get();
+    }
+
+    public static AgentsResponse getAllEnabledAgents() {
+        return new ValidatedCrudRequester<AgentsResponse>(
+                RequestSpecs.withAdminBasicAuth()
+                        .addQueryParam(QueryParamData.LOCATOR.getName(), "enabled:true")
+                        .setAccept(ContentType.JSON)
+                        .setContentType(ContentType.JSON)
+                        .build(),
+                Endpoint.AGENTS,
+                ResponseSpecs.requestReturnsOk()
+        ).get();
+    }
+
+    public static AgentsResponse getAllDisabledAgents() {
+        return new ValidatedCrudRequester<AgentsResponse>(
+                RequestSpecs.withAdminBasicAuth()
+                        .addQueryParam(QueryParamData.LOCATOR.getName(), "enabled:false")
                         .setAccept(ContentType.JSON)
                         .setContentType(ContentType.JSON)
                         .build(),
@@ -100,5 +127,17 @@ public class AgentSteps {
                 Endpoint.AGENTS_ID,
                 ResponseSpecs.requestReturnsOk()
         ).get(agentId);
+    }
+
+    public static void disableAllAgents() {
+        AgentSteps.getAllEnabledAgents().getAgent().forEach(agent -> {
+            AgentSteps.disableAgent(agent.getId());
+        });
+    }
+
+    public static void enableAllAgents() {
+        AgentSteps.getAllDisabledAgents().getAgent().forEach(agent -> {
+            AgentSteps.enableAgent(agent.getId());
+        });
     }
 }
