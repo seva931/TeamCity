@@ -26,7 +26,7 @@ public class TestDataGenerator {
     }
 
     public static String generateBuildName() {
-        return "build_name" + RandomStringUtils.randomAlphabetic(3).toLowerCase();
+        return "buildName" + RandomStringUtils.randomAlphabetic(3).toLowerCase();
     }
 
     public static String generateBuildId(String projectId, String buildName) {
