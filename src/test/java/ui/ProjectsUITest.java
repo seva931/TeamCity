@@ -10,6 +10,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ui.pages.ProjectsPage;
 
+import static com.codeborne.selenide.logevents.SelenideLogger.step;
+
 @WebTest
 @WithBuild
 public class ProjectsUITest extends BaseUITest {
@@ -20,10 +22,10 @@ public class ProjectsUITest extends BaseUITest {
             @User CreateUserResponse user,
             @Project ProjectResponse project
     ) {
-        ProjectsPage projectsPage = new ProjectsPage();
-
-        softly.assertThatCode(() -> projectsPage.open().shouldContainProjectId(project.getId()))
-                .as("На UI отображается проект с id: " + project.getId())
-                .doesNotThrowAnyException();
+        step("Открыть страницу проектов и проверить, что проект отображается в списке", () -> {
+            new ProjectsPage()
+                    .open()
+                    .shouldContainProjectId(project.getId());
+        });
     }
 }
