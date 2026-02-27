@@ -25,6 +25,9 @@
         <rgxgen.version>1.3</rgxgen.version>
         <selenide.version>7.14.0</selenide.version>
         <slf4j.version>2.0.17</slf4j.version>
+        <allure.version>2.33.0</allure.version>
+        <surefire.version>3.5.5</surefire.version>
+        <allure.maven.version>2.17.0</allure.maven.version>
     </properties>
 
     <dependencies>
@@ -101,7 +104,7 @@
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-junit5</artifactId>
-            <version>2.33.0</version>
+            <version>${allure.version}</version>
         </dependency>
     </dependencies>
 
@@ -110,7 +113,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.5</version>
+                <version>${surefire.version}</version>
                 <configuration>
                     <systemPropertyVariables>
                         <uiRemote>${uiRemote}</uiRemote>
@@ -122,14 +125,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.5.5</version>
+                <version>${surefire.version}</version>
             </plugin>
             <plugin>
                 <groupId>io.qameta.allure</groupId>
                 <artifactId>allure-maven</artifactId>
-                <version>2.17.0</version>
+                <version>${allure.maven.version}</version>
                 <configuration>
-                    <reportVersion>2.33.0</reportVersion>
+                    <reportVersion>${allure.version}</reportVersion>
                     <resultsDirectory>${project.basedir}/allure-results</resultsDirectory>
                 </configuration>
             </plugin>
