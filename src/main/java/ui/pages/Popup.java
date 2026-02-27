@@ -29,7 +29,7 @@ public class Popup extends BaseComponent<Popup> {
     public Popup submit() {
         SelenideElement submitButton = self.$("button[type='submit']");
         submitButton.shouldBe(visible, enabled)
-                .scrollIntoView("{block: 'center'}")
+                .scrollTo()
                 .click(usingJavaScript());
         return this;
     }
