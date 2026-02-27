@@ -13,6 +13,8 @@ import static com.codeborne.selenide.Selenide.$x;
 
 public class ProjectsPage extends AuthorizedPage<ProjectsPage> {
 
+    private final SelenideElement buildNumberSearchInput = $x("//*[@id='headerSearchField']");
+
     @Override
     public String url() {
         return "/favorite/projects?mode=builds";
@@ -36,5 +38,10 @@ public class ProjectsPage extends AuthorizedPage<ProjectsPage> {
                 .map(e -> e.getAttribute("data-project-id"))
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    public ProjectsPage searchBuildByNumber(String buildNumber) {
+        buildNumberSearchInput.setValue(buildNumber);
+        return this;
     }
 }
