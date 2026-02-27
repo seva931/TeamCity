@@ -13,6 +13,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <test.groups></test.groups>
 
         <restassured.version>5.5.1</restassured.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
@@ -24,6 +25,9 @@
         <rgxgen.version>1.3</rgxgen.version>
         <selenide.version>7.14.0</selenide.version>
         <slf4j.version>2.0.17</slf4j.version>
+        <allure.version>2.33.0</allure.version>
+        <surefire.version>3.5.5</surefire.version>
+        <allure.maven.version>2.17.0</allure.maven.version>
     </properties>
 
     <dependencies>
@@ -97,6 +101,63 @@
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit5</artifactId>
+            <version>${allure.version}</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <uiRemote>${uiRemote}</uiRemote>
+                        <ui.baseUrl>${ui.baseUrl}</ui.baseUrl>
+                    </systemPropertyVariables>
+                    <groups>${test.groups}</groups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>${surefire.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+                <version>${allure.maven.version}</version>
+                <configuration>
+                    <reportVersion>${allure.version}</reportVersion>
+                    <resultsDirectory>${project.basedir}/allure-results</resultsDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <uiRemote></uiRemote>
+                <ui.baseUrl>http://localhost:8111</ui.baseUrl>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>selenoid</id>
+            <properties>
+                <uiRemote>http://localhost:4444/wd/hub</uiRemote>
+                <ui.baseUrl>http://teamcity-server:8111</ui.baseUrl>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
