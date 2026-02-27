@@ -73,3 +73,7 @@ build/
 *.env
 .env.local
 *.local.properties
+infra/.env
+
+allure-results
+.allure
