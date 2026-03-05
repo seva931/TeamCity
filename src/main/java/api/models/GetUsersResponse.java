@@ -14,6 +14,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class GetUsersResponse extends BaseModel{
     private int count;
-    private List<Object> user;
+    private List<User> user;
    
 }

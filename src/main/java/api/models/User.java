@@ -16,7 +16,7 @@ public class User extends BaseModel{
     private String href;
 
     private Properties properties;
-    private Role roles;
+    private Roles roles;
     private Groups groups;
 
     private String locator;

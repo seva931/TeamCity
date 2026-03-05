@@ -109,6 +109,19 @@ public class AdminSteps {
                 .extract()
                 .as(GetUsersResponse.class);
     }
+    public static User getUser(String username) {
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_USER, ResponseSpecs.ok())
+                .get(username)
+                .extract()
+                .as(User.class);
+    }
+    public static List<User> getAllUsersList() {
+        return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS, ResponseSpecs.ok())
+                .get()
+                .extract()
+                .as(GetUsersResponse.class)
+                .getUser(); // или getUsers()
+    }
 
     public static PermissionsResponse getPermissionsForUser(int id) {
         return new CrudRequester(RequestSpecs.adminSpec(), Endpoint.USERS_ID_PERMISSIONS, ResponseSpecs.ok())

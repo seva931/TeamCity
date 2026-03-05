@@ -24,6 +24,12 @@ public class TestDataGenerator {
     public static String generateProjectName() {
         return "project_name" + RandomStringUtils.randomAlphabetic(3).toLowerCase();
     }
+    public static String generateNameUI() {
+        return RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    }
+    public static String generatePasswordUI() {
+        return RandomStringUtils.randomAlphabetic(5).toLowerCase() + RandomStringUtils.randomNumeric(4);
+    }
 
     public static String generateBuildName() {
         return "build_name" + RandomStringUtils.randomAlphabetic(3).toLowerCase();
