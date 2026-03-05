@@ -12,32 +12,32 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.*;
 
 public class AdminPage extends BasePage<AdminPage> {
-    private SelenideElement buttonCreateProject = $("[aria-label='Create'] a");
-    private SelenideElement projectNameInput = $("[data-test='project-name-input']");
-    private SelenideElement createButton = $(Selectors.byText("Create"));
-    private SelenideElement buttonWithOutRepository = $$("a").findBy(text("Proceed without repository"));
-    private SelenideElement buttonSkip = $(Selectors.byText("Skip"));
-    private SelenideElement vcsRootOptions = $(Selectors.byText("VCS Roots"));
-    private SelenideElement buttonCreateRoot = $(Selectors.byText("Create VCS root"));
-    private SelenideElement vcsType = $("#-ufd-teamcity-ui-vcsName");
-    private SelenideElement gitOption = $("li[data-title='Git']");
-    private SelenideElement vcsRootName = $("#vcsRootName");
-    private SelenideElement vcsRootId = $("#externalId");
-    private SelenideElement fetchUrl = $("#url");
-    private SelenideElement defaultBranch = $("#branch");
-    private SelenideElement createRoot = $("[value='Create']");
-    private SelenideElement duplicateDialog = $(".duplicateVcsRootsDialog");
-    private SelenideElement duplicateCancel = duplicateDialog.$(".btn.cancel");
-    private SelenideElement adminButton = $("a[data-hint-container-id='header-administration-link']");
-    private SelenideElement userManagement = $(Selectors.byText("Users"));
-    private SelenideElement usersToShow = $("#usersToShow");
-    private SelenideElement createUserButton = $(".icon_before.icon16.addNew");
-    private SelenideElement setUsername = $("#input_teamcityUsername");
-    private SelenideElement setPassword = $("#password1");
-    private SelenideElement setConfirmPassword = $("#retypedPassword");
-    private SelenideElement createUserButtonFinal = $(".btn.btn_primary.submitButton");
-    private SelenideElement adminCheckbox = $("#administrator");
-    private SelenideElement errorName = $(".input-wrapper.input-wrapper_username");
+    private final SelenideElement buttonCreateProject = $("[aria-label='Create'] a");
+    private final SelenideElement projectNameInput = $("[data-test='project-name-input']");
+    private final SelenideElement createButton = $(Selectors.byText("Create"));
+    private final SelenideElement buttonWithOutRepository = $$("a").findBy(text("Proceed without repository"));
+    private final SelenideElement buttonSkip = $(Selectors.byText("Skip"));
+    private final SelenideElement vcsRootOptions = $(Selectors.byText("VCS Roots"));
+    private final SelenideElement buttonCreateRoot = $(Selectors.byText("Create VCS root"));
+    private final SelenideElement vcsType = $("#-ufd-teamcity-ui-vcsName");
+    private final SelenideElement gitOption = $("li[data-title='Git']");
+    private final SelenideElement vcsRootName = $("#vcsRootName");
+    private final SelenideElement vcsRootId = $("#externalId");
+    private final SelenideElement fetchUrl = $("#url");
+    private final SelenideElement defaultBranch = $("#branch");
+    private final SelenideElement createRoot = $("[value='Create']");
+    private final SelenideElement duplicateDialog = $(".duplicateVcsRootsDialog");
+    private final SelenideElement duplicateCancel = duplicateDialog.$(".btn.cancel");
+    private final SelenideElement adminButton = $("a[data-hint-container-id='header-administration-link']");
+    private final SelenideElement userManagement = $(Selectors.byText("Users"));
+    private final SelenideElement usersToShow = $("#usersToShow");
+    private final SelenideElement createUserButton = $(".icon_before.icon16.addNew");
+    private final SelenideElement setUsername = $("#input_teamcityUsername");
+    private final SelenideElement setPassword = $("#password1");
+    private final SelenideElement setConfirmPassword = $("#retypedPassword");
+    private final SelenideElement createUserButtonFinal = $(".btn.btn_primary.submitButton");
+    private final SelenideElement adminCheckbox = $("#administrator");
+    private final SelenideElement errorName = $(".input-wrapper.input-wrapper_username");
 
 
 
