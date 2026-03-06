@@ -24,6 +24,7 @@ jobs:
             --output "$TEAMCITY_DATA_ASSET"
 
       - name: Extract
+        working-directory: ./infra
         run: tar -xzf "$TEAMCITY_DATA_ASSET"
 
       - name: Set env
@@ -41,6 +42,10 @@ jobs:
               sleep 5
             done
           '
+      - name: Show TeamCity logs
+        if: failure()
+        working-directory: ./infra
+        run: docker compose logs teamcity-server
 
       - name: Stop
         working-directory: ./infra
