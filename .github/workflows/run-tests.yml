@@ -28,7 +28,7 @@ jobs:
 
       - name: Start TeamCity
         working-directory: ./infra
-        run: docker compose -f up -d
+        run: docker compose up -d
 
       - name: Wait for TeamCity
         run: |
