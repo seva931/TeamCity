@@ -56,12 +56,6 @@ jobs:
             done
           '
 
-      - name: Check Java and Maven
-        run: |
-          java -version
-          javac -version
-          mvn -version
-
       - name: Run tests
         run: |
           mvn test -Pselenoid 
