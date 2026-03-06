@@ -51,7 +51,7 @@ jobs:
       - name: Wait for TeamCity
         run: |
           timeout 600 bash -c '
-            until curl -fsS http://localhost:8111/mnt/get/currentState > /dev/null; do
+            until curl -fsS http://localhost:8111/login.html > /dev/null; do
               sleep 5
             done
           '
