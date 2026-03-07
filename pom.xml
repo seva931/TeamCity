@@ -28,6 +28,7 @@
         <allure.version>2.33.0</allure.version>
         <surefire.version>3.5.5</surefire.version>
         <allure.maven.version>2.17.0</allure.maven.version>
+        <maven.compiler.version>3.11.0</maven.compiler.version>
     </properties>
 
     <dependencies>
@@ -130,13 +131,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>${maven.compiler.version}</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.38</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>
@@ -171,7 +172,7 @@
         <profile>
             <id>selenoid</id>
             <properties>
-                <uiRemote>http://localhost:4444/wd/hub</uiRemote>
+                <uiRemote>http://selenoid:4444/wd/hub</uiRemote>
                 <ui.baseUrl>http://teamcity-server:8111</ui.baseUrl>
             </properties>
         </profile>
