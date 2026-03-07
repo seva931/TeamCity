@@ -173,7 +173,7 @@
             <id>selenoid</id>
             <properties>
                 <uiRemote>http://localhost:4444/wd/hub</uiRemote>
-                <ui.baseUrl>http://localhost:8111</ui.baseUrl>
+                <ui.baseUrl>http://teamcity-server:8111</ui.baseUrl>
             </properties>
         </profile>
     </profiles>
