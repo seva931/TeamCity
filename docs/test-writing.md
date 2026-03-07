@@ -54,7 +54,7 @@ public class MyUITest extends BaseUITest {
 | Аннотация | Что делает |
 |-----------|-----------|
 | `@ApiTest` | Подключает `UserExtension` + тег `api` |
-| `@WebTest` | Подключает `UserExtension`, `UiAuthExtension` + тег `web` |
+| `@WebTest` | Подключает `UserExtension`, `UiAuthExtension`, `BrowserExtension` + тег `web` |
 | `@WithBuild` | Подключает `ProjectExtension` и `BuildExtension` |
 | `@WithProject` | Подключает только `ProjectExtension` |
 
@@ -78,7 +78,7 @@ public class MyUITest extends BaseUITest {
 
 ```java
 @Test
-@WithAgent(count = 1)
+@WithAgent(configKeys = {"teamcity.agent.1.name"})
 void testWithAgent(Agent[] agents) { ... }
 ```
 
