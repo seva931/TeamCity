@@ -1,6 +1,12 @@
 package api.requests.steps;
 
-import api.models.*;
+import api.models.AddBuildStepRequest;
+import api.models.AddBuildStepResponse;
+import api.models.BuildStepProperties;
+import api.models.BuildStepProperty;
+import api.models.BuildStepsResponse;
+import api.models.CreateBuildTypeResponse;
+import api.models.CreateUserResponse;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
 import api.requests.skeleton.requesters.ValidatedCrudRequester;
@@ -9,13 +15,14 @@ import api.specs.ResponseSpecs;
 import common.data.BuildStepPropertyData;
 import common.data.BuildStepTypeData;
 import common.generators.RandomModelGenerator;
+import io.qameta.allure.Step;
 
 import java.util.List;
 
 public class BuildStepsSteps {
 
+    @Step("Получить все шаги build type '{build.id}'")
     public static BuildStepsResponse getAllSteps(CreateUserResponse user, CreateBuildTypeResponse build) {
-
         String buildId = build.getId();
 
         return new ValidatedCrudRequester<BuildStepsResponse>(
@@ -25,6 +32,7 @@ public class BuildStepsSteps {
         ).get(buildId);
     }
 
+    @Step("Создать шаг типа '{stepType}' для build type '{build.id}'")
     public static AddBuildStepResponse createStep(
             CreateUserResponse user,
             CreateBuildTypeResponse build,
@@ -45,6 +53,7 @@ public class BuildStepsSteps {
                 .extract().as(AddBuildStepResponse.class);
     }
 
+    @Step("Создать стандартный шаг для build type '{build.id}'")
     public static AddBuildStepResponse createStep(
             CreateUserResponse user,
             CreateBuildTypeResponse build) {
@@ -54,7 +63,10 @@ public class BuildStepsSteps {
         request.setType(BuildStepTypeData.SIMPLE_RUNNER.getType());
         BuildStepProperties properties = BuildStepProperties.builder().property(
                 List.of(
-                        BuildStepProperty.builder().name(BuildStepPropertyData.SCRIPT_CONTENT.getName()).value("echo Hello").build())
+                        BuildStepProperty.builder()
+                                .name(BuildStepPropertyData.SCRIPT_CONTENT.getName())
+                                .value("echo Hello")
+                                .build())
         ).build();
         request.setProperties(properties);
 
@@ -66,6 +78,7 @@ public class BuildStepsSteps {
                 .extract().as(AddBuildStepResponse.class);
     }
 
+    @Step("Создать шаг для build type '{build.id}' по готовому request")
     public static AddBuildStepResponse createStep(
             CreateUserResponse user,
             CreateBuildTypeResponse build,
@@ -79,6 +92,7 @@ public class BuildStepsSteps {
                 .extract().as(AddBuildStepResponse.class);
     }
 
+    @Step("Создать шаг для build type '{buildId}' по готовому request")
     public static AddBuildStepResponse createStep(
             CreateUserResponse user,
             AddBuildStepRequest request,
@@ -92,6 +106,7 @@ public class BuildStepsSteps {
                 .extract().as(AddBuildStepResponse.class);
     }
 
+    @Step("Удалить шаг '{stepId}' у build type '{build.id}'")
     public static void deleteStepQuietly(String stepId, CreateUserResponse user, CreateBuildTypeResponse build) {
         new CrudRequester(
                 RequestSpecs.authAsUser(user),
@@ -100,6 +115,7 @@ public class BuildStepsSteps {
         ).delete(build.getId(), stepId);
     }
 
+    @Step("Добавить endless step для build type '{build.id}'")
     public static AddBuildStepResponse addEndlessStep(
             CreateUserResponse user,
             CreateBuildTypeResponse build

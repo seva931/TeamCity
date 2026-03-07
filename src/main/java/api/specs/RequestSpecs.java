@@ -1,13 +1,15 @@
 package api.specs;
 
-import configs.Config;
 import api.models.CreateUserResponse;
+import configs.Config;
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
@@ -17,25 +19,28 @@ public class RequestSpecs {
     }
 
     private static RequestSpecBuilder defaultRequestBuilder() {
+        AllureRestAssured allureFilter = new AllureRestAssured()
+                .setRequestTemplate("http-request.ftl")
+                .setResponseTemplate("http-response.ftl");
+
         return new RequestSpecBuilder()
-                .addFilters(
-                        List.of(new RequestLoggingFilter(),
-                                new ResponseLoggingFilter()))
+                .addFilters(List.of(
+                        new RequestLoggingFilter(),
+                        new ResponseLoggingFilter(),
+                        allureFilter
+                ))
                 .setBaseUri(Config.getProperty("BaseUrl") + Config.getProperty("api"));
     }
 
     public static RequestSpecBuilder withBasicAuth(CreateUserResponse user) {
         return defaultRequestBuilder()
-                .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((user.getUsername() + ":" + user.getTestData().getPassword())
-                                .getBytes()));
+                .addHeader("Authorization", "Basic " + encode(user.getUsername(), user.getTestData().getPassword()));
     }
 
     public static RequestSpecBuilder withAdminBasicAuth() {
         return defaultRequestBuilder()
                 .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((Config.getProperty("admin.login") + ":" + Config.getProperty("admin.password"))
-                                .getBytes()));
+                        encode(Config.getProperty("admin.login"), Config.getProperty("admin.password")));
     }
 
     public static RequestSpecification authAsUser(CreateUserResponse userResponse, ContentType type) {
@@ -43,8 +48,7 @@ public class RequestSpecs {
                 .setContentType(type)
                 .setAccept(type)
                 .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((userResponse.getUsername() + ":" + userResponse.getTestData().getPassword())
-                                .getBytes()))
+                        encode(userResponse.getUsername(), userResponse.getTestData().getPassword()))
                 .build();
     }
 
@@ -52,9 +56,7 @@ public class RequestSpecs {
         return defaultRequestBuilder()
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
-                .addHeader("Authorization", "Basic " +
-                        Base64.getEncoder().encodeToString((username + ":" + password)
-                                .getBytes()))
+                .addHeader("Authorization", "Basic " + encode(username, password))
                 .build();
     }
 
@@ -64,5 +66,10 @@ public class RequestSpecs {
 
     public static RequestSpecification adminSpec() {
         return authAsUser(Config.getProperty("admin.login"), Config.getProperty("admin.password"));
+    }
+
+    private static String encode(String username, String password) {
+        return Base64.getEncoder()
+                .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
 }

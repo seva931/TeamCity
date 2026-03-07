@@ -9,10 +9,12 @@ import api.requests.skeleton.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.data.QueryParamData;
+import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 
 public class AgentSteps {
 
+    @Step("Получить список агентов от имени пользователя: {user.username}")
     public static AgentsResponse getAgents(CreateUserResponse user) {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.authAsUser(user),
@@ -21,6 +23,7 @@ public class AgentSteps {
         ).get();
     }
 
+    @Step("Получить список агентов от имени администратора")
     public static AgentsResponse getAgents() {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.adminSpec(),
@@ -29,6 +32,7 @@ public class AgentSteps {
         ).get();
     }
 
+    @Step("Получить всех агентов с расширенным набором полей")
     public static AgentsResponse getAllAgents() {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.withAdminBasicAuth()
@@ -42,6 +46,7 @@ public class AgentSteps {
         ).get();
     }
 
+    @Step("Получить всех включенных агентов")
     public static AgentsResponse getAllEnabledAgents() {
         return new ValidatedCrudRequester<AgentsResponse>(
                 RequestSpecs.withAdminBasicAuth()
@@ -54,6 +59,7 @@ public class AgentSteps {
         ).get();
     }
 
+    @Step("Отключить агента с id: {agentId}")
     public static String disableAgent(long agentId) {
         return new CrudRequester(
                 RequestSpecs.withAdminBasicAuth()
@@ -65,6 +71,7 @@ public class AgentSteps {
         ).put(agentId, "false").extract().asString();
     }
 
+    @Step("Включить агента с id: {agentId}")
     public static String enableAgent(long agentId) {
         return new CrudRequester(
                 RequestSpecs.withAdminBasicAuth()
@@ -76,6 +83,7 @@ public class AgentSteps {
         ).put(agentId, "true").extract().asString();
     }
 
+    @Step("Авторизовать агента с id: {agentId}")
     public static String authorizeAgent(long agentId) {
         return new CrudRequester(
                 RequestSpecs.withAdminBasicAuth()
@@ -87,6 +95,7 @@ public class AgentSteps {
         ).put(agentId, "true").extract().asString();
     }
 
+    @Step("Снять авторизацию у агента с id: {agentId}")
     public static String unauthorizeAgent(long agentId) {
         return new CrudRequester(
                 RequestSpecs.withAdminBasicAuth()
@@ -98,8 +107,8 @@ public class AgentSteps {
         ).put(agentId, "false").extract().asString();
     }
 
+    @Step("Получить агента по id: {agentId} от имени пользователя: {user.username}")
     public static AgentResponse getAgentById(CreateUserResponse user, long agentId) {
-
         return new ValidatedCrudRequester<AgentResponse>(
                 RequestSpecs.authAsUser(user.getUsername(), user.getTestData().getPassword()),
                 Endpoint.AGENTS_ID,
@@ -107,8 +116,8 @@ public class AgentSteps {
         ).get(agentId);
     }
 
+    @Step("Получить агента по имени: {agentName} от имени пользователя: {user.username}")
     public static AgentResponse getAgentByName(CreateUserResponse user, String agentName) {
-
         return new CrudRequester(
                 RequestSpecs.authAsUser(user),
                 Endpoint.AGENTS_LOCATOR,

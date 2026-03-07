@@ -1,8 +1,8 @@
-name: run-tests.yml
+name: run-tests
+
 on:
   workflow_dispatch:
   push:
-    branches: [ create-teamcity-profile, or/allure-report ]
   pull_request:
 
 jobs:
@@ -22,16 +22,28 @@ jobs:
       TEAMCITY_DATA_ASSET: teamcity-data.tar.gz
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
-      - name: Download asset
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build code and run checkstyle
+        run: mvn -B clean validate
+
+      - name: Download TeamCity data asset
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -39,7 +51,7 @@ jobs:
             --pattern "$TEAMCITY_DATA_ASSET" \
             --output "$TEAMCITY_DATA_ASSET"
 
-      - name: Extract
+      - name: Extract TeamCity data
         run: |
           tar -xzf "$TEAMCITY_DATA_ASSET" -C infra
           ls -la infra
@@ -53,16 +65,11 @@ jobs:
         working-directory: ./infra
         run: cp .env.example .env
 
-      - name: Cache Maven repository # Кэширование репозитория Maven для ускорения сборки
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Set up services # Настройка сервисов, например, запуск Docker контейнеров
-        run: cd infra && bash restart_docker.sh selenoid && cd ..
+      - name: Start services
+        run: |
+          cd infra
+          bash restart_docker.sh selenoid
+          cd ..
 
       - name: Wait for TeamCity
         run: |
@@ -71,18 +78,20 @@ jobs:
               sleep 10
             done
           '
+
       - name: Clean Allure dirs
         run: |
           rm -rf allure-results target/site/allure-maven-plugin
 
-      - name: Run tests
-        run: |
-          mvn clean test -Pselenoid 
+      - name: Run API tests
+        run: mvn -B test -Pselenoid -Dgroups=api
+
+      - name: Run UI tests
+        run: mvn -B test -Pselenoid -Dgroups=web
 
       - name: Generate Allure report
         if: always()
-        run: |
-          mvn allure:report
+        run: mvn -B allure:report
 
       - name: Upload Allure artifacts
         if: always()
@@ -108,7 +117,7 @@ jobs:
         if: always() && github.event_name != 'pull_request'
         uses: actions/deploy-pages@v4
 
-      - name: Stop
-        working-directory: ./infra
+      - name: Stop services
         if: always()
+        working-directory: ./infra
         run: docker compose down -v

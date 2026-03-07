@@ -1,7 +1,9 @@
 package ui;
 
-import configs.Config;
 import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.logevents.SelenideLogger;
+import configs.Config;
+import io.qameta.allure.selenide.AllureSelenide;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,6 +32,10 @@ public class BaseUITest {
         } else {
             Configuration.browserCapabilities = new MutableCapabilities();
         }
+
+        SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
+                .screenshots(true)
+                .savePageSource(true));
     }
 
     @BeforeEach
