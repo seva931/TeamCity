@@ -21,7 +21,6 @@ API- и UI-тесты для TeamCity на Java 21.
 
 ## Документация
 
-
 - [Запуск окружения через Docker Compose](docs/docker-compose.md)
 - [Тесты: режимы запуска и отчёт](docs/test-run.md)
 - [Тесты: написание и структура](docs/test-writing.md)
