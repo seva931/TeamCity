@@ -53,7 +53,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Set up services # Настройка сервисов, например, запуск Docker контейнеров
-        run: cd infra && bash restart_docker.sh && cd ..
+        run: cd infra && bash restart_docker.sh selenoid && cd ..
 
       - name: Wait for TeamCity
         run: |
