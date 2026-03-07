@@ -3,14 +3,14 @@ package ui.pages;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
-import org.openqa.selenium.By;
 
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$x;
 
 public class CreateBuildTypePage extends ProjectPage<CreateBuildTypePage> {
-    private SelenideElement newBuildConfigurationNameInput = $(By.xpath("//*[contains(text(),'Name')]/..//*/input"));
-    private SelenideElement saveChangesButton = $(By.xpath("//*/button[contains(text(),'Create')]"));
-    private SelenideElement saveChangesDisabledButton = $(By.xpath("//*/button[@disabled='' and contains(text(),'Create')]"));
+    private SelenideElement newBuildConfigurationNameInput = $x("//*[contains(text(),'Name')]/..//*/input");
+    private SelenideElement saveChangesButton = $x("//*/button[contains(text(),'Create')]");
+    private SelenideElement saveChangesDisabledButton = $x("//*/button[@disabled='' and contains(text(),'Create')]");
 
     @Override
     public String url() {

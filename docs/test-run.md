@@ -19,23 +19,12 @@ mvn test -Pselenoid -Dtest.groups=web      # только @Tag("web"), Selenoid
 
 ---
 
-## Отчёт Surefire
+## Результаты JUnit (Surefire)
 
-Сгенерировать HTML-отчёт:
+После `mvn test` Maven сохраняет результаты выполнения тестов в:
+- `target/surefire-reports/`
 
-```bash
-mvn surefire-report:report-only
-```
-
-Отчёт лежит в файле:
-- `target/reports/surefire.html`
-
-Если отчёт пустой или не создаётся, сначала выполните тесты:
-
-```bash
-mvn test
-mvn surefire-report:report-only
-```
+Это XML/текстовые файлы для диагностики падений и интеграций CI.
 
 ---
 
@@ -61,3 +50,12 @@ mvn allure:report
 ```
 
 При падении UI-тестов в Allure автоматически прикладывается скриншот с именем `Screenshot on fail`.
+
+---
+
+## Allure в CI (GitHub Actions)
+
+Workflow `.github/workflows/run-tests.yml` после тестов:
+- генерирует отчёт `mvn allure:report`
+- загружает артефакты `allure-results` и `target/site/allure-maven-plugin`
+- публикует отчёт в GitHub Pages (для `push`, не для `pull_request`)

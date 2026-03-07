@@ -20,6 +20,7 @@
 - Docker Desktop (с поддержкой Docker Compose)
 - Java 21
 - Maven 3.9+
+- `jq` (нужен для `infra/restart_docker.sh`)
 
 ---
 
@@ -75,6 +76,25 @@ docker compose ps
 3. создать пользователя (для учебного стенда можно `admin/admin`)
 
 Важно: пока не пройден initial setup TeamCity, часть REST/Swagger-эндпоинтов может быть недоступна или требовать авторизацию.
+
+---
+
+## Перезапуск окружения через скрипт
+
+В проекте есть скрипт `infra/restart_docker.sh`, который:
+- останавливает текущее compose-окружение
+- подтягивает browser images из `infra/browsers.json`
+- запускает compose с переданными профилями
+- для профиля `selenoid` ждёт readiness `http://localhost:4444/status`
+
+Примеры:
+
+```bash
+cd infra
+bash restart_docker.sh                  # без профилей
+bash restart_docker.sh selenoid         # с профилем selenoid
+bash restart_docker.sh swagger selenoid # два профиля
+```
 
 ---
 
