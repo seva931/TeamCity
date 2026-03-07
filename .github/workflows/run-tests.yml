@@ -62,9 +62,6 @@ jobs:
               sleep 10
             done
           '
-      - name: Check selenoid
-        run: |
-          curl -v http://localhost:4444/status
 
       - name: Run tests
         run: |
@@ -80,11 +77,6 @@ jobs:
             target/failsafe-reports
             target/site
           if-no-files-found: ignore
-
-      - name: Show TeamCity logs
-        if: failure()
-        working-directory: ./infra
-        run: docker compose logs teamcity-server
 
       - name: Stop
         working-directory: ./infra
