@@ -33,12 +33,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
 
       - name: Run Checkstyle
-        run: ./mvnw -B checkstyle:checkstyle
+        run: mvn -B checkstyle:checkstyle
+
+      - name: Download swagger-coverage CLI
+        if: always()
+        run: |
+          curl -L -o swagger-coverage.zip https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
+          unzip -q swagger-coverage.zip
 
       - name: Download TeamCity data asset
         env:
@@ -74,13 +80,19 @@ jobs:
               sleep 10
             done
           '
+      - name: Run Swagger coverage
+        if: always()
+        run: |
+          swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
+            -s http://localhost:8111/app/rest/swagger.json \
+            -i target/swagger-coverage-output
 
       - name: Clean Allure dirs
         run: |
           rm -rf allure-results target/site/allure-maven-plugin
 
       - name: Run tests
-        run: ./mvnw clean test -q
+        run: mvn clean test -q
 
       - name: Load report history
         if: always()
@@ -110,7 +122,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
-          destination_dir: allure-history
 
       - name: Cleanup services
         if: always()
