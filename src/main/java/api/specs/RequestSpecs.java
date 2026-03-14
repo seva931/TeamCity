@@ -4,6 +4,9 @@ import api.models.CreateUserResponse;
 import configs.Config;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.LogConfig;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
@@ -19,22 +22,40 @@ public class RequestSpecs {
     }
 
     private static RequestSpecBuilder defaultRequestBuilder() {
-        AllureRestAssured allureFilter = new AllureRestAssured()
-                .setRequestTemplate("http-request.ftl")
-                .setResponseTemplate("http-response.ftl");
+        boolean loggingEnabled = Boolean.parseBoolean(
+                System.getProperty("api.logging.enabled", "true")
+        );
+        AllureRestAssured allureFilter = new AllureRestAssured();
 
-        return new RequestSpecBuilder()
+        RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder()
+                .setConfig(RestAssuredConfig.config().logConfig(
+                        LogConfig.logConfig()
+                                .blacklistHeader("Authorization")
+                                .blacklistHeader("Cookie")
+                                .blacklistHeader("Set-Cookie")
+                ))
                 .addFilters(List.of(
-                        new RequestLoggingFilter(),
-                        new ResponseLoggingFilter(),
-                        allureFilter
+                        new RequestLoggingFilter(LogDetail.METHOD),
+                        new RequestLoggingFilter(LogDetail.URI),
+                        new ResponseLoggingFilter(LogDetail.STATUS)
                 ))
                 .setBaseUri(Config.getProperty("BaseUrl") + Config.getProperty("api"));
+
+        if (loggingEnabled) {
+            requestSpecBuilder.addFilter(new SensitiveBodyLoggingFilter());
+            requestSpecBuilder.addFilter(new ResponseLoggingFilter(LogDetail.BODY));
+        }
+
+        requestSpecBuilder.addFilter(allureFilter);
+
+        return requestSpecBuilder;
     }
 
     public static RequestSpecBuilder withBasicAuth(CreateUserResponse user) {
         return defaultRequestBuilder()
-                .addHeader("Authorization", "Basic " + encode(user.getUsername(), user.getTestData().getPassword()));
+                .addHeader(
+                        "Authorization",
+                        "Basic " + encode(user.getUsername(), user.getTestData().getPassword()));
     }
 
     public static RequestSpecBuilder withAdminBasicAuth() {
