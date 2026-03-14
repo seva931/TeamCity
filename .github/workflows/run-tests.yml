@@ -54,14 +54,9 @@ jobs:
           ls -la infra
           ls -la infra/teamcity-data
 
-      - name: Fix permissions (use container UID)
-        working-directory: ./infra
+      - name: Fix permissions
         run: |
-          TC_UID=$(docker compose exec -T teamcity-server id -u)
-          TC_GID=$(docker compose exec -T teamcity-server id -g)
-          echo "TeamCity UID:GID = $TC_UID:$TC_GID"
-          sudo chown -R "$TC_UID:$TC_GID" teamcity-data
-          ls -ln teamcity-data
+          sudo chown -R 1000:1000 infra/teamcity-data
 
       - name: Set env
         working-directory: ./infra
