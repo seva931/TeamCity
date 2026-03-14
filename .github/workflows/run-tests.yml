@@ -65,6 +65,7 @@ jobs:
 
       - name: Dump TeamCity logs on failure
         if: failure()
+        working-directory: ./infra
         run: |
           docker compose ps
           docker compose logs teamcity-server --tail=200
@@ -82,13 +83,6 @@ jobs:
         working-directory: ./infra
         run: |
           docker compose restart teamcity-server
-
-      - name: Dump TeamCity logs on failure
-        if: failure()
-        working-directory: ./infra
-        run: |
-          docker compose ps
-          docker compose logs teamcity-server --tail=200
 
       - name: Wait for TeamCity
         run: |
