@@ -34,7 +34,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run Checkstyle
-        run: mvn -B checkstyle:checkstyle
+        run: ./mvnw -B checkstyle:checkstyle
 
       - name: Download TeamCity data asset
         env:
@@ -75,11 +75,8 @@ jobs:
         run: |
           rm -rf allure-results target/site/allure-maven-plugin
 
-      - name: Run tests (API)
-        run: mvn -B test -Pselenoid -Dtest.groups=api
-
-      - name: Run tests (UI)
-        run: mvn -B test -Pselenoid -Dtest.groups=web
+      - name: Run tests
+        run: ./mvnw clean test -q
 
       - name: Load report history
         if: always()
