@@ -70,16 +70,25 @@ jobs:
           docker compose logs teamcity-server --tail=200
 
       - name: Fix permissions (use container UID)
+        working-directory: ./infra
         run: |
           TC_UID=$(docker compose exec -T teamcity-server id -u)
           TC_GID=$(docker compose exec -T teamcity-server id -g)
           echo "TeamCity UID:GID = $TC_UID:$TC_GID"
-          sudo chown -R "$TC_UID:$TC_GID" infra/teamcity-data
-          ls -ln infra/teamcity-data
+          sudo chown -R "$TC_UID:$TC_GID" teamcity-data
+          ls -ln teamcity-data
 
       - name: Restart TeamCity after chown
+        working-directory: ./infra
         run: |
           docker compose restart teamcity-server
+
+      - name: Dump TeamCity logs on failure
+        if: failure()
+        working-directory: ./infra
+        run: |
+          docker compose ps
+          docker compose logs teamcity-server --tail=200
 
       - name: Wait for TeamCity
         run: |
