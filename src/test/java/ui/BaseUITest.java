@@ -34,7 +34,7 @@ public class BaseUITest {
         }
 
         SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
-                .screenshots(true)
+//                .screenshots(true)
                 .savePageSource(true));
     }
 
