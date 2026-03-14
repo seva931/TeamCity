@@ -71,6 +71,10 @@ jobs:
           sudo chown -R "$TC_UID:$TC_GID" infra/teamcity-data
           ls -ln infra/teamcity-data
 
+      - name: Restart TeamCity after chown
+        run: |
+          docker compose restart teamcity-server
+
       - name: Wait for TeamCity
         run: |
           timeout 600 bash -c '
