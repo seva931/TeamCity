@@ -40,12 +40,6 @@ jobs:
       - name: Run Checkstyle
         run: mvn -B checkstyle:checkstyle
 
-      - name: Download swagger-coverage CLI
-        if: always()
-        run: |
-          curl -L -o swagger-coverage.zip https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
-          unzip -q swagger-coverage.zip
-
       - name: Download TeamCity data asset
         env:
           GH_TOKEN: ${{ github.token }}
@@ -80,6 +74,11 @@ jobs:
               sleep 10
             done
           '
+      - name: Download swagger-coverage CLI
+        if: always()
+        run: |
+          curl -L -o swagger-coverage.zip https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
+          unzip -q swagger-coverage.zip
 
       - name: Clean Allure dirs
         run: |
