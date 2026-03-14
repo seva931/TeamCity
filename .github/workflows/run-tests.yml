@@ -40,19 +40,6 @@ jobs:
       - name: Run Checkstyle
         run: mvn -B checkstyle:checkstyle
 
-      - name: Set env
-        working-directory: ./infra
-        run: cp .env.example .env
-
-      - name: Fix permissions (use container UID)
-        working-directory: ./infra
-        run: |
-          TC_UID=$(docker compose exec -T teamcity-server id -u)
-          TC_GID=$(docker compose exec -T teamcity-server id -g)
-          echo "TeamCity UID:GID = $TC_UID:$TC_GID"
-          sudo chown -R "$TC_UID:$TC_GID" teamcity-data
-          ls -ln teamcity-data
-
       - name: Download TeamCity data asset
         env:
           GH_TOKEN: ${{ github.token }}
@@ -67,6 +54,19 @@ jobs:
           ls -la infra
           ls -la infra/teamcity-data
 
+      - name: Fix permissions (use container UID)
+        working-directory: ./infra
+        run: |
+          TC_UID=$(docker compose exec -T teamcity-server id -u)
+          TC_GID=$(docker compose exec -T teamcity-server id -g)
+          echo "TeamCity UID:GID = $TC_UID:$TC_GID"
+          sudo chown -R "$TC_UID:$TC_GID" teamcity-data
+          ls -ln teamcity-data
+
+      - name: Set env
+        working-directory: ./infra
+        run: cp .env.example .env
+
       - name: Start services
         run: |
           cd infra
@@ -78,11 +78,6 @@ jobs:
         run: |
           docker compose ps
           docker compose logs teamcity-server --tail=200
-
-      - name: Restart TeamCity after chown
-        working-directory: ./infra
-        run: |
-          docker compose restart teamcity-server
 
       - name: Wait for TeamCity
         run: |
