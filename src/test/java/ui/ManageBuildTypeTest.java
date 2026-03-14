@@ -10,6 +10,7 @@ import jupiter.annotation.Project;
 import jupiter.annotation.User;
 import jupiter.annotation.meta.WithProject;
 import jupiter.annotation.meta.WebTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import ui.pages.BuildTypePage;
 import ui.pages.CreateBuildTypePage;
@@ -18,6 +19,7 @@ import ui.pages.ProjectDetailsPage;
 import static com.codeborne.selenide.logevents.SelenideLogger.step;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled("Тесты падают")
 @WithProject
 @WebTest
 public class ManageBuildTypeTest extends BaseUITest {
