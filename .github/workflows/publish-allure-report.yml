@@ -5,9 +5,9 @@ on:
     workflows: ["run-tests"]
     types:
       - completed
+  workflow_dispatch:
   push:
-    branches:
-      - refactor/ci-cd-report-branch
+  pull_request:
 
 jobs:
   publish:
