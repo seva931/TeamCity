@@ -63,6 +63,12 @@ jobs:
           cd infra
           bash restart_docker.sh selenoid
 
+      - name: Dump TeamCity logs on failure
+        if: failure()
+        run: |
+          docker compose ps
+          docker compose logs teamcity-server --tail=200
+
       - name: Fix permissions (use container UID)
         run: |
           TC_UID=$(docker compose exec -T teamcity-server id -u)
