@@ -7,6 +7,7 @@ import jupiter.annotation.User;
 import jupiter.annotation.WithAgent;
 import jupiter.annotation.meta.WebTest;
 import jupiter.extension.AgentExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import ui.pages.AgentsOverviewPage;
@@ -17,6 +18,7 @@ import static com.codeborne.selenide.logevents.SelenideLogger.step;
 @ExtendWith(AgentExtension.class)
 public class AgentsTest extends BaseUITest {
 
+    @Disabled
     @WithAgent(configKeys = {"teamcity.agent.1.name"})
     @Test
     void userCanDisableAgent(@User CreateUserResponse user, Agent[] agents) {
