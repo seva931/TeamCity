@@ -57,6 +57,8 @@ jobs:
       - name: Fix permissions
         run: |
           sudo chown -R 1000:1000 infra/teamcity-data
+          ls -la infra/teamcity-data
+          ls -la infra/teamcity-data/plugins
 
       - name: Set env
         working-directory: ./infra
@@ -74,11 +76,6 @@ jobs:
               sleep 10
             done
           '
-      - name: Download swagger-coverage CLI
-        if: always()
-        run: |
-          curl -L -o swagger-coverage.zip https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
-          unzip -q swagger-coverage.zip
 
       - name: Clean Allure dirs
         run: |
