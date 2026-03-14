@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run Checkstyle
-        run: mvn -B checkstyle:checkstyle
+        run: ./mvnw -B checkstyle:checkstyle
 
       - name: Download TeamCity data asset
         env:
@@ -67,13 +67,6 @@ jobs:
           cd infra
           bash restart_docker.sh selenoid
 
-      - name: Dump TeamCity logs on failure
-        if: failure()
-        working-directory: ./infra
-        run: |
-          docker compose ps
-          docker compose logs teamcity-server --tail=200
-
       - name: Wait for TeamCity
         run: |
           timeout 600 bash -c '
@@ -87,7 +80,7 @@ jobs:
           rm -rf allure-results target/site/allure-maven-plugin
 
       - name: Run tests
-        run: mvn clean test -q
+        run: ./mvnw test -Pselenoid -q
 
       - name: Load report history
         if: always()
