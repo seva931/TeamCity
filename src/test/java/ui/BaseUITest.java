@@ -1,7 +1,9 @@
 package ui;
 
+import com.codeborne.selenide.logevents.SelenideLogger;
 import configs.Config;
 import com.codeborne.selenide.Configuration;
+import io.qameta.allure.selenide.AllureSelenide;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,6 +20,11 @@ public class BaseUITest {
         Configuration.baseUrl = Config.getProperty("ui.baseUrl");
         Configuration.browser = Config.getProperty("browser");
         Configuration.browserSize = Config.getProperty("browser.size");
+        SelenideLogger.addListener("AllureSelenide",
+                new AllureSelenide()
+                        .screenshots(true)
+                        .savePageSource(true)
+        );
 
         String remote = Config.getProperty("uiRemote");
         boolean isRemote = remote != null && !remote.isBlank();

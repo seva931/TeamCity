@@ -8,6 +8,10 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     env:
       TEAMCITY_DATA_TAG: teamcity-data
       TEAMCITY_DATA_ASSET: teamcity-data.tar.gz
@@ -19,7 +23,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Download asset
@@ -30,7 +34,7 @@ jobs:
             --pattern "$TEAMCITY_DATA_ASSET" \
             --output "$TEAMCITY_DATA_ASSET"
 
-      - name: Extract
+      - name: Extract TeamCity data
         run: |
           tar -xzf "$TEAMCITY_DATA_ASSET" -C infra
           ls -la infra
@@ -63,26 +67,25 @@ jobs:
             done
           '
 
-      - name: Run tests
+      - name: Clean Allure dirs
         run: |
-          mvn test -Pselenoid 
+          rm -rf allure-results target/site/allure-maven-plugin
 
-      - name: Generate Allure report
-        if: always()
-        run: |
-          mvn allure:report
+      - name: Run API tests
+        run: mvn -B test -Pselenoid -Dgroups=api
 
-      - name: Upload Allure artifacts
+      - name: Run UI tests
+        run: mvn -B test -Pselenoid -Dgroups=web
+
+      - name: Upload Allure results artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-artifacts
-          path: |
-            allure-results
-            target/site/allure-maven-plugin
+          name: allure-results
+          path: allure-results
           if-no-files-found: ignore
 
-      - name: Stop
-        working-directory: ./infra
+      - name: Stop services
         if: always()
+        working-directory: ./infra
         run: docker compose down -v

@@ -2,6 +2,7 @@ package api.specs;
 
 import configs.Config;
 import api.models.CreateUserResponse;
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -20,7 +21,8 @@ public class RequestSpecs {
         return new RequestSpecBuilder()
                 .addFilters(
                         List.of(new RequestLoggingFilter(),
-                                new ResponseLoggingFilter()))
+                                new ResponseLoggingFilter(),
+                                new AllureRestAssured()))
                 .setBaseUri(Config.getProperty("BaseUrl") + Config.getProperty("api"));
     }
 
