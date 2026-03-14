@@ -5,9 +5,6 @@ on:
     workflows: ["run-tests"]
     types:
       - completed
-  push:
-    branches:
-      - refactor/ci-cd-report-branch
 
 jobs:
   publish:
@@ -41,38 +38,11 @@ jobs:
         run: |
           set -e
 
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "SOURCE_RUN_ID=${{ github.event.workflow_run.id }}" >> "$GITHUB_ENV"
-            echo "SOURCE_RUN_NUMBER=${{ github.event.workflow_run.run_number }}" >> "$GITHUB_ENV"
-            echo "SOURCE_BRANCH=${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_ENV"
-            echo "SOURCE_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
-            echo "SOURCE_RUN_URL=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_ENV"
-            exit 0
-          fi
-
-          BRANCH="${GITHUB_REF_NAME}"
-          SHA="${GITHUB_SHA}"
-
-          for i in {1..60}; do
-            RUN_JSON="$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows/run-tests.yml/runs?branch=${BRANCH}&per_page=20")"
-
-            MATCHED_RUN="$(echo "$RUN_JSON" | jq -c --arg SHA "$SHA" '.workflow_runs[] | select(.head_sha == $SHA and .status == "completed")' | head -n 1)"
-
-            if [ -n "$MATCHED_RUN" ]; then
-              echo "SOURCE_RUN_ID=$(echo "$MATCHED_RUN" | jq -r '.id')" >> "$GITHUB_ENV"
-              echo "SOURCE_RUN_NUMBER=$(echo "$MATCHED_RUN" | jq -r '.run_number')" >> "$GITHUB_ENV"
-              echo "SOURCE_BRANCH=$(echo "$MATCHED_RUN" | jq -r '.head_branch')" >> "$GITHUB_ENV"
-              echo "SOURCE_SHA=$(echo "$MATCHED_RUN" | jq -r '.head_sha')" >> "$GITHUB_ENV"
-              echo "SOURCE_RUN_URL=$(echo "$MATCHED_RUN" | jq -r '.html_url')" >> "$GITHUB_ENV"
-              exit 0
-            fi
-
-            echo "Ожидание завершения run-tests для коммита ${SHA}. Попытка $i/60"
-            sleep 10
-          done
-
-          echo "Не найден завершённый workflow run-tests для коммита ${SHA}"
-          exit 1
+          echo "SOURCE_RUN_ID=${{ github.event.workflow_run.id }}" >> "$GITHUB_ENV"
+          echo "SOURCE_RUN_NUMBER=${{ github.event.workflow_run.run_number }}" >> "$GITHUB_ENV"
+          echo "SOURCE_BRANCH=${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_ENV"
+          echo "SOURCE_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_RUN_URL=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_ENV"
 
       - name: Download allure-results artifact
         env:
@@ -106,6 +76,34 @@ jobs:
           rm -rf allure-results
           mkdir -p allure-results
           unzip -o "${{ runner.temp }}/allure-results.zip" -d allure-results
+
+      - name: Restore Allure history from gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+
+          TMP_DIR="$(mktemp -d)"
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          cd "$TMP_DIR"
+          git init
+          git remote add origin "$REPO_URL"
+
+          if git ls-remote --exit-code --heads origin "$REPORT_BRANCH" >/dev/null 2>&1; then
+            git fetch --depth 1 origin "$REPORT_BRANCH"
+            git checkout -B "$REPORT_BRANCH" FETCH_HEAD
+
+            if [ -d "latest/history" ]; then
+              mkdir -p "${GITHUB_WORKSPACE}/allure-results/history"
+              cp -R latest/history/. "${GITHUB_WORKSPACE}/allure-results/history/"
+              echo "History restored from gh-pages/latest/history"
+            else
+              echo "History not found in gh-pages/latest/history"
+            fi
+          else
+            echo "Branch ${REPORT_BRANCH} does not exist yet. First report will be created without history."
+          fi
 
       - name: Prepare Allure executor metadata
         run: |
