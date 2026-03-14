@@ -54,6 +54,10 @@ jobs:
           ls -la infra
           ls -la infra/teamcity-data
 
+      - name: Set env
+        working-directory: ./infra
+        run: cp .env.example .env
+
       - name: Start services
         run: |
           cd infra
@@ -66,10 +70,6 @@ jobs:
           echo "TeamCity UID:GID = $TC_UID:$TC_GID"
           sudo chown -R "$TC_UID:$TC_GID" infra/teamcity-data
           ls -ln infra/teamcity-data
-
-      - name: Set env
-        working-directory: ./infra
-        run: cp .env.example .env
 
       - name: Wait for TeamCity
         run: |
