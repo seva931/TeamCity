@@ -54,20 +54,22 @@ jobs:
           ls -la infra
           ls -la infra/teamcity-data
 
-      - name: Fix permissions
-        run: |
-          sudo chown -R 1000:1000 infra/teamcity-data
-          ls -la infra/teamcity-data
-          ls -la infra/teamcity-data/plugins
-
-      - name: Set env
-        working-directory: ./infra
-        run: cp .env.example .env
-
       - name: Start services
         run: |
           cd infra
           bash restart_docker.sh selenoid
+
+      - name: Fix permissions (use container UID)
+        run: |
+          TC_UID=$(docker compose exec -T teamcity-server id -u)
+          TC_GID=$(docker compose exec -T teamcity-server id -g)
+          echo "TeamCity UID:GID = $TC_UID:$TC_GID"
+          sudo chown -R "$TC_UID:$TC_GID" infra/teamcity-data
+          ls -ln infra/teamcity-data
+
+      - name: Set env
+        working-directory: ./infra
+        run: cp .env.example .env
 
       - name: Wait for TeamCity
         run: |
