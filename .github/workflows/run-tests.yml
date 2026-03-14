@@ -80,12 +80,6 @@ jobs:
               sleep 10
             done
           '
-      - name: Run Swagger coverage
-        if: always()
-        run: |
-          swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
-            -s http://localhost:8111/app/rest/swagger.json \
-            -i target/swagger-coverage-output
 
       - name: Clean Allure dirs
         run: |
