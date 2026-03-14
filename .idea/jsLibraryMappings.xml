@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptLibraryMappings">
+    <excludedPredefinedLibrary name="teamcity-tests/infra/teamcity-data/system/caches/tools.unpacked/idea/plugins/JavaScriptLanguage/helpers/package-version-range-matcher/node_modules" />
+    <excludedPredefinedLibrary name="teamcity-tests/infra/teamcity-data/system/caches/tools.unpacked/idea/plugins/spy-js/server/node_modules" />
+  </component>
+</project>
