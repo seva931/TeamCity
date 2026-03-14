@@ -25,7 +25,9 @@ public class RequestSpecs {
         boolean loggingEnabled = Boolean.parseBoolean(
                 System.getProperty("api.logging.enabled", "true")
         );
-        AllureRestAssured allureFilter = new AllureRestAssured();
+        AllureRestAssured allureFilter = new AllureRestAssured()
+                .setRequestTemplate("http-request.ftl")
+                .setResponseTemplate("http-response.ftl");
 
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder()
                 .setConfig(RestAssuredConfig.config().logConfig(
